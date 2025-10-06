@@ -1,4 +1,4 @@
-package ru.sogaz.site.orderingService.dto
+package ru.sogaz.site.orderingService.dto.request
 
 import java.math.BigDecimal
 import java.util.UUID

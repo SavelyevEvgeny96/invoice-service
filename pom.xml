@@ -103,6 +103,16 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>ru.sogaz.site</groupId>
+			<artifactId>exception-starter</artifactId>
+			<version>1.0.101</version>
+		</dependency>
+		<dependency>
+			<groupId>ru.sogaz.site</groupId>
+			<artifactId>filter-starter</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		<dependency>
 			<groupId>ru.sogaz.esb.core</groupId>
 			<artifactId>logger</artifactId>
 			<version>${ru.sogaz.esb.core.logger.version}</version>

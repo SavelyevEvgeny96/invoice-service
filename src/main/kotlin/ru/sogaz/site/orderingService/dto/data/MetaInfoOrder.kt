@@ -1,4 +1,4 @@
-package ru.sogaz.site.orderingService.dto
+package ru.sogaz.site.orderingService.dto.data
 
 import java.time.Instant
 
