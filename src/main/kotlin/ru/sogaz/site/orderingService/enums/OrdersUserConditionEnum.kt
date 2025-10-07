@@ -5,19 +5,18 @@ import com.fasterxml.jackson.annotation.JsonValue
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 
-/** Статус запрошенных заказов */
-enum class OrdersStatusIsPaid(@JsonValue val value: String) {
-    UNPAID("unpaid"),
-    PAID("paid"),
-    ALL("all");
+/** Логическое условие при одновременной передаче email и phone */
+enum class OrdersUserConditionEnum(@JsonValue val values: String) {
+    OR("or"),
+    AND("and");
 
     companion object {
         @JvmStatic @JsonCreator
-        fun from(value: String?): OrdersStatusIsPaid? {
+        fun from(value: String?): OrdersUserConditionEnum? {
             if (value.isNullOrBlank()) return null
             val traceId =getTraceId()
-            return entries.find { it.value == value }
-                ?: throw InnerException(traceId, "Invalid OrdersStatus: '$value'")
+            return entries.find { it.values == value }
+                ?: throw InnerException(traceId, "Invalid Condition: '$value'")
         }
     }
 }
