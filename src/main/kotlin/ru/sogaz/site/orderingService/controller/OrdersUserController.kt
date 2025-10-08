@@ -19,7 +19,7 @@ class OrdersUserController(
     fun getClientOrders(
         @Valid @RequestBody request: OrdersUserRequest,
     ): ResponseEntity<Response<OrdersUserResponse>>? {
-        ordersUserService.findOrders()
+        ordersUserService.findOrders(request)
         return null
     }
 }

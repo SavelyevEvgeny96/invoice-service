@@ -4,9 +4,11 @@ import org.springframework.jdbc.core.JdbcTemplate
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.Timestamp
 
 class OrderDaoImpl(
+    private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
     companion object {
@@ -16,6 +18,17 @@ class OrderDaoImpl(
     }
 
     private val logger = loggerFor(javaClass)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientUserId(userId)
+
+    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientUserGdId(gdId)
+
+    override fun findByEmailOrPhone(email: String?, phone: String?): List<OrderEntity?> =
+        orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
+
+    override fun findByEmailAndPhone(email: String, phone: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
     override fun upsertOrders(orders: List<OrderEntity>) {
         val sql =

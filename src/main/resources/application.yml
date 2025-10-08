@@ -6,7 +6,7 @@ spring:
     active: ${ENVIRONMENT:local}
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering?reWriteBatchedInserts=true}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123456}
   jpa:
