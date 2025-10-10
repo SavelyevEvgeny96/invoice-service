@@ -26,7 +26,8 @@ open class BuildBatchConsumerServiceImpl(
     companion object {
         const val DUPLICATE = "Дубликат orderId в пачке, пропускаем: %s"
     }
-     private val logger = loggerFor(BuildBatchConsumerServiceImpl::class.java)
+
+    private val logger = loggerFor(BuildBatchConsumerServiceImpl::class.java)
 
     override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
         val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()

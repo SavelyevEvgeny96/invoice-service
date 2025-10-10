@@ -19,11 +19,9 @@ class OrderDaoImpl(
 
     private val logger = loggerFor(javaClass)
 
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientUserId(userId)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
-    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientUserGdId(gdId)
+    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserGdId(gdId)
 
     override fun findByEmailOrPhone(
         email: String?,
@@ -36,7 +34,8 @@ class OrderDaoImpl(
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
     override fun upsertOrders(orders: List<OrderEntity>) {
-        val sql = """
+        val sql =
+            """
             INSERT INTO orders (
                 order_id, create_date, recipient_email, recipient_phone,
                 premium_amount, payment_end_date, key_card, save_card,
@@ -59,7 +58,7 @@ class OrderDaoImpl(
                                             ELSE 'UPDATE'
                                          END,
                   update_date          = NOW()
-        """.trimIndent()
+            """.trimIndent()
 
         logger.info(LOG_START.format(orders.size))
 
