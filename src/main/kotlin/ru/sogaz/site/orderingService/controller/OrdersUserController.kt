@@ -14,7 +14,6 @@ import ru.sogaz.siter.models.resonses.Response
 class OrdersUserController(
     private val ordersUserService: OrdersUserService,
 ) {
-
     @PostMapping("/v1/orders/ordersuser")
     fun getClientOrders(
         @Valid @RequestBody request: OrdersUserRequest,

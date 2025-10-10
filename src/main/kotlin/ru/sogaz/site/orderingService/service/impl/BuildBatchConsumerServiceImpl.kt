@@ -3,7 +3,7 @@ package ru.sogaz.site.orderingService.service.impl
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
-import ru.sogaz.site.orderingService.dto.request.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
@@ -45,7 +45,7 @@ open class BuildBatchConsumerServiceImpl(
 
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
-        nowIso: String
+        nowIso: String,
     ): List<PaymentCreatedEvent> = orders.map { paymentEventMapper.toPaymentEvent(it, nowIso, props.routingKeyPayment) }
 
     private fun prepareEntities(batch: List<OrderPayloadDto>): Pair<List<OrderEntity>, List<SubOrderEntity>> {

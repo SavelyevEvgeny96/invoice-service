@@ -12,8 +12,10 @@ import ru.sogaz.site.orderingService.repository.OrderRepository
 @Configuration
 class DaoConfig {
     @Bean
-    fun orderDaoConfig(jdbcTemplate: JdbcTemplate, orderRepository: OrderRepository): OrderDao =
-        OrderDaoImpl(jdbcTemplate = jdbcTemplate, orderRepository = orderRepository)
+    fun orderDaoConfig(
+        jdbcTemplate: JdbcTemplate,
+        orderRepository: OrderRepository,
+    ): OrderDao = OrderDaoImpl(jdbcTemplate = jdbcTemplate, orderRepository = orderRepository)
 
     @Bean
     fun subOrderDao(jdbcTemplate: JdbcTemplate): SubOrderDao = SubOrderDaoImpl(jdbcTemplate = jdbcTemplate)

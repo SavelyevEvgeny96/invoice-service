@@ -4,7 +4,7 @@ import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.support.converter.MessageConverter
-import ru.sogaz.site.orderingService.dto.request.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
 import ru.sogaz.site.orderingService.service.OrderBatchConsumer

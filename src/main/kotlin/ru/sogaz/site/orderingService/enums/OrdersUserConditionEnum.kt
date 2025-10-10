@@ -6,15 +6,18 @@ import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 
 /** Логическое условие при одновременной передаче email и phone */
-enum class OrdersUserConditionEnum(@JsonValue val values: String) {
+enum class OrdersUserConditionEnum(
+    @JsonValue val values: String,
+) {
     OR("or"),
-    AND("and");
+    AND("and"),
+    ;
 
     companion object {
         @JvmStatic @JsonCreator
         fun from(value: String?): OrdersUserConditionEnum? {
             if (value.isNullOrBlank()) return null
-            val traceId =getTraceId()
+            val traceId = getTraceId()
             return entries.find { it.values == value }
                 ?: throw InnerException(traceId, "Invalid Condition: '$value'")
         }

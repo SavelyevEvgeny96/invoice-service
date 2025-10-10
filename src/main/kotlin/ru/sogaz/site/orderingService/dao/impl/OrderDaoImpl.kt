@@ -18,17 +18,20 @@ class OrderDaoImpl(
     }
 
     private val logger = loggerFor(javaClass)
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientUserId(userId)
 
-    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientUserGdId(gdId)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
-    override fun findByEmailOrPhone(email: String?, phone: String?): List<OrderEntity?> =
-        orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
+    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserGdId(gdId)
 
-    override fun findByEmailAndPhone(email: String, phone: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
+    override fun findByEmailOrPhone(
+        email: String?,
+        phone: String?,
+    ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
+
+    override fun findByEmailAndPhone(
+        email: String,
+        phone: String,
+    ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
     override fun upsertOrders(orders: List<OrderEntity>) {
         val sql =

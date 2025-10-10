@@ -4,9 +4,10 @@ import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
+import org.springframework.beans.factory.annotation.Qualifier
 import kotlin.reflect.KClass
 
-@Target(AnnotationTarget.FIELD)
+@Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.RUNTIME)
 @Constraint(validatedBy = [PhoneValidator::class])
 annotation class Phone(
@@ -16,10 +17,10 @@ annotation class Phone(
 )
 
 class PhoneValidator(
-    private val regex: Regex,
+    @Qualifier("phoneRegex") private val regex: Regex,
 ) : ConstraintValidator<Phone, String?> {
-    override fun isValid(value: String?, context: ConstraintValidatorContext?): Boolean {
-        if (value.isNullOrBlank()) return true // поле опционально
-        return regex.matches(value)
-    }
+    override fun isValid(
+        value: String?,
+        context: ConstraintValidatorContext?,
+    ): Boolean = value.isNullOrBlank() || regex.matches(value)
 }

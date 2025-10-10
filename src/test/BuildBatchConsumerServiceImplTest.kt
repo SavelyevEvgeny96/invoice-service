@@ -15,7 +15,7 @@ import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
-import ru.sogaz.site.orderingService.dto.request.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.dto.request.PaymentData
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto

@@ -1,14 +1,11 @@
 package ru.sogaz.site.orderingService
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
-import ru.sogaz.site.orderingService.properties.AppInfoProperties
-import ru.sogaz.site.orderingService.properties.RabbitListenerProps
-import ru.sogaz.site.orderingService.properties.RabbitProps
 
 @SpringBootApplication
-@EnableConfigurationProperties(AppInfoProperties::class, RabbitProps::class, RabbitListenerProps::class)
+@ConfigurationPropertiesScan("ru.sogaz.site.orderingService.properties")
 class OrderingServiceApplication
 
 fun main(args: Array<String>) {

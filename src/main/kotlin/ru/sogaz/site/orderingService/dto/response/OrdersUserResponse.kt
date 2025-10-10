@@ -7,7 +7,7 @@ import java.util.UUID
  * Корневой объект бизнес-данных ответа /v1/orders/ordersuser
  */
 data class OrdersUserResponse(
-    val ordersList: List<OrderItem>
+    val ordersList: List<OrderItem>,
 )
 
 /**
@@ -15,5 +15,5 @@ data class OrdersUserResponse(
  */
 data class OrderItem(
     val orderId: UUID?,
-    val premiumAmount: BigDecimal?
+    val premiumAmount: BigDecimal?,
 )
