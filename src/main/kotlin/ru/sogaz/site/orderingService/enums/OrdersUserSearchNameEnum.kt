@@ -19,7 +19,7 @@ enum class OrdersUserSearchNameEnum(
         fun from(value: String?): OrdersUserSearchNameEnum? {
             if (value.isNullOrBlank()) return null
             val traceId = getTraceId()
-            return entries.find { it.values == value }
+            return entries.find { it.values.equals(value, ignoreCase = true) }
                 ?: throw InnerException(traceId, "Invalid SearchName: '$value'")
         }
     }

@@ -9,13 +9,6 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123456}
-  jpa:
-    open-in-view: false
-    properties:
-      hibernate.jdbc.batch_size: 50
-      hibernate.order_inserts: true
-      hibernate.order_updates: true
-      hibernate.jdbc.batch_versioned_data: true
   liquibase:
     change-log: db.changelog/db.changelog-master.yaml
     enabled: true

@@ -17,8 +17,8 @@ class OrdersUserController(
     @PostMapping("/v1/orders/ordersuser")
     fun getClientOrders(
         @Valid @RequestBody request: OrdersUserRequest,
-    ): ResponseEntity<Response<OrdersUserResponse>>? {
-        ordersUserService.findOrders(request)
-        return null
+    ): Response<OrdersUserResponse> {
+        return ordersUserService.findOrders(request)
+
     }
 }

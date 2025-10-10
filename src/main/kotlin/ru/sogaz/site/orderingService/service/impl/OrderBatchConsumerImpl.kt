@@ -22,7 +22,7 @@ class OrderBatchConsumerImpl(
             "Итог обработки пачки: количество=%d, длительность(мс)=%d"
     }
 
-    private val logger = loggerFor(javaClass)
+    private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
 
     @RabbitListener(
         queues = ["\${app.rabbit.queue-order}"],

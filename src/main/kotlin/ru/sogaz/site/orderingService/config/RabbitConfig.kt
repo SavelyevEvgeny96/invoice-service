@@ -33,7 +33,7 @@ class RabbitConfig(
         private const val RETURNED_LOG = " Сообщение возвращено брокером: %s, reply=%s"
     }
 
-    private val logger = loggerFor(javaClass)
+    private val logger = loggerFor(RabbitConfig::class.java)
     private val confirmed = ConcurrentHashMap<UUID, Boolean>()
     private val errors = ConcurrentHashMap<UUID, String?>()
 

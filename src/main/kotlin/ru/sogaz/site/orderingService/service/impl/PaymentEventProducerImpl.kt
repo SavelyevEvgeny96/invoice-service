@@ -21,8 +21,7 @@ class PaymentEventProducerImpl(
         private const val PUBLISH_ERROR_LOG = "Ошибка при отправке сообщения orderId=%s: %s"
         private const val BATCH_RESULT_LOG = "Результат отправки: подтверждено=%d, ошибок=%d, неподтверждено=%d"
     }
-
-    private val logger = loggerFor(javaClass)
+    private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
     override fun sendBatch(events: List<PaymentCreatedEvent>): PublishResult {
         if (events.isEmpty()) {
