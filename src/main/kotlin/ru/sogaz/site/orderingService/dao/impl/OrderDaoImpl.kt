@@ -19,9 +19,11 @@ class OrderDaoImpl(
 
     private val logger = loggerFor(javaClass)
 
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientUserId(userId)
 
-    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserGdId(gdId)
+    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientUserGdId(gdId)
 
     override fun findByEmailOrPhone(
         email: String?,
@@ -34,14 +36,13 @@ class OrderDaoImpl(
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
     override fun upsertOrders(orders: List<OrderEntity>) {
-        val sql =
-            """
+        val sql = """
             INSERT INTO orders (
                 order_id, create_date, recipient_email, recipient_phone,
                 premium_amount, payment_end_date, key_card, save_card,
-                recurrent, recipient_user_gd_id, recipient_user_id, update_date
+                recurrent, recipient_user_gd_id, recipient_user_id, status, update_date
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', NOW())
             ON CONFLICT (order_id) DO UPDATE
               SET recipient_email      = EXCLUDED.recipient_email,
                   recipient_phone      = EXCLUDED.recipient_phone,
@@ -52,8 +53,13 @@ class OrderDaoImpl(
                   recurrent            = EXCLUDED.recurrent,
                   recipient_user_gd_id = EXCLUDED.recipient_user_gd_id,
                   recipient_user_id    = EXCLUDED.recipient_user_id,
+                  -- если текущий статус НЕ терминальный — переведём в UPDATE, иначе оставим как есть
+                  status               = CASE
+                                            WHEN orders.status IN ('SUCCESS', 'OVERDUE', 'MARKEDDEL') THEN orders.status
+                                            ELSE 'UPDATE'
+                                         END,
                   update_date          = NOW()
-            """.trimIndent()
+        """.trimIndent()
 
         logger.info(LOG_START.format(orders.size))
 
