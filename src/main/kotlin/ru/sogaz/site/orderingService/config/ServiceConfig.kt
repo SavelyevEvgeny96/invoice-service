@@ -55,5 +55,8 @@ class ServiceConfig {
     ): PaymentEventProducer = PaymentEventProducerImpl(rabbit = rabbit, props = props)
 
     @Bean
-    fun orderServiceConfig(orderDao: OrderDao): OrdersUserService = OrdersUserServiceImpl(orderDao = orderDao)
+    fun orderServiceConfig(
+        orderDao: OrderDao,
+        subOrderDao: SubOrderDao,
+    ): OrdersUserService = OrdersUserServiceImpl(orderDao = orderDao, subOrderDao = subOrderDao)
 }

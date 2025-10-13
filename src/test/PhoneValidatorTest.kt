@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import ru.sogaz.site.orderingService.validation.constraint.PhoneValidator
 
 class PhoneValidatorTest {
-
     private lateinit var validator: PhoneValidator
 
     @BeforeEach
@@ -17,12 +16,13 @@ class PhoneValidatorTest {
 
     @Test
     fun `should return true for valid phone numbers`() {
-        val validPhones = listOf(
-            "+71234567890",
-            "89991234567",
-            "1234567890",
-            "123 456 7890"
-        )
+        val validPhones =
+            listOf(
+                "+71234567890",
+                "89991234567",
+                "1234567890",
+                "123 456 7890",
+            )
 
         validPhones.forEach { phone ->
             assertTrue(validator.isValid(phone, null), "Expected '$phone' to be valid")
@@ -31,14 +31,15 @@ class PhoneValidatorTest {
 
     @Test
     fun `should return false for invalid phone numbers`() {
-        val invalidPhones = listOf(
-            "++123456",
-            "+7(123)456-7890",
-            "123-456-7890",
-            "phone123",
-            "+ 1234567890",
-            "+7 12 34abc"
-        )
+        val invalidPhones =
+            listOf(
+                "++123456",
+                "+7(123)456-7890",
+                "123-456-7890",
+                "phone123",
+                "+ 1234567890",
+                "+7 12 34abc",
+            )
 
         invalidPhones.forEach { phone ->
             assertFalse(validator.isValid(phone, null), "Expected '$phone' to be invalid")

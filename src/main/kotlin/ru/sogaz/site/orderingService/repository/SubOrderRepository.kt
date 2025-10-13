@@ -7,5 +7,5 @@ import java.util.UUID
 
 @Repository
 interface SubOrderRepository : JpaRepository<SubOrderEntity, UUID> {
-    fun findAllByOrderEntityOrderId(orderId: String): List<SubOrderEntity?>
+    fun findAllByOrderEntityOrderId(orderId: UUID?): List<SubOrderEntity?>
 }

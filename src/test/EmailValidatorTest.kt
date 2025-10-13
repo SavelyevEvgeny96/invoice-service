@@ -1,12 +1,10 @@
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.sogaz.site.orderingService.validation.constraint.EmailValidator
 
 class EmailValidatorTest {
-
     private lateinit var validator: EmailValidator
 
     @BeforeEach
@@ -17,12 +15,13 @@ class EmailValidatorTest {
 
     @Test
     fun `should return true for valid emails`() {
-        val validEmails = listOf(
-            "user@example.com",
-            "user.name+tag@domain.co",
-            "user_name@domain.org",
-            "u.ser@sub.domain.com"
-        )
+        val validEmails =
+            listOf(
+                "user@example.com",
+                "user.name+tag@domain.co",
+                "user_name@domain.org",
+                "u.ser@sub.domain.com",
+            )
 
         validEmails.forEach { email ->
             assertTrue(validator.isValid(email, null), "Expected '$email' to be valid")
@@ -31,14 +30,15 @@ class EmailValidatorTest {
 
     @Test
     fun `should return false for invalid emails`() {
-        val invalidEmails = listOf(
-            "userexample.com",
-            "user@.com",
-            ".user@domain.com",
-            "user@domain..com",
-            "user@domain",
-            "user@domain.c"
-        )
+        val invalidEmails =
+            listOf(
+                "userexample.com",
+                "user@.com",
+                ".user@domain.com",
+                "user@domain..com",
+                "user@domain",
+                "user@domain.c",
+            )
 
         invalidEmails.forEach { email ->
             assertFalse(validator.isValid(email, null), "Expected '$email' to be invalid")
