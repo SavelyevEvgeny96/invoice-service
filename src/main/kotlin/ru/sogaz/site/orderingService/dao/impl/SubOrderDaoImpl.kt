@@ -4,14 +4,17 @@ import org.springframework.jdbc.core.JdbcTemplate
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.repository.SubOrderRepository
 
 class SubOrderDaoImpl(
     private val jdbcTemplate: JdbcTemplate,
+    private val subOrderRepository: SubOrderRepository
 ) : SubOrderDao {
     companion object {
         private const val LOG_START = "Старт batch upsertSubOrders: size=%d"
         private const val LOG_EXECUTE = "Выполняем batchUpdate() для %d записей"
         private const val LOG_DONE = "Завершён upsertSubOrders: size=%d"
+        private const val GET_SUB_ORDER_LIST = "Получение списка sub_orders по orderId: %d"
     }
 
     private val logger = loggerFor(javaClass)
@@ -53,4 +56,10 @@ class SubOrderDaoImpl(
         logger.info(LOG_EXECUTE.format(subs.size))
         logger.info(LOG_DONE.format(subs.size))
     }
+
+    override fun findByOrderId(orderId: String): List<SubOrderEntity?> {
+        logger.info(GET_SUB_ORDER_LIST.format(orderId))
+        return subOrderRepository.findAllByOrderEntityOrderId(orderId)
+    }
 }
+

@@ -16,4 +16,14 @@ data class OrdersUserResponse(
 data class OrderItem(
     val orderId: UUID?,
     val premiumAmount: BigDecimal?,
+    val subOrdersList: List<SubOrderItem> = emptyList()
+)
+/**
+ * Под карточки заказа
+ */
+data class SubOrderItem(
+    val policyId: String,
+    val policyNumber: String,
+    val typeInsurance: String?,
+    val premiumAmount: BigDecimal?
 )
