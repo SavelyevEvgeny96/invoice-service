@@ -23,10 +23,10 @@ spring:
     ansi:
       enabled: ALWAYS
   rabbitmq:
-    host: localhost
+    host: ${RABBIT_HOST:rabbitmq}
     port: 5672
-    username: dev
-    password: dev
+    username: ${RABBIT_USERNAME:username}
+    password: ${RABBIT_PASSWORD:password}
     virtual-host: /
     listener:
       simple:
