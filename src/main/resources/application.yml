@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:rabbitmq}
     port: 5672
-    username: ${RABBIT_USERNAME:username}
-    password: ${RABBIT_PASSWORD:password}
+    username: dev
+    password: dev
     virtual-host: /
     listener:
       simple:
