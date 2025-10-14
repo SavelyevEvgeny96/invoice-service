@@ -5,28 +5,22 @@ import com.fasterxml.jackson.annotation.JsonValue
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 
-enum class OrderStatusesEnum(
+/** Статус запрошенных заказов */
+enum class OrdersStatusIsPaidEnum(
     @JsonValue val values: String,
 ) {
-    NEW("NEW"),
-    UPDATE("UPDATE"),
-    OVERDUE("OVERDUE"),
-    MARKEDDEL("MARKEDDEL"),
-    SUCCESS("SUCCESS"),
+    UNPAID("unpaid"),
+    PAID("paid"),
+    ALL("all"),
     ;
 
     companion object {
-        @JvmStatic
-        @JsonCreator
-        fun from(value: String?): OrderStatusesEnum? {
+        @JvmStatic @JsonCreator
+        fun from(value: String?): OrdersStatusIsPaidEnum? {
             if (value.isNullOrBlank()) return null
             val traceId = getTraceId()
             return entries.find { it.values.equals(value, ignoreCase = true) }
-                ?: throw InnerException(traceId, "Invalid OrderStatus: '$value'")
+                ?: throw InnerException(traceId, "Invalid OrdersStatus: '$value'")
         }
     }
-
-    fun isPaidFor() = this == SUCCESS
-
-    fun isNotAvailable() = this in listOf(OVERDUE, MARKEDDEL)
 }

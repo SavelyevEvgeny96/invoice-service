@@ -5,28 +5,22 @@ import com.fasterxml.jackson.annotation.JsonValue
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 
-enum class OrderStatusesEnum(
+/** Поле, по которому ищем */
+enum class OrdersUserSearchNameEnum(
     @JsonValue val values: String,
 ) {
-    NEW("NEW"),
-    UPDATE("UPDATE"),
-    OVERDUE("OVERDUE"),
-    MARKEDDEL("MARKEDDEL"),
-    SUCCESS("SUCCESS"),
+    USER_ID("userId"),
+    GD_ID("gdId"),
+    EMAIL_OR_PHONE("emailOrPhone"),
     ;
 
     companion object {
-        @JvmStatic
-        @JsonCreator
-        fun from(value: String?): OrderStatusesEnum? {
+        @JvmStatic @JsonCreator
+        fun from(value: String?): OrdersUserSearchNameEnum? {
             if (value.isNullOrBlank()) return null
             val traceId = getTraceId()
             return entries.find { it.values.equals(value, ignoreCase = true) }
-                ?: throw InnerException(traceId, "Invalid OrderStatus: '$value'")
+                ?: throw InnerException(traceId, "Invalid SearchName: '$value'")
         }
     }
-
-    fun isPaidFor() = this == SUCCESS
-
-    fun isNotAvailable() = this in listOf(OVERDUE, MARKEDDEL)
 }

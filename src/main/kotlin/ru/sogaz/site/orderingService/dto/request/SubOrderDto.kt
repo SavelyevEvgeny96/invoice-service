@@ -1,4 +1,4 @@
-package ru.sogaz.site.orderingService.dto
+package ru.sogaz.site.orderingService.dto.request
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.DecimalMin

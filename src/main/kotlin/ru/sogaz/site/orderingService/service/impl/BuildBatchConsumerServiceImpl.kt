@@ -4,7 +4,7 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
-import ru.sogaz.site.orderingService.dto.PaymentCreatedEvent
+import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -27,7 +27,7 @@ open class BuildBatchConsumerServiceImpl(
         const val DUPLICATE = "Дубликат orderId в пачке, пропускаем: %s"
     }
 
-    private val logger = loggerFor(javaClass)
+    private val logger = loggerFor(BuildBatchConsumerServiceImpl::class.java)
 
     override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
         val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()
@@ -45,7 +45,7 @@ open class BuildBatchConsumerServiceImpl(
 
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
-        nowIso: String
+        nowIso: String,
     ): List<PaymentCreatedEvent> = orders.map { paymentEventMapper.toPaymentEvent(it, nowIso, props.routingKeyPayment) }
 
     private fun prepareEntities(batch: List<OrderPayloadDto>): Pair<List<OrderEntity>, List<SubOrderEntity>> {

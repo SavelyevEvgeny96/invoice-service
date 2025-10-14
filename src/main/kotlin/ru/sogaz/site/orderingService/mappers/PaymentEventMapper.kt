@@ -3,8 +3,8 @@ package ru.sogaz.site.orderingService.mappers
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import ru.sogaz.site.orderingService.dto.PaymentCreatedEvent
-import ru.sogaz.site.orderingService.dto.PaymentData
+import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
+import ru.sogaz.site.orderingService.dto.request.PaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import java.time.ZoneOffset
 

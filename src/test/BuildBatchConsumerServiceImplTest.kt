@@ -16,9 +16,9 @@ import org.mockito.quality.Strictness
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
-import ru.sogaz.site.orderingService.dto.PaymentCreatedEvent
-import ru.sogaz.site.orderingService.dto.PaymentData
-import ru.sogaz.site.orderingService.dto.SubOrderDto
+import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
+import ru.sogaz.site.orderingService.dto.request.PaymentData
+import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderMapper

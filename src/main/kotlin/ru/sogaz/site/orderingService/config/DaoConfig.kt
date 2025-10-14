@@ -7,12 +7,20 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dao.impl.OrderDaoImpl
 import ru.sogaz.site.orderingService.dao.impl.SubOrderDaoImpl
+import ru.sogaz.site.orderingService.repository.OrderRepository
+import ru.sogaz.site.orderingService.repository.SubOrderRepository
 
 @Configuration
 class DaoConfig {
     @Bean
-    fun orderDaoConfig(jdbcTemplate: JdbcTemplate): OrderDao = OrderDaoImpl(jdbcTemplate = jdbcTemplate)
+    fun orderDaoConfig(
+        jdbcTemplate: JdbcTemplate,
+        orderRepository: OrderRepository,
+    ): OrderDao = OrderDaoImpl(jdbcTemplate = jdbcTemplate, orderRepository = orderRepository)
 
     @Bean
-    fun subOrderDao(jdbcTemplate: JdbcTemplate): SubOrderDao = SubOrderDaoImpl(jdbcTemplate = jdbcTemplate)
+    fun subOrderDao(
+        jdbcTemplate: JdbcTemplate,
+        subOrderRepository: SubOrderRepository,
+    ): SubOrderDao = SubOrderDaoImpl(jdbcTemplate = jdbcTemplate, subOrderRepository = subOrderRepository)
 }

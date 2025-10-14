@@ -6,16 +6,9 @@ spring:
     active: ${ENVIRONMENT:local}
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering?reWriteBatchedInserts=true}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:123456}
-  jpa:
-    open-in-view: false
-    properties:
-      hibernate.jdbc.batch_size: 50
-      hibernate.order_inserts: true
-      hibernate.order_updates: true
-      hibernate.jdbc.batch_versioned_data: true
   liquibase:
     change-log: db.changelog/db.changelog-master.yaml
     enabled: true
@@ -35,10 +28,16 @@ spring:
     serialization:
       write-dates-as-timestamps: false
     time-zone: UTC
+
 server:
   port: ${SERVER_PORT:8080}
   use-forward-headers: true
   main.allow-bean-definition-overriding: true
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true     # навязывать UTF-8 и для ответа, и для запроса
+      enabled: true
 
 app:
   rabbit:

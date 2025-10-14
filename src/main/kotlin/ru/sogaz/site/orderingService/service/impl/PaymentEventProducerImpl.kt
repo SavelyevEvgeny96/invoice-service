@@ -2,8 +2,8 @@ package ru.sogaz.site.orderingService.service.impl
 
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import ru.sogaz.site.orderingService.dto.PaymentCreatedEvent
-import ru.sogaz.site.orderingService.dto.PublishResult
+import ru.sogaz.site.orderingService.dto.data.PublishResult
+import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.PaymentEventProducer
@@ -22,7 +22,7 @@ class PaymentEventProducerImpl(
         private const val BATCH_RESULT_LOG = "Результат отправки: подтверждено=%d, ошибок=%d, неподтверждено=%d"
     }
 
-    private val logger = loggerFor(javaClass)
+    private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
     override fun sendBatch(events: List<PaymentCreatedEvent>): PublishResult {
         if (events.isEmpty()) {
