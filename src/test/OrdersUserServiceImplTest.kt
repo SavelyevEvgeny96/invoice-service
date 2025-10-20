@@ -29,7 +29,6 @@ import kotlin.test.assertTrue
 
 @ExtendWith(MockitoExtension::class)
 class OrdersUserServiceImplTest {
-
     @Mock
     lateinit var orderDao: OrderDao
 
@@ -44,30 +43,33 @@ class OrdersUserServiceImplTest {
 
     @BeforeEach
     fun `инициализация_тестовых_данных`() {
-        orderEntity = OrderEntity(
-            orderId = UUID.randomUUID(),
-            premiumAmount = BigDecimal("3500"),
-            status = OrderStatusesEnum.NEW
-        )
+        orderEntity =
+            OrderEntity(
+                orderId = UUID.randomUUID(),
+                premiumAmount = BigDecimal("3500"),
+                status = OrderStatusesEnum.NEW,
+            )
 
-        subOrderEntity = SubOrderEntity(
-            id = UUID.randomUUID(),
-            policyId = "policy123",
-            policyNumber = "SG-001",
-            typeInsurance = "Ипотека",
-            premiumAmount = BigDecimal("3500"),
-            orderEntity = orderEntity
-        )
+        subOrderEntity =
+            SubOrderEntity(
+                id = UUID.randomUUID(),
+                policyId = "policy123",
+                policyNumber = "SG-001",
+                typeInsurance = "Ипотека",
+                premiumAmount = BigDecimal("3500"),
+                orderEntity = orderEntity,
+            )
     }
 
     // 1. Успешный сценарий
     @Test
     fun `должен вернуть orders с вложенными suborders`() {
-        val request = OrdersUserRequest(
-            searchName = OrdersUserSearchNameEnum.USER_ID,
-            userId = "user1",
-            status = OrdersStatusIsPaidEnum.UNPAID
-        )
+        val request =
+            OrdersUserRequest(
+                searchName = OrdersUserSearchNameEnum.USER_ID,
+                userId = "user1",
+                status = OrdersStatusIsPaidEnum.UNPAID,
+            )
 
         whenever(orderDao.findByRecipientUserId("user1")).thenReturn(listOf(orderEntity))
         whenever(subOrderDao.findByOrderId(orderEntity.orderId)).thenReturn(listOf(subOrderEntity))
@@ -91,35 +93,40 @@ class OrdersUserServiceImplTest {
     // 2. Нет заказов
     @Test
     fun `должен выбросить исключение если заказы не найдены`() {
-        val request = OrdersUserRequest(
-            searchName = OrdersUserSearchNameEnum.USER_ID,
-            userId = "userX",
-            status = OrdersStatusIsPaidEnum.UNPAID
-        )
+        val request =
+            OrdersUserRequest(
+                searchName = OrdersUserSearchNameEnum.USER_ID,
+                userId = "userX",
+                status = OrdersStatusIsPaidEnum.UNPAID,
+            )
 
         whenever(orderDao.findByRecipientUserId("userX")).thenReturn(emptyList())
 
-        val ex = assertThrows<BusinessException> {
-            service.findOrders(request)
-        }
+        val ex =
+            assertThrows<BusinessException> {
+                service.findOrders(request)
+            }
 
         assertTrue(ex is BusinessException)
         verify(orderDao, times(1)).findByRecipientUserId(eq("userX"))
         verify(subOrderDao, never()).findByOrderId(any())
-    }// 3. Исключение при работе DAO
+    } // 3. Исключение при работе DAO
+
     @Test
     fun `должен выбросить BusinessException при ошибке в OrderDao`() {
-        val request = OrdersUserRequest(
-            searchName = OrdersUserSearchNameEnum.USER_ID,
-            userId = "crash",
-            status = OrdersStatusIsPaidEnum.UNPAID
-        )
+        val request =
+            OrdersUserRequest(
+                searchName = OrdersUserSearchNameEnum.USER_ID,
+                userId = "crash",
+                status = OrdersStatusIsPaidEnum.UNPAID,
+            )
 
         whenever(orderDao.findByRecipientUserId("crash")).thenThrow(RuntimeException("DB down"))
 
-        val ex = assertThrows<BusinessException> {
-            service.findOrders(request)
-        }
+        val ex =
+            assertThrows<BusinessException> {
+                service.findOrders(request)
+            }
 
         assertTrue(ex is BusinessException)
         verify(subOrderDao, never()).findByOrderId(any())
@@ -131,11 +138,12 @@ class OrdersUserServiceImplTest {
         val paidOrder = orderEntity.copy(status = OrderStatusesEnum.SUCCESS)
         val unpaidOrder = orderEntity.copy(status = OrderStatusesEnum.NEW)
 
-        val request = OrdersUserRequest(
-            searchName = OrdersUserSearchNameEnum.USER_ID,
-            userId = "user2",
-            status = OrdersStatusIsPaidEnum.PAID
-        )
+        val request =
+            OrdersUserRequest(
+                searchName = OrdersUserSearchNameEnum.USER_ID,
+                userId = "user2",
+                status = OrdersStatusIsPaidEnum.PAID,
+            )
 
         whenever(orderDao.findByRecipientUserId("user2")).thenReturn(listOf(paidOrder, unpaidOrder))
         whenever(subOrderDao.findByOrderId(any())).thenReturn(emptyList())
@@ -143,18 +151,25 @@ class OrdersUserServiceImplTest {
         val response = service.findOrders(request)
 
         assertEquals(1, response.data?.ordersList?.size)
-        assertEquals(paidOrder.orderId, response.data?.ordersList?.first()?.orderId)
+        assertEquals(
+            paidOrder.orderId,
+            response.data
+                ?.ordersList
+                ?.first()
+                ?.orderId,
+        )
         verify(orderDao, times(1)).findByRecipientUserId(eq("user2"))
     }
 
     // 5. Ошибка сабордеров не ломает выполнение
     @Test
     fun `должен вернуть заказы даже если SubOrderDao выбрасывает исключение`() {
-        val request = OrdersUserRequest(
-            searchName = OrdersUserSearchNameEnum.USER_ID,
-            userId = "user3",
-            status = OrdersStatusIsPaidEnum.UNPAID
-        )
+        val request =
+            OrdersUserRequest(
+                searchName = OrdersUserSearchNameEnum.USER_ID,
+                userId = "user3",
+                status = OrdersStatusIsPaidEnum.UNPAID,
+            )
 
         whenever(orderDao.findByRecipientUserId("user3")).thenReturn(listOf(orderEntity))
         whenever(subOrderDao.findByOrderId(any())).thenThrow(RuntimeException("DB error"))
@@ -162,6 +177,11 @@ class OrdersUserServiceImplTest {
         val response = service.findOrders(request)
 
         assertEquals(1, response.data?.ordersList?.size)
-        response.data?.ordersList?.first()?.subOrdersList?.isEmpty()?.let { assertTrue(it) }
+        response.data
+            ?.ordersList
+            ?.first()
+            ?.subOrdersList
+            ?.isEmpty()
+            ?.let { assertTrue(it) }
     }
 }

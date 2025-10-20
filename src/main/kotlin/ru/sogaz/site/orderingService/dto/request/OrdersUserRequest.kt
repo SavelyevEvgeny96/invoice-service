@@ -1,10 +1,10 @@
 package ru.sogaz.site.orderingService.dto.request
 
-import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotNull
 import ru.sogaz.site.orderingService.enums.OrdersStatusIsPaidEnum
 import ru.sogaz.site.orderingService.enums.OrdersUserConditionEnum
 import ru.sogaz.site.orderingService.enums.OrdersUserSearchNameEnum
+import ru.sogaz.site.orderingService.validation.constraint.EmailValid
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.ValidateOrdersUserRequest
 
@@ -30,7 +30,7 @@ data class OrdersUserRequest(
     /** Идентификатор золотой карточки клиента – обязателен, если searchName=gdId */
     val gdId: String? = null,
     /** Email – используется, если searchName=emailOrPhone */
-    @field:Email(message = "{validation.ordersUserRequest.email.invalid}")
+    @field:EmailValid(message = "{validation.ordersUserRequest.email.invalid}")
     val email: String? = null,
     /** Телефон – используется, если searchName=emailOrPhone */
     @field:Phone(message = "{validation.ordersUserRequest.phone.invalid}")

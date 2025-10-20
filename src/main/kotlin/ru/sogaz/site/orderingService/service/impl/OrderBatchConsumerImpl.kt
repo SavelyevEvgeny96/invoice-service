@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.service.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
@@ -14,6 +15,7 @@ class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val paymentProducer: PaymentEventProducer,
     private val messageConverter: MessageConverter,
+    private val objectMapper: ObjectMapper,
 ) : OrderBatchConsumer {
     companion object {
         private const val SUCCESSFUL_QUEUE_PROCESSING =
@@ -39,10 +41,41 @@ class OrderBatchConsumerImpl(
         messages.forEach { msg ->
             val tag = msg.messageProperties.deliveryTag
             try {
-                val dto = messageConverter.fromMessage(msg) as OrderPayloadDto
+                // 1) логируем headers для отладки
+                val headers = msg.messageProperties.headers ?: emptyMap<String, Any?>()
+                logger.debug("Входящие заголовки для tag=$tag: $headers")
+
+                // 2) получаем результат из messageConverter — он может вернуть DTO или Map
+                val raw =
+                    try {
+                        messageConverter.fromMessage(msg)
+                    } catch (ex: Exception) {
+                        logger.warn("messageConverter.fromMessage ошибочно для tag=$tag, вернемся к разбору тела", ex)
+                        null
+                    }
+                // 3) пытаемся привести/сконвертировать в OrderPayloadDto разными способами
+                val dto =
+                    when (raw) {
+                        is OrderPayloadDto -> raw
+                        is Map<*, *> -> objectMapper.convertValue(raw, OrderPayloadDto::class.java)
+                        is String -> objectMapper.readValue(raw, OrderPayloadDto::class.java)
+                        is ByteArray -> objectMapper.readValue(String(raw, Charsets.UTF_8), OrderPayloadDto::class.java)
+                        null -> {
+                            // если converter упал или вернул null — парсим body напрямую
+                            val body = String(msg.body, Charsets.UTF_8)
+                            objectMapper.readValue(body, OrderPayloadDto::class.java)
+                        }
+
+                        else -> {
+                            // на случай непредвиденных типов — пробуем через body
+                            val body = String(msg.body, Charsets.UTF_8)
+                                objectMapper.readValue(body, OrderPayloadDto::class.java)
+                        }
+                    }
+
                 payloads += tag to dto
             } catch (ex: Exception) {
-                logger.error("Ошибка парсинга сообщения: ${msg.messageProperties.messageId}")
+                logger.error("Ошибка парсинга сообщения: ${msg.messageProperties.messageId} (tag=$tag)", ex)
                 // отправляем битое сообщение в DLQ
                 channel.basicReject(tag, false)
             }
@@ -53,26 +86,17 @@ class OrderBatchConsumerImpl(
             return
         }
 
+        // далее — без изменений (upsert, publish, ack/ reject)
         try {
-            // 1) запись в БД + сбор событий
             val events = buildBatchConsumerService.upsertBatch(payloads.map { it.second })
-
-            // 2) публикация событий
             paymentProducer.sendBatch(events)
-
-            // 3) ack только за валидные сообщения
-            payloads.forEach { (tag, _) ->
-                channel.basicAck(tag, false)
-            }
+            payloads.forEach { (tag, _) -> channel.basicAck(tag, false) }
 
             val tookMs = (System.nanoTime() - started) / 1_000_000
             logger.info(BATCH_SUMMARY.format(payloads.size, tookMs))
         } catch (ex: Exception) {
-            logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}")
-            // если ошибка на уровне БД/бизнес-логики → отправляем валидные в DLQ тоже
-            payloads.forEach { (tag, _) ->
-                channel.basicReject(tag, false)
-            }
+            logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}", ex)
+            payloads.forEach { (tag, _) -> channel.basicReject(tag, false) }
         }
     }
 }

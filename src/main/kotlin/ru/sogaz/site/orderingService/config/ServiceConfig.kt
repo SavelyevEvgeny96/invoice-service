@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.MessageConverter
 import org.springframework.context.annotation.Bean
@@ -41,11 +42,13 @@ class ServiceConfig {
         buildBatchConsumerService: BuildBatchConsumerService,
         paymentProducer: PaymentEventProducer,
         messageConverter: MessageConverter,
+        objectMapper: ObjectMapper,
     ): OrderBatchConsumer =
         OrderBatchConsumerImpl(
             buildBatchConsumerService = buildBatchConsumerService,
             paymentProducer = paymentProducer,
             messageConverter = messageConverter,
+            objectMapper = objectMapper,
         )
 
     @Bean
