@@ -1,6 +1,5 @@
 package ru.sogaz.site.orderingService.dto.request
 
-import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotNull
 import ru.sogaz.site.orderingService.enums.OrdersStatusIsPaidEnum
 import ru.sogaz.site.orderingService.enums.OrdersUserConditionEnum
