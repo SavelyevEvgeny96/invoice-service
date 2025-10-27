@@ -40,6 +40,14 @@ server:
       enabled: true
 
 app:
+  info:
+    application_name: ${PROJECT_NAME:ordering service}
+    version: ${PROJECT_VERSION:1.0.0}
+    description: ${PROJECT_DESCRIPTION:ordering Service}
+    artifact_Id: ${PROJECT_ARTIFACTID:ordering-service}
+    group_Id: ${PROJECT_GROUPID:ru.sogaz.site}
+    app_profile: ${ENVIRONMENT:local}
+    java-version: ${JAVA_VERSION:21}
   rabbit:
     exchange: ${ORDERS_EXCHANGE:orders.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:orders.created.queue}
@@ -52,14 +60,6 @@ app:
       prefetch: 100
       concurrency: 3
       max-concurrency: 10
-  info:
-    application_name: @project.name@
-    version: @project.version@
-    description: @project.description@
-    artifact_Id: @project.artifactId@
-    group_Id: @project.groupId@
-    app_profile: ${ENVIRONMENT:dev}
-    java-version: @java.version@
 
 management:
   endpoints:

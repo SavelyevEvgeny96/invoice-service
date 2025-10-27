@@ -69,7 +69,7 @@ class OrderBatchConsumerImpl(
                         else -> {
                             // на случай непредвиденных типов — пробуем через body
                             val body = String(msg.body, Charsets.UTF_8)
-                                objectMapper.readValue(body, OrderPayloadDto::class.java)
+                            objectMapper.readValue(body, OrderPayloadDto::class.java)
                         }
                     }
 
