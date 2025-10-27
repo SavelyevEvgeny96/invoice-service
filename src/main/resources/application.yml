@@ -69,6 +69,10 @@ management:
   metrics:
     tags:
       application: ${HOSTNAME:localhost}
+    export:
+      prometheus:
+        enabled: true
+
   endpoint:
     health:
       show-details: always
