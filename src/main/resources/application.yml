@@ -32,6 +32,7 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   use-forward-headers: true
+  forward-headers-strategy: framework
   main.allow-bean-definition-overriding: true
   servlet:
     encoding:
