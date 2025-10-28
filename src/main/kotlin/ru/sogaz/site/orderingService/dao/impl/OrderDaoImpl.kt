@@ -39,9 +39,10 @@ class OrderDaoImpl(
             INSERT INTO orders (
                 order_id, create_date, recipient_email, recipient_phone,
                 premium_amount, payment_end_date, key_card, save_card,
-                recurrent, recipient_user_gd_id, recipient_user_id, status, update_date
+                recurrent, unified_id, recipient_user_id,url_to_return,url_to_decline,
+                policyholder,payment_type,subscription_id,status, update_date
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, 'NEW', NOW())
             ON CONFLICT (order_id) DO UPDATE
               SET recipient_email      = EXCLUDED.recipient_email,
                   recipient_phone      = EXCLUDED.recipient_phone,
@@ -50,8 +51,13 @@ class OrderDaoImpl(
                   key_card             = EXCLUDED.key_card,
                   save_card            = EXCLUDED.save_card,
                   recurrent            = EXCLUDED.recurrent,
-                  recipient_user_gd_id = EXCLUDED.recipient_user_gd_id,
+                  unified_id           = EXCLUDED.unified_id,
                   recipient_user_id    = EXCLUDED.recipient_user_id,
+                  url_to_return        = EXCLUDED.url_to_return,
+                  url_to_decline       = EXCLUDED.url_to_decline,
+                  policyholder         = EXCLUDED.policyholder,
+                  payment_type         = EXCLUDED.payment_type,
+                  subscription_id      = EXCLUDED.subscription_id,
                   -- если текущий статус НЕ терминальный — переведём в UPDATE, иначе оставим как есть
                   status               = CASE
                                             WHEN orders.status IN ('SUCCESS', 'OVERDUE', 'MARKEDDEL') THEN orders.status
@@ -72,8 +78,13 @@ class OrderDaoImpl(
             ps.setString(7, o.keyCard)
             ps.setObject(8, o.saveCard)
             ps.setObject(9, o.recurrent)
-            ps.setString(10, o.recipientUserGdId)
+            ps.setString(10, o.unifiedId)
             ps.setString(11, o.recipientUserId)
+            ps.setString(12, o.urlToReturn)
+            ps.setString(13, o.urlToDecline)
+            ps.setString(14, o.policyholder)
+            ps.setString(15, o.paymentType)
+            ps.setString(15, o.subscriptionId)
         }
 
         logger.info(LOG_EXECUTE.format(orders.size))

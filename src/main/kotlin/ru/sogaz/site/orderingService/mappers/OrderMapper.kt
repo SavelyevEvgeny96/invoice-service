@@ -8,30 +8,52 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.math.BigDecimal
-import java.util.UUID
 
-@Mapper
+@Mapper(componentModel = "spring")
 abstract class OrderMapper {
-    @Mapping(target = "orderId", source = "orderId", qualifiedByName = ["stringToUUID"])
+    @Mapping(target = "orderId", ignore = true)
+    @Mapping(target = "urlToReturn", ignore = true)
+    @Mapping(target = "urlToDecline", ignore = true)
+    @Mapping(target = "bank", ignore = true)
+    @Mapping(target = "paymentType", ignore = true)
+    @Mapping(target = "status", expression = "java(ru.sogaz.site.orderingService.enums.OrderStatusesEnum.NEW)")
+    @Mapping(target = "recurrent", ignore = true)
+    @Mapping(target = "updateDate", ignore = true)
+    @Mapping(target = "unifiedId", source = "unifiedId")
+    @Mapping(target = "policyholder", source = "policyholder")
+    @Mapping(target = "subscriptionId", source = "subscriptionId")
+    @Mapping(target = "keyCard", source = "keyCard")
+    @Mapping(target = "saveCard", source = "saveCard")
+    @Mapping(target = "paymentEndDate", source = "orderEndDate")
     @Mapping(target = "recipientEmail", source = "recipientEmail", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
-    @Mapping(target = "paymentEndDate", source = "orderEndDate")
-    @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "recipientUserId", source = "recipientUserId")
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
+    @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "orderEntity", source = "order")
-    @Mapping(target = "managerEmail", source = "managerEmail")
+    @Mapping(target = "policyId", source = "dto.policyId")
+    @Mapping(target = "policyNumber", source = "dto.policyNumber")
+    @Mapping(target = "contractId", source = "dto.contractId")
+    @Mapping(target = "contractNumber", source = "dto.contractNumber")
+    @Mapping(target = "docType", source = "dto.docType")
+    @Mapping(target = "channel", source = "dto.channel")
+    @Mapping(target = "mainContractCheck", source = "dto.mainContractCheck")
+    @Mapping(target = "insuranceProgram", source = "dto.insuranceProgram")
+    @Mapping(target = "typeInsurance", source = "dto.typeInsurance")
+    @Mapping(target = "premiumAmount", source = "dto.premiumAmountDto")
+    @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "updateDate", ignore = true)
+    @Mapping(target = "contractDate", source = "dto.contractDate")
+    @Mapping(target = "policyDate", source = "dto.policyDate")
     abstract fun toSubOrderEntity(
         dto: SubOrderDto,
         order: OrderEntity,
-        managerEmail: String?,
     ): SubOrderEntity
 
-    // ----------------- Helpers -----------------
-    @Named("stringToUUID")
-    fun stringToUUID(orderId: String): UUID = UUID.fromString(orderId)
-
+    // ---------- Helpers ----------
     @Named("nullToEmpty")
     fun nullToEmpty(value: String?): String = value ?: ""
 

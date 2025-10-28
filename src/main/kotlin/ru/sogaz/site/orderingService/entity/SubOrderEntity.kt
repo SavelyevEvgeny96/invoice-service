@@ -17,10 +17,8 @@ data class SubOrderEntity(
     @Column(name = "sub_order_id", columnDefinition = "uuid")
     var id: UUID? = null,
     @ManyToOne
-    @JoinColumn(name = "order_id", referencedColumnName = "order_id", nullable = false)
+    @JoinColumn(name = "subscription_id", referencedColumnName = "subscription_id", nullable = false)
     var orderEntity: OrderEntity? = null,
-    @Column(name = "operation_id")
-    var operationId: String? = null,
     @Column(name = "policy_id", nullable = false)
     var policyId: String = "",
     @Column(name = "policy_number", nullable = false)
@@ -29,6 +27,12 @@ data class SubOrderEntity(
     var contractId: String? = null,
     @Column(name = "contract_number")
     var contractNumber: String? = null,
+    @Column(name = "doc_type")
+    var docType: String? = null,
+    @Column(name = "channel")
+    var channel: String? = null,
+    @Column(name = "main_contract_check")
+    var mainContractCheck: Boolean = false,
     @Column(name = "insurance_program")
     var insuranceProgram: String? = null,
     @Column(name = "type_insurance")
@@ -41,4 +45,8 @@ data class SubOrderEntity(
     var createDate: Instant? = null,
     @Column(name = "update_date")
     var updateDate: Instant? = null,
+    @Column(name = "contract_date")
+    var contractDate: Instant? = null,
+    @Column(name = "policy_date")
+    var policyDate: Instant? = null,
 )

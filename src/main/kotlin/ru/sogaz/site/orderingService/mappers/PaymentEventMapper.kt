@@ -1,3 +1,4 @@
+
 package ru.sogaz.site.orderingService.mappers
 
 import org.mapstruct.Mapper
@@ -8,7 +9,7 @@ import ru.sogaz.site.orderingService.dto.request.PaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import java.time.ZoneOffset
 
-@Mapper
+@Mapper(componentModel = "spring")
 abstract class PaymentEventMapper {
     @Mapping(target = "timestamp", source = "nowIso")
     @Mapping(target = "eventType", source = "eventType")
@@ -18,8 +19,6 @@ abstract class PaymentEventMapper {
         nowIso: String,
         eventType: String,
     ): PaymentCreatedEvent
-
-    // ----------------- Helpers -----------------
 
     @Named("mapPaymentData")
     fun toPaymentData(order: OrderEntity): PaymentData =
@@ -31,7 +30,7 @@ abstract class PaymentEventMapper {
             keyCard = order.keyCard,
             recipientEmail = order.recipientEmail,
             recipientPhone = order.recipientPhone,
-            dateCreate = order.updateDate?.atOffset(ZoneOffset.UTC)?.toString(),
+            dateCreate = order.createDate?.atOffset(ZoneOffset.UTC)?.toString(),
             dateEnd = order.paymentEndDate?.atOffset(ZoneOffset.UTC)?.toString(),
         )
 }

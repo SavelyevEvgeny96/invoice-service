@@ -69,38 +69,35 @@ class BuildBatchConsumerServiceImplTest {
                 insuranceProgram = "Life",
                 typeInsurance = "Personal",
                 premiumAmountDto = BigDecimal.TEN,
-                operationId = "opId",
+                managerEmail = "manager@mail.",
             )
 
         dto =
             OrderPayloadDto(
                 metaInfo = emptyList(),
-                orderId = UUID.randomUUID().toString(),
                 recipientEmail = "client@mail.com",
                 recipientPhone = "+79998887766",
                 recipientUserId = "user123",
-                recipientGdId = "gd999",
-                recurrent = false,
+                unifiedId = "gd999",
                 keyCard = null,
                 saveCard = null,
-                managerEmail = "manager@mail.com",
                 orderEndDate = Instant.now(),
                 subOrders = listOf(subOrderDto),
+                subscriptionId = "subscriptionId",
             )
 
         orderEntity =
             OrderEntity(
-                orderId = UUID.fromString(dto.orderId),
+                orderId = UUID.randomUUID(),
                 recipientEmail = dto.recipientEmail ?: "",
                 recipientPhone = dto.recipientPhone ?: "",
                 premiumAmount = BigDecimal.TEN,
                 paymentEndDate = dto.orderEndDate,
                 updateDate = Instant.now(),
-                recurrent = dto.recurrent,
                 keyCard = dto.keyCard,
                 saveCard = dto.saveCard,
                 recipientUserId = dto.recipientUserId,
-                recipientUserGdId = dto.recipientGdId,
+                unifiedId = dto.unifiedId,
             )
 
         subOrderEntity =
@@ -113,7 +110,7 @@ class BuildBatchConsumerServiceImplTest {
                 insuranceProgram = subOrderDto.insuranceProgram,
                 typeInsurance = subOrderDto.typeInsurance,
                 premiumAmount = subOrderDto.premiumAmountDto,
-                managerEmail = dto.managerEmail,
+                managerEmail = subOrderDto.managerEmail,
             )
 
         paymentEvent =
@@ -136,7 +133,7 @@ class BuildBatchConsumerServiceImplTest {
 
         whenever(props.routingKeyPayment).thenReturn("type")
         whenever(orderMapper.toOrderEntity(dto)).thenReturn(orderEntity)
-        whenever(orderMapper.toSubOrderEntity(any(), eq(orderEntity), any())).thenReturn(subOrderEntity)
+        whenever(orderMapper.toSubOrderEntity(any(), eq(orderEntity))).thenReturn(subOrderEntity)
         whenever(paymentEventMapper.toPaymentEvent(any(), any(), any())).thenReturn(paymentEvent)
     }
 
@@ -160,24 +157,6 @@ class BuildBatchConsumerServiceImplTest {
         verify(paymentEventMapper, never()).toPaymentEvent(any(), any(), any())
 
         assertTrue(result.isEmpty())
-    }
-
-    @Test
-    fun `должен пропустить дубликат orderId`() {
-        val duplicate =
-            dto.copy(
-                managerEmail = "duplicate@mail.com",
-                subOrders =
-                    listOf(
-                        dto.subOrders.first().copy(policyId = "anotherPolicy"),
-                    ),
-            )
-        val result = service.upsertBatch(listOf(dto, duplicate))
-        verify(orderMapper, times(1)).toOrderEntity(any())
-        verify(paymentEventMapper, times(1))
-            .toPaymentEvent(eq(orderEntity), any(), any())
-
-        assertEquals(1, result.size)
     }
 
     @Test
