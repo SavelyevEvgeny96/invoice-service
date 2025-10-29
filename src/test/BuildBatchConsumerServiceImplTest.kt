@@ -26,7 +26,7 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.BuildBatchConsumerServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -35,9 +35,13 @@ import kotlin.test.assertTrue
 @MockitoSettings(strictness = Strictness.LENIENT)
 class BuildBatchConsumerServiceImplTest {
     @Mock lateinit var orderDao: OrderDao
+
     @Mock lateinit var subOrderDao: SubOrderDao
+
     @Mock lateinit var props: RabbitProps
+
     @Mock lateinit var orderMapper: OrderMapper
+
     @Mock lateinit var paymentEventMapper: PaymentEventMapper
 
     @InjectMocks
@@ -161,9 +165,10 @@ class BuildBatchConsumerServiceImplTest {
         whenever(orderDao.upsertOrdersReturningIds(any()))
             .thenThrow(RuntimeException("DB error"))
 
-        val exception = assertThrows<RuntimeException> {
-            service.upsertBatch(listOf(dto))
-        }
+        val exception =
+            assertThrows<RuntimeException> {
+                service.upsertBatch(listOf(dto))
+            }
 
         assertEquals("DB error", exception.message)
         verify(orderDao).upsertOrdersReturningIds(any())

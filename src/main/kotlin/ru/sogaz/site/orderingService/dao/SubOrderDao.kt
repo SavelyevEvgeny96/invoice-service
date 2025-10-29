@@ -4,7 +4,7 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.util.UUID
 
 interface SubOrderDao {
-    fun     upsertSubOrders(subs: List<SubOrderEntity>)
+    fun upsertSubOrders(subs: List<SubOrderEntity>)
 
     fun findByOrderId(orderId: UUID?): List<SubOrderEntity?>
 }

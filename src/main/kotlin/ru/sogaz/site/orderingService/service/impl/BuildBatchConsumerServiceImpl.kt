@@ -1,9 +1,7 @@
 package ru.sogaz.site.orderingService.service.impl
 
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
@@ -24,12 +22,14 @@ open class BuildBatchConsumerServiceImpl(
     private val subOrderDao: SubOrderDao,
     private val props: RabbitProps,
     private val orderMapper: OrderMapper,
-    private val paymentEventMapper: PaymentEventMapper
+    private val paymentEventMapper: PaymentEventMapper,
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
     }
+
     private val logger = loggerFor(javaClass)
+
     @Transactional(rollbackFor = [Exception::class])
     override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
         val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()

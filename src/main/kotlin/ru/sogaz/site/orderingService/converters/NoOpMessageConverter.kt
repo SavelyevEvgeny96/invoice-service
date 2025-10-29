@@ -12,12 +12,10 @@ import org.springframework.stereotype.Component
  */
 @Component
 class NoOpMessageConverter : MessageConverter {
+    override fun toMessage(
+        p0: Any,
+        p1: MessageProperties,
+    ): Message = throw UnsupportedOperationException("Метод toMessage() не используется в NoOpMessageConverter")
 
-    override fun toMessage(p0: Any, p1: MessageProperties): Message {
-        throw UnsupportedOperationException("Метод toMessage() не используется в NoOpMessageConverter")
-    }
-
-    override fun fromMessage(message: Message): Any {
-        return message
-    }
+    override fun fromMessage(message: Message): Any = message
 }
