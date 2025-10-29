@@ -36,11 +36,11 @@ class OrdersUserRequestValidator : ConstraintValidator<ValidateOrdersUserRequest
                     valid = false
                 }
             }
-            OrdersUserSearchNameEnum.GD_ID -> {
-                if (req.gdId.isNullOrBlank()) {
+            OrdersUserSearchNameEnum.UNIFIED_ID -> {
+                if (req.unifiedId.isNullOrBlank()) {
                     ctx
                         .buildConstraintViolation("{validation.ordersUserRequest.gdId.required}")
-                        .addPropertyNode("gdId")
+                        .addPropertyNode("unifiedId")
                         .addConstraintViolation()
                     valid = false
                 }

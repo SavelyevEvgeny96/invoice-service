@@ -21,7 +21,7 @@ class OrderDaoImpl(
 
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
-    override fun findByRecipientGdId(gdId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserGdId(gdId)
+    override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
 
     override fun findByEmailOrPhone(
         email: String?,
@@ -34,58 +34,55 @@ class OrderDaoImpl(
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
     override fun upsertOrders(orders: List<OrderEntity>) {
-        val sql =
-            """
-            INSERT INTO orders (
-                order_id, create_date, recipient_email, recipient_phone,
-                premium_amount, payment_end_date, key_card, save_card,
-                recurrent, unified_id, recipient_user_id,url_to_return,url_to_decline,
-                policyholder,payment_type,subscription_id,status, update_date
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, 'NEW', NOW())
-            ON CONFLICT (order_id) DO UPDATE
-              SET recipient_email      = EXCLUDED.recipient_email,
-                  recipient_phone      = EXCLUDED.recipient_phone,
-                  premium_amount       = EXCLUDED.premium_amount,
-                  payment_end_date     = EXCLUDED.payment_end_date,
-                  key_card             = EXCLUDED.key_card,
-                  save_card            = EXCLUDED.save_card,
-                  recurrent            = EXCLUDED.recurrent,
-                  unified_id           = EXCLUDED.unified_id,
-                  recipient_user_id    = EXCLUDED.recipient_user_id,
-                  url_to_return        = EXCLUDED.url_to_return,
-                  url_to_decline       = EXCLUDED.url_to_decline,
-                  policyholder         = EXCLUDED.policyholder,
-                  payment_type         = EXCLUDED.payment_type,
-                  subscription_id      = EXCLUDED.subscription_id,
-                  -- если текущий статус НЕ терминальный — переведём в UPDATE, иначе оставим как есть
-                  status               = CASE
-                                            WHEN orders.status IN ('SUCCESS', 'OVERDUE', 'MARKEDDEL') THEN orders.status
-                                            ELSE 'UPDATE'
-                                         END,
-                  update_date          = NOW()
-            """.trimIndent()
+        val sqlSetImmediate = "SET CONSTRAINTS ALL IMMEDIATE"
+        val sqlInsert = """
+        INSERT INTO orders (
+            create_date, recipient_email, recipient_phone,
+            premium_amount, payment_end_date, key_card, save_card,
+            recurrent, unified_id, recipient_user_id,
+            url_to_return, url_to_decline, policyholder,
+            payment_type, subscription_id, status, update_date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', NOW())
+        ON CONFLICT (subscription_id) DO UPDATE
+          SET recipient_email   = EXCLUDED.recipient_email,
+              recipient_phone   = EXCLUDED.recipient_phone,
+              premium_amount    = EXCLUDED.premium_amount,
+              payment_end_date  = EXCLUDED.payment_end_date,
+              key_card          = EXCLUDED.key_card,
+              save_card         = EXCLUDED.save_card,
+              recurrent         = EXCLUDED.recurrent,
+              unified_id        = EXCLUDED.unified_id,
+              recipient_user_id = EXCLUDED.recipient_user_id,
+              url_to_return     = EXCLUDED.url_to_return,
+              url_to_decline    = EXCLUDED.url_to_decline,
+              policyholder      = EXCLUDED.policyholder,
+              payment_type      = EXCLUDED.payment_type,
+              update_date       = NOW()
+    """.trimIndent()
+        val sqlSetDeferred = "SET CONSTRAINTS ALL DEFERRED"
 
         logger.info(LOG_START.format(orders.size))
 
-        jdbcTemplate.batchUpdate(sql, orders, orders.size) { ps, o ->
-            ps.setObject(1, o.orderId)
-            ps.setTimestamp(2, o.createDate?.let { Timestamp.from(it) })
-            ps.setString(3, o.recipientEmail)
-            ps.setString(4, o.recipientPhone)
-            ps.setBigDecimal(5, o.premiumAmount)
-            ps.setTimestamp(6, o.paymentEndDate?.let { Timestamp.from(it) })
-            ps.setString(7, o.keyCard)
-            ps.setObject(8, o.saveCard)
-            ps.setObject(9, o.recurrent)
-            ps.setString(10, o.unifiedId)
-            ps.setString(11, o.recipientUserId)
-            ps.setString(12, o.urlToReturn)
-            ps.setString(13, o.urlToDecline)
-            ps.setString(14, o.policyholder)
-            ps.setString(15, o.paymentType)
+        jdbcTemplate.execute(sqlSetImmediate)
+        jdbcTemplate.batchUpdate(sqlInsert, orders, orders.size) { ps, o ->
+            ps.setTimestamp(1, o.createDate?.let { Timestamp.from(it) })
+            ps.setString(2, o.recipientEmail)
+            ps.setString(3, o.recipientPhone)
+            ps.setBigDecimal(4, o.premiumAmount)
+            ps.setTimestamp(5, o.paymentEndDate?.let { Timestamp.from(it) })
+            ps.setString(6, o.keyCard)
+            ps.setObject(7, o.saveCard)
+            ps.setObject(8, o.recurrent)
+            ps.setString(9, o.unifiedId)
+            ps.setString(10, o.recipientUserId)
+            ps.setString(11, o.urlToReturn)
+            ps.setString(12, o.urlToDecline)
+            ps.setString(13, o.policyholder)
+            ps.setString(14, o.paymentType)
             ps.setString(15, o.subscriptionId)
         }
+        jdbcTemplate.execute(sqlSetDeferred)
 
         logger.info(LOG_EXECUTE.format(orders.size))
         logger.info(LOG_DONE.format(orders.size))

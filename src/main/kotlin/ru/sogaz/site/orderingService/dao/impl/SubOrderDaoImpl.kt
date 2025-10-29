@@ -63,7 +63,7 @@ class SubOrderDaoImpl(
             ps.setString(11, s.channel)
             ps.setObject(12, s.mainContractCheck)
             ps.setTimestamp(13, s.contractDate?.let { Timestamp.from(it) })
-            ps.setTimestamp(13, s.policyDate?.let { Timestamp.from(it) })
+            ps.setTimestamp(14, s.policyDate?.let { Timestamp.from(it) })
         }
 
         logger.info(LOG_EXECUTE.format(subs.size))

@@ -10,7 +10,7 @@ enum class OrdersUserSearchNameEnum(
     @JsonValue val values: String,
 ) {
     USER_ID("userId"),
-    GD_ID("gdId"),
+    UNIFIED_ID("unifiedId"),
     EMAIL_OR_PHONE("emailOrPhone"),
     ;
 

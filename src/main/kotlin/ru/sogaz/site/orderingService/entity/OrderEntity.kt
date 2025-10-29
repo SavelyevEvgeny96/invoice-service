@@ -18,8 +18,7 @@ import java.util.UUID
 data class OrderEntity(
     @Id
     @Column(name = "order_id", columnDefinition = "uuid")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    var orderId: UUID? = null,
+    var orderId: UUID = UUID.randomUUID(),
     @Column(name = "unified_id")
     var unifiedId: String? = null,
     @Column(name = "url_to_return")

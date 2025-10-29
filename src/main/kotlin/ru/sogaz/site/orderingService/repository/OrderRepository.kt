@@ -10,7 +10,7 @@ import java.util.UUID
 interface OrderRepository : JpaRepository<OrderEntity, UUID> {
     fun findAllByRecipientUserId(userId: String): List<OrderEntity?>
 
-    fun findAllByRecipientUserGdId(gdId: String): List<OrderEntity?>
+    fun findAllByUnifiedId(unifiedId: String): List<OrderEntity?>
 
     @Query(
         """

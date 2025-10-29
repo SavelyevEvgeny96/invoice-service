@@ -15,7 +15,7 @@ import java.util.UUID
 data class SubOrderEntity(
     @Id
     @Column(name = "sub_order_id", columnDefinition = "uuid")
-    var id: UUID? = null,
+    var id: UUID= UUID.randomUUID(),
     @ManyToOne
     @JoinColumn(name = "subscription_id", referencedColumnName = "subscription_id", nullable = false)
     var orderEntity: OrderEntity? = null,

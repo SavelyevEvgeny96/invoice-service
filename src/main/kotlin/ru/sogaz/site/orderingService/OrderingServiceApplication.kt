@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
+
 @ConfigurationPropertiesScan("ru.sogaz.site.orderingService.properties")
 class OrderingServiceApplication
 

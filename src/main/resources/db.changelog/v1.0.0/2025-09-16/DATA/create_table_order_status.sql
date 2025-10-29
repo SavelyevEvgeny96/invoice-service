@@ -5,7 +5,7 @@ CREATE TYPE order_statuses_enum AS ENUM (
     'UPDATE',
     'OVERDUE',
     'MARKEDDEL',
-    'SUCCESS'
+    'SUCCESS',
     'CANCELED'
 );
 

@@ -16,7 +16,7 @@ spring:
     ansi:
       enabled: ALWAYS
   rabbitmq:
-    host: ${RABBIT_HOST:rabbitmq}
+    host: ${RABBIT_HOST:localhost}
     port: 5672
     username: dev
     password: dev
@@ -89,17 +89,18 @@ management:
 #logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
 #logging.level.org.hibernate.stat: DEBUG
 #spring.jpa.properties.hibernate.generate_statistics: true
-logging:
-  level:
-    ru:
-      sogaz:
-        site:
-          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
 #logging:
 #  level:
-#    org.springframework.jdbc: DEBUG
-#    org.springframework.transaction: DEBUG
+#    ru:
+#      sogaz:
+#        site:
+#          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
+logging:
+  level:
+    org.springframework.jdbc: DEBUG
+    org.springframework.transaction: DEBUG
 #    org.springframework.amqp.rabbit.*: DEBUG
+    logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
 
 
 logstash:

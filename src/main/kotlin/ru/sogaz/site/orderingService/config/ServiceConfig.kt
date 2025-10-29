@@ -5,6 +5,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.MessageConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.jdbc.core.JdbcTemplate
+import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.mappers.OrderMapper
@@ -21,27 +23,13 @@ import ru.sogaz.site.orderingService.service.impl.PaymentEventProducerImpl
 
 @Configuration
 class ServiceConfig {
-    @Bean
-    fun buildBatchConsumerConfig(
-        orderDao: OrderDao,
-        subOrderDao: SubOrderDao,
-        props: RabbitProps,
-        orderMapper: OrderMapper,
-        paymentEventMapper: PaymentEventMapper,
-    ): BuildBatchConsumerService =
-        BuildBatchConsumerServiceImpl(
-            orderDao = orderDao,
-            subOrderDao = subOrderDao,
-            props = props,
-            orderMapper = orderMapper,
-            paymentEventMapper = paymentEventMapper,
-        )
+
 
     @Bean
     fun orderBatchConsumerConfig(
         buildBatchConsumerService: BuildBatchConsumerService,
         paymentProducer: PaymentEventProducer,
-        messageConverter: MessageConverter,
+        messageConverter: NoOpMessageConverter,
         objectMapper: ObjectMapper,
     ): OrderBatchConsumer =
         OrderBatchConsumerImpl(
