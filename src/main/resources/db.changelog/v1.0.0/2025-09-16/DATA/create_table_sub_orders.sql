@@ -16,8 +16,4 @@ CREATE TABLE sub_orders (
    main_contract_check BOOLEAN DEFAULT FALSE,   -- Основной договор страхования
    create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), -- Дата создания
    update_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),  -- Дата обновления
-
-   FOREIGN KEY (order_id)
-       REFERENCES orders(order_id)
-       DEFERRABLE INITIALLY DEFERRED            -- Проверка FK в конце транзакции
-);
+   FOREIGN KEY (order_id)REFERENCES orders(order_id));

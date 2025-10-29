@@ -24,7 +24,7 @@ abstract class PaymentEventMapper {
     fun toPaymentData(order: OrderEntity): PaymentData =
         PaymentData(
             recurrent = order.recurrent ?: false,
-            orderId = order.orderId!!,
+            orderId = order.orderId,
             premiumAmount = order.premiumAmount,
             saveCard = order.saveCard,
             keyCard = order.keyCard,

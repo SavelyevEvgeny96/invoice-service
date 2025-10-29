@@ -17,28 +17,31 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+
 @Service
 open class BuildBatchConsumerServiceImpl(
     private val orderDao: OrderDao,
     private val subOrderDao: SubOrderDao,
     private val props: RabbitProps,
     private val orderMapper: OrderMapper,
-    private val paymentEventMapper: PaymentEventMapper,
-    private val jdbcTemplate:JdbcTemplate
+    private val paymentEventMapper: PaymentEventMapper
 ) : BuildBatchConsumerService {
+    companion object {
+        private const val LOG_START = "Старт batch upsertOrders: size=%d"
+    }
     private val logger = loggerFor(javaClass)
-    @Transactional(
-        transactionManager = "dataSourceTransactionManager",
-        rollbackFor = [Exception::class]
-    )
+    @Transactional(rollbackFor = [Exception::class])
     override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
         val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()
         val (orders, subs) = prepareEntities(batch)
-        // 🔥 Отложенные проверки внешних ключей до конца транзакции
-//        jdbcTemplate.execute("SET CONSTRAINTS ALL DEFERRED")
-        logger.info("TX active = ${TransactionSynchronizationManager.isActualTransactionActive()}")
-        if (orders.isNotEmpty()) orderDao.upsertOrders(orders)
+        logger.info(LOG_START.format(batch.size))
+        if (orders.isNotEmpty()) {
+            val idBySub = orderDao.upsertOrdersReturningIds(orders)
+            orders.forEach { o -> idBySub[o.subscriptionId]?.let { o.orderId = it } }
+        }
+
         if (subs.isNotEmpty()) subOrderDao.upsertSubOrders(subs)
+
         return mapToPaymentEvents(orders, nowIso)
     }
 

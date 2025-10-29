@@ -6,9 +6,9 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.repository.SubOrderRepository
 import java.sql.Timestamp
-import java.util.UUID
+import java.util.*
 
-class SubOrderDaoImpl(
+open class SubOrderDaoImpl(
     private val jdbcTemplate: JdbcTemplate,
     private val subOrderRepository: SubOrderRepository,
 ) : SubOrderDao {
@@ -20,7 +20,6 @@ class SubOrderDaoImpl(
     }
 
     private val logger = loggerFor(javaClass)
-
     override fun upsertSubOrders(subs: List<SubOrderEntity>) {
         val sql =
             """
