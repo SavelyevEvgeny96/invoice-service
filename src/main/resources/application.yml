@@ -50,7 +50,7 @@ app:
     java-version: ${JAVA_VERSION:21}
   rabbit:
     orders-exchange: ${ORDERS_EXCHANGE:orders.exchange}
-    payments-exchange: ${PAYMENTS_EXCHANGE:orders.exchange}
+    payments-exchange: ${PAYMENTS_EXCHANGE:payments.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:orders.created.queue}
     queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:orders.created.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
