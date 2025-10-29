@@ -41,7 +41,7 @@ class PaymentEventProducerImpl(
 
             try {
                 rabbit.convertAndSend(
-                    props.exchange,
+                    props.paymentsExchange,
                     event.eventType,
                     event,
                     { msg ->

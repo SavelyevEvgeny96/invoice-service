@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -27,7 +26,7 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.BuildBatchConsumerServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -35,20 +34,11 @@ import kotlin.test.assertTrue
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class BuildBatchConsumerServiceImplTest {
-    @Mock
-    lateinit var orderDao: OrderDao
-
-    @Mock
-    lateinit var subOrderDao: SubOrderDao
-
-    @Mock
-    lateinit var props: RabbitProps
-
-    @Mock
-    lateinit var orderMapper: OrderMapper
-
-    @Mock
-    lateinit var paymentEventMapper: PaymentEventMapper
+    @Mock lateinit var orderDao: OrderDao
+    @Mock lateinit var subOrderDao: SubOrderDao
+    @Mock lateinit var props: RabbitProps
+    @Mock lateinit var orderMapper: OrderMapper
+    @Mock lateinit var paymentEventMapper: PaymentEventMapper
 
     @InjectMocks
     lateinit var service: BuildBatchConsumerServiceImpl
@@ -98,6 +88,7 @@ class BuildBatchConsumerServiceImplTest {
                 saveCard = dto.saveCard,
                 recipientUserId = dto.recipientUserId,
                 unifiedId = dto.unifiedId,
+                // важное: в реальном коде есть поле subscriptionId; тест не использует его напрямую
             )
 
         subOrderEntity =
@@ -131,17 +122,22 @@ class BuildBatchConsumerServiceImplTest {
                     ),
             )
 
+        // моки
         whenever(props.routingKeyPayment).thenReturn("type")
         whenever(orderMapper.toOrderEntity(dto)).thenReturn(orderEntity)
         whenever(orderMapper.toSubOrderEntity(any(), eq(orderEntity))).thenReturn(subOrderEntity)
         whenever(paymentEventMapper.toPaymentEvent(any(), any(), any())).thenReturn(paymentEvent)
+
+        // ВАЖНО: новый метод — возвращаем map { subscriptionId -> orderId }
+        whenever(orderDao.upsertOrdersReturningIds(any()))
+            .thenReturn(mapOf("subscriptionId" to orderEntity.orderId!!))
     }
 
     @Test
     fun `должен успешно обработать пачку заказов`() {
         val result = service.upsertBatch(listOf(dto))
 
-        verify(orderDao).upsertOrders(listOf(orderEntity))
+        verify(orderDao).upsertOrdersReturningIds(listOf(orderEntity))
         verify(subOrderDao).upsertSubOrders(listOf(subOrderEntity))
         verify(paymentEventMapper).toPaymentEvent(eq(orderEntity), any(), any())
 
@@ -152,7 +148,8 @@ class BuildBatchConsumerServiceImplTest {
     @Test
     fun `должен вернуть пустой список, если входная пачка пуста`() {
         val result = service.upsertBatch(emptyList())
-        verify(orderDao, never()).upsertOrders(any())
+
+        verify(orderDao, never()).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
         verify(paymentEventMapper, never()).toPaymentEvent(any(), any(), any())
 
@@ -161,15 +158,15 @@ class BuildBatchConsumerServiceImplTest {
 
     @Test
     fun `должен выбросить исключение, если orderDao завершился ошибкой`() {
-        whenever(orderDao.upsertOrders(any())).thenThrow(RuntimeException("DB error"))
+        whenever(orderDao.upsertOrdersReturningIds(any()))
+            .thenThrow(RuntimeException("DB error"))
 
-        val exception =
-            assertThrows<RuntimeException> {
-                service.upsertBatch(listOf(dto))
-            }
+        val exception = assertThrows<RuntimeException> {
+            service.upsertBatch(listOf(dto))
+        }
 
         assertEquals("DB error", exception.message)
-        verify(orderDao).upsertOrders(any())
+        verify(orderDao).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
         verify(paymentEventMapper, never()).toPaymentEvent(any(), any(), any())
     }
