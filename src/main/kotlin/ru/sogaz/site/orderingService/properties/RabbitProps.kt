@@ -7,12 +7,12 @@ import ru.sogaz.site.orderingService.loggerFor
 @ConfigurationProperties(prefix = "app.rabbit")
 class RabbitProps {
     private val logger = loggerFor(javaClass)
-    var ordersExchange: String = "order.exchange"
-    var paymentsExchange: String = "payment.exchange"
-    var queueOrder: String = "order.created.queue"
-    var queuePayment: String = "payment.created.queue"
-    var routingKeyOrder: String = "order.created"
-    var routingKeyPayment: String = "payment.status.created"
+    lateinit var ordersExchange: String
+   lateinit var paymentsExchange: String
+   lateinit var queueOrder: String
+   lateinit var queuePayment: String
+   lateinit var routingKeyOrder: String
+   lateinit var routingKeyPayment: String
 
     @PostConstruct
     fun postConstruct() {
