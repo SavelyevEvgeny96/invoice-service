@@ -3,7 +3,6 @@ package ru.sogaz.site.orderingService.apiDoc
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -12,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import ru.sogaz.site.orderingService.dto.request.OrdersUserRequest
 import ru.sogaz.site.orderingService.dto.response.OrdersUserResponse
 import ru.sogaz.siter.models.resonses.Response
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 @Tag(
     name = "OrdersUser",
-    description = "Методы для получения информации о заказах пользователя"
+    description = "Методы для получения информации о заказах пользователя",
 )
 interface OrdersUserApi {
-
     @PostMapping("/v1/orders/ordersuser")
     @Operation(
         summary = "Получить заказы пользователя",
@@ -28,24 +27,25 @@ interface OrdersUserApi {
             - **422** — некорректные параметры запроса (валидация не пройдена);
             - **409** — клиент не найден или нет заказов с указанным статусом.
         """,
-        requestBody = SwaggerRequestBody(
-            required = true,
-            description = "Параметры фильтрации заказов пользователя",
-            content = [
-                Content(
-                    schema = Schema(implementation = OrdersUserRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                required = true,
+                description = "Параметры фильтрации заказов пользователя",
+                content = [
+                    Content(
+                        schema = Schema(implementation = OrdersUserRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "200",
                 description = "Успешный ответ. Заказы найдены.",
                 content = [
                     Content(
-                        schema = Schema(implementation = OrdersUserResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = OrdersUserResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "422",
@@ -67,7 +67,7 @@ interface OrdersUserApi {
                       "data": null
                     }
                 """,
-                content = [Content(schema = Schema(hidden = true))]
+                content = [Content(schema = Schema(hidden = true))],
             ),
             ApiResponse(
                 responseCode = "409",
@@ -88,14 +88,14 @@ interface OrdersUserApi {
                       "data": null
                     }
                 """,
-                content = [Content(schema = Schema(hidden = true))]
+                content = [Content(schema = Schema(hidden = true))],
             ),
             ApiResponse(
                 responseCode = "500",
                 description = "Внутренняя ошибка сервиса",
-                content = [Content(schema = Schema(hidden = true))]
+                content = [Content(schema = Schema(hidden = true))],
             ),
-        ]
+        ],
     )
     fun getClientOrders(
         @Valid @RequestBody request: OrdersUserRequest,

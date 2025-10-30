@@ -16,9 +16,21 @@ import java.util.UUID
 data class OrderEntity(
     @Id
     @Column(name = "order_id", columnDefinition = "uuid")
-    var orderId: UUID? = null,
-    @Column(name = "recipient_user_gd_id")
-    var recipientUserGdId: String? = null,
+    var orderId: UUID = UUID.randomUUID(),
+    @Column(name = "unified_id")
+    var unifiedId: String? = null,
+    @Column(name = "url_to_return")
+    var urlToReturn: String? = null,
+    @Column(name = "url_to_decline")
+    var urlToDecline: String? = null,
+    @Column(name = "bank")
+    var bank: String? = null,
+    @Column(name = "policyholder")
+    var policyholder: String? = null,
+    @Column(name = "payment_type")
+    var paymentType: String? = null,
+    @Column(name = "subscription_id")
+    var subscriptionId: String? = null,
     @Column(name = "key_card")
     var keyCard: String? = null,
     @Column(name = "save_card")

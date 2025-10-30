@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
-import org.springframework.amqp.support.converter.MessageConverter
+import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
@@ -14,7 +14,7 @@ import ru.sogaz.site.orderingService.service.PaymentEventProducer
 class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val paymentProducer: PaymentEventProducer,
-    private val messageConverter: MessageConverter,
+    private val messageConverter: NoOpMessageConverter,
     private val objectMapper: ObjectMapper,
 ) : OrderBatchConsumer {
     companion object {
@@ -59,7 +59,6 @@ class OrderBatchConsumerImpl(
                         is OrderPayloadDto -> raw
                         is Map<*, *> -> objectMapper.convertValue(raw, OrderPayloadDto::class.java)
                         is String -> objectMapper.readValue(raw, OrderPayloadDto::class.java)
-                        is ByteArray -> objectMapper.readValue(String(raw, Charsets.UTF_8), OrderPayloadDto::class.java)
                         null -> {
                             // если converter упал или вернул null — парсим body напрямую
                             val body = String(msg.body, Charsets.UTF_8)

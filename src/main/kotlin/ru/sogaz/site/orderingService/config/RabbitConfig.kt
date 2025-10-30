@@ -15,6 +15,8 @@ import org.springframework.amqp.support.converter.MessageConverter
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
+import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitListenerProps
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -71,8 +73,11 @@ class RabbitConfig(
     @Bean
     fun errorsMap(): ConcurrentHashMap<UUID, String?> = errors
 
-    @Bean
-    fun ordersExchange(): TopicExchange = TopicExchange(props.exchange, true, false)
+    @Bean(name = ["ordersExchange"])
+    fun ordersExchange(): TopicExchange = TopicExchange(props.ordersExchange, true, false)
+
+    @Bean(name = ["paymentsExchange"])
+    fun paymentsExchange(): TopicExchange = TopicExchange(props.paymentsExchange, true, false)
 
     // Основная очередь заказов с DLQ
     @Bean(name = ["ordersQueue"])
@@ -92,26 +97,26 @@ class RabbitConfig(
     @Bean
     fun ordersBinding(
         @Qualifier("ordersQueue") queue: Queue,
-        exchange: TopicExchange,
+        @Qualifier("ordersExchange")exchange: TopicExchange,
     ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrder)
 
     @Bean
     fun paymentsBinding(
         @Qualifier("paymentsQueue") queue: Queue,
-        exchange: TopicExchange,
+        @Qualifier("paymentsExchange")exchange: TopicExchange,
     ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyPayment)
 
     @Bean
+    @Primary
     fun jacksonMessageConverter(objectMapper: ObjectMapper): MessageConverter = Jackson2JsonMessageConverter(objectMapper)
 
     @Bean("batchContainerFactory")
-    fun batchContainerFactory(messageConverter: MessageConverter): SimpleRabbitListenerContainerFactory =
+    fun batchContainerFactory(noOpMessageConverter: NoOpMessageConverter): SimpleRabbitListenerContainerFactory =
         SimpleRabbitListenerContainerFactory().apply {
             setConnectionFactory(connectionFactory)
-            setMessageConverter(messageConverter)
             setBatchListener(true)
             setConsumerBatchEnabled(true)
-            setDeBatchingEnabled(false)
+            setDeBatchingEnabled(true)
             setBatchSize(propsListener.batchSize)
             setPrefetchCount(propsListener.prefetch)
             setConcurrentConsumers(propsListener.concurrency)
@@ -119,5 +124,7 @@ class RabbitConfig(
             setAcknowledgeMode(AcknowledgeMode.MANUAL)
             setChannelTransacted(true)
             setDefaultRequeueRejected(false)
+
+            setMessageConverter(noOpMessageConverter)
         }
 }
