@@ -49,13 +49,13 @@ app:
     app_profile: ${ENVIRONMENT:local}
     java-version: ${JAVA_VERSION:21}
   rabbit:
-    orders-exchange: ${ORDERS_EXCHANGE:orders.exchange}
-    payments-exchange: ${PAYMENTS_EXCHANGE:payments.exchange}
-    queue-order: ${ORDER_CREATED_QUEUE:orders.created.queue}
-    queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:orders.created.queue.dlq} #DLQ
+    orders-exchange: ${ORDERS_EXCHANGE:order.exchange}
+    payments-exchange: ${PAYMENTS_EXCHANGE:payment.exchange}
+    queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
+    queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
-    routing-key-order: ${ROUTING_KEY_ORDERS_CREATED:orders.created}
-    routing-key-payment: ${ROUTING_KEY_PAYMENTS_CREATED:payments.created}
+    routing-key-order: ${ROUTING_KEY_ORDERS_CREATED:order.created}
+    routing-key-payment: ${ROUTING_KEY_PAYMENTS_CREATED:payment.created}
     listener:
       batch-size: 100
       prefetch: 100
