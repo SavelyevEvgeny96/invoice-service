@@ -78,6 +78,8 @@ class BuildBatchConsumerServiceImplTest {
                 orderEndDate = Instant.now(),
                 subOrders = listOf(subOrderDto),
                 subscriptionId = "subscriptionId",
+                bank = "gpb",
+                paymentType = "card",
             )
 
         orderEntity =
@@ -123,6 +125,8 @@ class BuildBatchConsumerServiceImplTest {
                         recipientPhone = orderEntity.recipientPhone,
                         dateCreate = orderEntity.updateDate?.toString(),
                         dateEnd = orderEntity.paymentEndDate?.toString(),
+                        bank = orderEntity.bank,
+                        paymentType = orderEntity.paymentType,
                     ),
             )
 
@@ -134,7 +138,7 @@ class BuildBatchConsumerServiceImplTest {
 
         // ВАЖНО: новый метод — возвращаем map { subscriptionId -> orderId }
         whenever(orderDao.upsertOrdersReturningIds(any()))
-            .thenReturn(mapOf("subscriptionId" to orderEntity.orderId!!))
+            .thenReturn(listOf(orderEntity.orderId))
     }
 
     @Test
