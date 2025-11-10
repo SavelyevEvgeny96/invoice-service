@@ -27,41 +27,39 @@ open class OrderDaoImpl(
         phone: String,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
 
-    override fun upsertOrdersReturningIds(orders: List<OrderEntity>): Map<String, UUID> {
-        if (orders.isEmpty()) return emptyMap()
+    override fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID> {
+        if (orders.isEmpty()) return emptyList<UUID>()
 
-        val tuple = "(" + List(15) { "?" }.joinToString(", ") + ", 'NEW', NOW())"
+        // 16 параметров, status и update_date — константы
+        val tuple = "(" + List(16) { "?" }.joinToString(", ") + ", 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
-        val sql =
-            """
-            INSERT INTO orders (
-                create_date, recipient_email, recipient_phone,
-                premium_amount, payment_end_date, key_card, save_card,
-                recurrent, unified_id, recipient_user_id,
-                url_to_return, url_to_decline, policyholder,
-                payment_type, subscription_id, status, update_date
-            )
-            VALUES $valuesSql
-            ON CONFLICT (subscription_id) DO UPDATE
-              SET recipient_email   = EXCLUDED.recipient_email,
-                  recipient_phone   = EXCLUDED.recipient_phone,
-                  premium_amount    = EXCLUDED.premium_amount,
-                  payment_end_date  = EXCLUDED.payment_end_date,
-                  key_card          = EXCLUDED.key_card,
-                  save_card         = EXCLUDED.save_card,
-                  recurrent         = EXCLUDED.recurrent,
-                  unified_id        = EXCLUDED.unified_id,
-                  recipient_user_id = EXCLUDED.recipient_user_id,
-                  url_to_return     = EXCLUDED.url_to_return,
-                  url_to_decline    = EXCLUDED.url_to_decline,
-                  policyholder      = EXCLUDED.policyholder,
-                  payment_type      = EXCLUDED.payment_type,
-                  update_date       = NOW()
-            RETURNING subscription_id, order_id
-            """.trimIndent()
+        val sql = """
+        INSERT INTO orders (
+            create_date,
+            recipient_email,
+            recipient_phone,
+            premium_amount,
+            payment_end_date,
+            key_card,
+            save_card,
+            recurrent,
+            unified_id,
+            recipient_user_id,
+            url_to_return,
+            url_to_decline,
+            policyholder,
+            payment_type,
+            subscription_id,
+            bank,
+            status,
+            update_date
+        )
+        VALUES $valuesSql
+        RETURNING order_id
+    """.trimIndent()
 
-        val args = ArrayList<Any?>(orders.size * 15)
+        val args = ArrayList<Any?>(orders.size * 16)
         orders.forEach { o ->
             args += o.createDate?.let { Timestamp.from(it) }
             args += o.recipientEmail
@@ -78,16 +76,13 @@ open class OrderDaoImpl(
             args += o.policyholder
             args += o.paymentType
             args += o.subscriptionId
+            args += o.bank
         }
 
-        val mapper =
-            RowMapper { rs: ResultSet, _: Int ->
-                rs.getString("subscription_id") to rs.getObject("order_id", UUID::class.java)
-            }
+        val mapper = RowMapper { rs: ResultSet, _: Int ->
+            rs.getObject("order_id", UUID::class.java)
+        }
 
-        val pairs: List<Pair<String, UUID>> =
-            jdbcTemplate.query(sql, mapper, *args.toTypedArray())
-
-        return pairs.toMap()
+        return jdbcTemplate.query(sql, mapper, *args.toTypedArray())
     }
 }

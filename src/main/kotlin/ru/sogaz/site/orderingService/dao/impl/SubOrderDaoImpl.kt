@@ -22,50 +22,41 @@ open class SubOrderDaoImpl(
     private val logger = loggerFor(javaClass)
 
     override fun upsertSubOrders(subs: List<SubOrderEntity>) {
-        val sql =
-            """
-            INSERT INTO sub_orders (
-                order_id, policy_id, policy_number, contract_id, contract_number,
-                insurance_program, type_insurance, premium_amount, manager_email,
-                doc_type,channel,main_contract_check,contract_date,policy_date
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (policy_id) DO UPDATE
-              SET policy_number     = EXCLUDED.policy_number,
-                  contract_id       = EXCLUDED.contract_id,
-                  policy_id         = EXCLUDED.policy_id,
-                  contract_number   = EXCLUDED.contract_number,
-                  insurance_program = EXCLUDED.insurance_program,
-                  type_insurance    = EXCLUDED.type_insurance,
-                  premium_amount    = EXCLUDED.premium_amount,
-                  manager_email     = EXCLUDED.manager_email,
-                  order_id          = EXCLUDED.order_id,
-                  doc_type          = EXCLUDED.doc_type,
-                  channel           = EXCLUDED.channel,
-                  main_contract_check = EXCLUDED.main_contract_check,
-                  contract_date     = EXCLUDED.contract_date,
-                  policy_date       = EXCLUDED.policy_date
-            """.trimIndent()
+        if (subs.isEmpty()) return
 
-        logger.info(LOG_START.format(subs.size))
+        // 14 плейсхолдеров под все колонки
+        val tuple = "(" + List(14) { "?" }.joinToString(", ") + ")"
+        val valuesSql = subs.joinToString(",") { tuple }
 
-        jdbcTemplate.batchUpdate(sql, subs, subs.size) { ps, s ->
-            ps.setObject(1, s.orderEntity?.orderId)
-            ps.setString(2, s.policyId)
-            ps.setString(3, s.policyNumber)
-            ps.setString(4, s.contractId)
-            ps.setString(5, s.contractNumber)
-            ps.setString(6, s.insuranceProgram)
-            ps.setString(7, s.typeInsurance)
-            ps.setBigDecimal(8, s.premiumAmount)
-            ps.setString(9, s.managerEmail)
-            ps.setString(10, s.docType)
-            ps.setString(11, s.channel)
-            ps.setObject(12, s.mainContractCheck)
-            ps.setTimestamp(13, s.contractDate?.let { Timestamp.from(it) })
-            ps.setTimestamp(14, s.policyDate?.let { Timestamp.from(it) })
+        val sql = """
+        INSERT INTO sub_orders (
+            order_id, policy_id, policy_number, contract_id, contract_number,
+            insurance_program, type_insurance, premium_amount, manager_email,
+            doc_type, channel, main_contract_check, contract_date, policy_date
+        )
+        VALUES $valuesSql
+    """.trimIndent()
+
+        val args = ArrayList<Any?>(subs.size * 14)
+        subs.forEach { s ->
+            args += s.orderEntity?.orderId
+            args += s.policyId
+            args += s.policyNumber
+            args += s.contractId
+            args += s.contractNumber
+            args += s.insuranceProgram
+            args += s.typeInsurance
+            args += s.premiumAmount
+            args += s.managerEmail
+            args += s.docType
+            args += s.channel
+            args += s.mainContractCheck
+            args += s.contractDate?.let { Timestamp.from(it) }
+            args += s.policyDate?.let { Timestamp.from(it) }
         }
 
+        logger.info(LOG_START.format(subs.size))
+        jdbcTemplate.update(sql, *args.toTypedArray())
         logger.info(LOG_EXECUTE.format(subs.size))
         logger.info(LOG_DONE.format(subs.size))
     }
