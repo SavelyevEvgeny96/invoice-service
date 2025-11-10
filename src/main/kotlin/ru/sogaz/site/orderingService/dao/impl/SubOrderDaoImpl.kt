@@ -28,14 +28,15 @@ open class SubOrderDaoImpl(
         val tuple = "(" + List(14) { "?" }.joinToString(", ") + ")"
         val valuesSql = subs.joinToString(",") { tuple }
 
-        val sql = """
-        INSERT INTO sub_orders (
-            order_id, policy_id, policy_number, contract_id, contract_number,
-            insurance_program, type_insurance, premium_amount, manager_email,
-            doc_type, channel, main_contract_check, contract_date, policy_date
-        )
-        VALUES $valuesSql
-    """.trimIndent()
+        val sql =
+            """
+            INSERT INTO sub_orders (
+                order_id, policy_id, policy_number, contract_id, contract_number,
+                insurance_program, type_insurance, premium_amount, manager_email,
+                doc_type, channel, main_contract_check, contract_date, policy_date
+            )
+            VALUES $valuesSql
+            """.trimIndent()
 
         val args = ArrayList<Any?>(subs.size * 14)
         subs.forEach { s ->

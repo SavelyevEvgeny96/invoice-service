@@ -19,6 +19,6 @@ data class PaymentData(
     val recipientPhone: String?,
     val dateCreate: String?,
     val dateEnd: String?,
-    val bank: String,
-    val paymentType:String
+    val bank: String?,
+    val paymentType: String?,
 )

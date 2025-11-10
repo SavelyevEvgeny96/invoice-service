@@ -36,11 +36,15 @@ open class BuildBatchConsumerServiceImpl(
         val (orders, subs) = prepareEntities(batch)
         logger.info(LOG_START.format(batch.size))
         if (orders.isNotEmpty()) {
-            val idBySub = orderDao.upsertOrdersReturningIds(orders)
-            orders.forEach { o -> idBySub[o.subscriptionId]?.let { o.orderId = it } }
+            val orderIds = orderDao.upsertOrdersReturningIds(orders)
+            orders.forEachIndexed { index, o ->
+                o.orderId = orderIds[index]
+            }
         }
 
-        if (subs.isNotEmpty()) subOrderDao.upsertSubOrders(subs)
+        if (subs.isNotEmpty()) {
+            subOrderDao.upsertSubOrders(subs)
+        }
 
         return mapToPaymentEvents(orders, nowIso)
     }

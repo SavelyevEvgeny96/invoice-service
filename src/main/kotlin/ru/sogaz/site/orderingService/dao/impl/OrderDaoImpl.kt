@@ -34,30 +34,31 @@ open class OrderDaoImpl(
         val tuple = "(" + List(16) { "?" }.joinToString(", ") + ", 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
-        val sql = """
-        INSERT INTO orders (
-            create_date,
-            recipient_email,
-            recipient_phone,
-            premium_amount,
-            payment_end_date,
-            key_card,
-            save_card,
-            recurrent,
-            unified_id,
-            recipient_user_id,
-            url_to_return,
-            url_to_decline,
-            policyholder,
-            payment_type,
-            subscription_id,
-            bank,
-            status,
-            update_date
-        )
-        VALUES $valuesSql
-        RETURNING order_id
-    """.trimIndent()
+        val sql =
+            """
+            INSERT INTO orders (
+                create_date,
+                recipient_email,
+                recipient_phone,
+                premium_amount,
+                payment_end_date,
+                key_card,
+                save_card,
+                recurrent,
+                unified_id,
+                recipient_user_id,
+                url_to_return,
+                url_to_decline,
+                policyholder,
+                payment_type,
+                subscription_id,
+                bank,
+                status,
+                update_date
+            )
+            VALUES $valuesSql
+            RETURNING order_id
+            """.trimIndent()
 
         val args = ArrayList<Any?>(orders.size * 16)
         orders.forEach { o ->
@@ -79,9 +80,10 @@ open class OrderDaoImpl(
             args += o.bank
         }
 
-        val mapper = RowMapper { rs: ResultSet, _: Int ->
-            rs.getObject("order_id", UUID::class.java)
-        }
+        val mapper =
+            RowMapper { rs: ResultSet, _: Int ->
+                rs.getObject("order_id", UUID::class.java)
+            }
 
         return jdbcTemplate.query(sql, mapper, *args.toTypedArray())
     }
