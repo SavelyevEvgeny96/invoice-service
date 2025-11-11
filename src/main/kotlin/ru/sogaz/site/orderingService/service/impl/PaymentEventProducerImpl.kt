@@ -25,15 +25,11 @@ class PaymentEventProducerImpl(
     private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
     override fun sendBatch(events: List<PaymentCreatedEvent>): PublishResult {
-        if (events.isEmpty()) {
-            logger.debug(EMPTY_BATCH_LOG)
-            return PublishResult(emptySet(), emptyMap(), emptySet())
-        }
-        val errors = ConcurrentHashMap<UUID, String?>()
-        val confirmed = ConcurrentHashMap<UUID, Boolean>()
-        val acked = mutableSetOf<UUID>()
-        val nAcked = mutableMapOf<UUID, String?>()
-        val unconfirmed = mutableSetOf<UUID>()
+        val errors = ConcurrentHashMap<UUID?, String?>()
+        val confirmed = ConcurrentHashMap<UUID?, Boolean>()
+        val acked = mutableSetOf<UUID?>()
+        val nAcked = mutableMapOf<UUID?, String?>()
+        val unconfirmed = mutableSetOf<UUID?>()
 
         events.forEach { event ->
             val orderId = event.data.orderId

@@ -23,10 +23,8 @@ abstract class PaymentEventMapper {
     @Named("mapPaymentData")
     fun toPaymentData(order: OrderEntity): PaymentData =
         PaymentData(
-            recurrent = order.recurrent ?: false,
             orderId = order.orderId,
             premiumAmount = order.premiumAmount,
-            saveCard = order.saveCard,
             keyCard = order.keyCard,
             recipientEmail = order.recipientEmail,
             recipientPhone = order.recipientPhone,

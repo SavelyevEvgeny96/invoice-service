@@ -16,7 +16,7 @@ data class OrdersUserResponse(
 data class OrderItem(
     val orderId: UUID?,
     val premiumAmount: BigDecimal?,
-    val status: String,
+    val status: String?,
     val subOrdersList: List<SubOrderItem> = emptyList(),
 )
 

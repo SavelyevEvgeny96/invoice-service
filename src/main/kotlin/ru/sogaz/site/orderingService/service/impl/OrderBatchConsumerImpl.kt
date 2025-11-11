@@ -52,11 +52,13 @@ class OrderBatchConsumerImpl(
         }
         try {
             val events = buildBatchConsumerService.upsertBatch(payloads.map { it.second })
-            paymentProducer.sendBatch(events)
-            payloads.forEach { (tag, _) -> channel.basicAck(tag, false) }
+            if (events.isNotEmpty()) {
+                paymentProducer.sendBatch(events)
+                payloads.forEach { (tag, _) -> channel.basicAck(tag, false) }
 
-            val tookMs = (System.nanoTime() - started) / 1_000_000
-            logger.info(BATCH_SUMMARY.format(payloads.size, tookMs))
+                val tookMs = (System.nanoTime() - started) / 1_000_000
+                logger.info(BATCH_SUMMARY.format(payloads.size, tookMs))
+            }
         } catch (ex: Exception) {
             logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}", ex)
             payloads.forEach { (tag, _) -> channel.basicReject(tag, false) }

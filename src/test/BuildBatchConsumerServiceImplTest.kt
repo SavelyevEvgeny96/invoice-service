@@ -34,15 +34,20 @@ import kotlin.test.assertTrue
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class BuildBatchConsumerServiceImplTest {
-    @Mock lateinit var orderDao: OrderDao
+    @Mock
+    lateinit var orderDao: OrderDao
 
-    @Mock lateinit var subOrderDao: SubOrderDao
+    @Mock
+    lateinit var subOrderDao: SubOrderDao
 
-    @Mock lateinit var props: RabbitProps
+    @Mock
+    lateinit var props: RabbitProps
 
-    @Mock lateinit var orderMapper: OrderMapper
+    @Mock
+    lateinit var orderMapper: OrderMapper
 
-    @Mock lateinit var paymentEventMapper: PaymentEventMapper
+    @Mock
+    lateinit var paymentEventMapper: PaymentEventMapper
 
     @InjectMocks
     lateinit var service: BuildBatchConsumerServiceImpl
@@ -74,12 +79,12 @@ class BuildBatchConsumerServiceImplTest {
                 recipientUserId = "user123",
                 unifiedId = "gd999",
                 keyCard = null,
-                saveCard = null,
                 orderEndDate = Instant.now(),
                 subOrders = listOf(subOrderDto),
                 subscriptionId = "subscriptionId",
                 bank = "gpb",
                 paymentType = "card",
+                policyholder = "Gena Vanya",
             )
 
         orderEntity =
@@ -91,14 +96,20 @@ class BuildBatchConsumerServiceImplTest {
                 paymentEndDate = dto.orderEndDate,
                 updateDate = Instant.now(),
                 keyCard = dto.keyCard,
-                saveCard = dto.saveCard,
                 recipientUserId = dto.recipientUserId,
                 unifiedId = dto.unifiedId,
-                // важное: в реальном коде есть поле subscriptionId; тест не использует его напрямую
+                bank = dto.bank,
+                policyholder = dto.policyholder,
+                paymentType = "",
+                recurrent = false,
+                saveCard = true,
+                subscriptionId = "",
+                createDate = Instant.now(),
             )
 
         subOrderEntity =
             SubOrderEntity(
+                id = UUID.randomUUID(),
                 orderEntity = orderEntity,
                 policyId = subOrderDto.policyId,
                 policyNumber = subOrderDto.policyNumber,
@@ -108,6 +119,13 @@ class BuildBatchConsumerServiceImplTest {
                 typeInsurance = subOrderDto.typeInsurance,
                 premiumAmount = subOrderDto.premiumAmountDto,
                 managerEmail = subOrderDto.managerEmail,
+                docType = "",
+                channel = "",
+                mainContractCheck = true,
+                createDate = Instant.now(),
+                policyDate = Instant.now(),
+                updateDate = Instant.now(),
+                contractDate = Instant.now(),
             )
 
         paymentEvent =
@@ -117,9 +135,7 @@ class BuildBatchConsumerServiceImplTest {
                 data =
                     PaymentData(
                         orderId = orderEntity.orderId!!,
-                        recurrent = orderEntity.recurrent ?: false,
                         premiumAmount = orderEntity.premiumAmount,
-                        saveCard = orderEntity.saveCard,
                         keyCard = orderEntity.keyCard,
                         recipientEmail = orderEntity.recipientEmail,
                         recipientPhone = orderEntity.recipientPhone,
@@ -138,7 +154,7 @@ class BuildBatchConsumerServiceImplTest {
 
         // ВАЖНО: новый метод — возвращаем map { subscriptionId -> orderId }
         whenever(orderDao.upsertOrdersReturningIds(any()))
-            .thenReturn(listOf(orderEntity.orderId))
+            .thenReturn(listOf(orderEntity.orderId!!))
     }
 
     @Test
