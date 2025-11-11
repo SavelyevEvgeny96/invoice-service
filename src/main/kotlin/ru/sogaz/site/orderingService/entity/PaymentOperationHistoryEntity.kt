@@ -15,20 +15,20 @@ import java.util.UUID
 
 @Entity
 @Table(name = "payment_operation_history")
-data class PaymentOperationHistoryEntity(
+class PaymentOperationHistoryEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    val id: UUID? = null,
+    val id: UUID?,
     @Column(name = "action")
-    val action: Long? = null,
+    val action: Long?,
     @CreationTimestamp
     @Column(name = "action_date")
-    val actionDate: Instant? = null,
+    val actionDate: Instant?,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "action_author_id", referencedColumnName = "external_system_code")
-    val actionAuthor: ClientSystemEntity? = null,
+    val actionAuthor: ClientSystemEntity?,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", referencedColumnName = "order_id")
-    val orderEntity: OrderEntity? = null,
+    val orderEntity: OrderEntity?,
 )

@@ -24,10 +24,6 @@ class OrderEntity(
     var orderId: UUID?,
     @Column(name = "unified_id")
     var unifiedId: String?,
-    @Column(name = "url_to_return")
-    var urlToReturn: String?,
-    @Column(name = "url_to_decline")
-    var urlToDecline: String?,
     @Column(name = "bank")
     var bank: String?,
     @Column(name = "policyholder")
@@ -42,7 +38,7 @@ class OrderEntity(
     var saveCard: Boolean?,
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    var status: OrderStatusesEnum = OrderStatusesEnum.NEW,
+    var status: OrderStatusesEnum? = OrderStatusesEnum.NEW,
     @Column(name = "recurrent")
     var recurrent: Boolean?,
     @Column(name = "payment_end_date")
@@ -50,9 +46,9 @@ class OrderEntity(
     @Column(name = "premium_amount", precision = 19, scale = 2)
     var premiumAmount: BigDecimal?,
     @Column(name = "recipient_email", nullable = false)
-    var recipientEmail: String,
+    var recipientEmail: String?,
     @Column(name = "recipient_phone", nullable = false)
-    var recipientPhone: String,
+    var recipientPhone: String?,
     @Column(name = "recipient_user_id")
     var recipientUserId: String?,
     @CreationTimestamp
