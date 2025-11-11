@@ -6,6 +6,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -41,8 +43,10 @@ data class SubOrderEntity(
     var premiumAmount: BigDecimal? = null,
     @Column(name = "manager_email")
     var managerEmail: String? = null,
+    @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,
+    @UpdateTimestamp
     @Column(name = "update_date")
     var updateDate: Instant? = null,
     @Column(name = "contract_date")

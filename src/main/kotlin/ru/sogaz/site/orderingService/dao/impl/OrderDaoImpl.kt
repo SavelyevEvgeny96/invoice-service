@@ -13,8 +13,7 @@ open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
-        orderRepository.findAllByRecipientUserId(userId)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
 
@@ -36,54 +35,56 @@ open class OrderDaoImpl(
         val tuple = "(" + List(14) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
-        val sql = """
-        INSERT INTO orders (
-            create_date,
-            recipient_email,
-            recipient_phone,
-            premium_amount,
-            payment_end_date,
-            key_card,
-            unified_id,
-            recipient_user_id,
-            url_to_return,
-            url_to_decline,
-            policyholder,
-            payment_type,
-            subscription_id,
-            bank,
-            save_card,
-            recurrent,
-            status,
-            update_date
-        )
-        VALUES $valuesSql
-        RETURNING order_id
-    """.trimIndent()
+        val sql =
+            """
+            INSERT INTO orders (
+                create_date,
+                recipient_email,
+                recipient_phone,
+                premium_amount,
+                payment_end_date,
+                key_card,
+                unified_id,
+                recipient_user_id,
+                url_to_return,
+                url_to_decline,
+                policyholder,
+                payment_type,
+                subscription_id,
+                bank,
+                save_card,
+                recurrent,
+                status,
+                update_date
+            )
+            VALUES $valuesSql
+            RETURNING order_id
+            """.trimIndent()
 
         // 14 параметров на каждую запись
         val args = ArrayList<Any?>(orders.size * 14)
         orders.forEach { o ->
             args += o.createDate?.let { Timestamp.from(it) } // create_date
-            args += o.recipientEmail                        // recipient_email
-            args += o.recipientPhone                        // recipient_phone
-            args += o.premiumAmount                         // premium_amount
+            args += o.recipientEmail // recipient_email
+            args += o.recipientPhone // recipient_phone
+            args += o.premiumAmount // premium_amount
             args += o.paymentEndDate?.let { Timestamp.from(it) } // payment_end_date
-            args += o.keyCard                               // key_card
-            args += o.unifiedId                             // unified_id
-            args += o.recipientUserId                       // recipient_user_id
-            args += o.urlToReturn                           // url_to_return
-            args += o.urlToDecline                          // url_to_decline
-            args += o.policyholder                          // policyholder
-            args += o.paymentType                           // payment_type
-            args += o.subscriptionId                        // subscription_id
-            args += o.bank                                  // bank
+            args += o.keyCard // key_card
+            args += o.unifiedId // unified_id
+            args += o.recipientUserId // recipient_user_id
+            args += o.urlToReturn // url_to_return
+            args += o.urlToDecline // url_to_decline
+            args += o.policyholder // policyholder
+            args += o.paymentType // payment_type
+            args += o.subscriptionId // subscription_id
+            args += o.bank // bank
             // save_card, recurrent, status, update_date — хардкодом в SQL
         }
 
-        val mapper = RowMapper { rs: ResultSet, _: Int ->
-            rs.getObject("order_id", UUID::class.java)
-        }
+        val mapper =
+            RowMapper { rs: ResultSet, _: Int ->
+                rs.getObject("order_id", UUID::class.java)
+            }
 
         return jdbcTemplate.query(sql, mapper, *args.toTypedArray())
     }

@@ -22,7 +22,6 @@ data class OrderPayloadDto(
     val recipientPhone: String?, // телефон страхователя
     val recipientUserId: String?, // ID личного кабинета
     val keyCard: String?, // ключ карты (если recurrent=true)
-    val saveCard: Boolean? = null, // сохранять карту?
     val orderEndDate: Instant?, // срок актуальности заказа
     val unifiedId: String? = null, // золотой ID
     val policyholder: String? = null,

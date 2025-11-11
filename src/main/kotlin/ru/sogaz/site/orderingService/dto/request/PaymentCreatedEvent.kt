@@ -10,10 +10,8 @@ data class PaymentCreatedEvent(
 )
 
 data class PaymentData(
-    val recurrent: Boolean,
-    val orderId: UUID,
+    val orderId: UUID?,
     val premiumAmount: BigDecimal?,
-    val saveCard: Boolean?,
     val keyCard: String?,
     val recipientEmail: String?,
     val recipientPhone: String?,
