@@ -8,11 +8,11 @@ import ru.sogaz.site.orderingService.loggerFor
 class RabbitProps {
     private val logger = loggerFor(javaClass)
     lateinit var ordersExchange: String
-   lateinit var paymentsExchange: String
-   lateinit var queueOrder: String
-   lateinit var queuePayment: String
-   lateinit var routingKeyOrder: String
-   lateinit var routingKeyPayment: String
+    lateinit var paymentsExchange: String
+    lateinit var queueOrder: String
+    lateinit var queuePayment: String
+    lateinit var routingKeyOrder: String
+    lateinit var routingKeyPayment: String
 
     @PostConstruct
     fun postConstruct() {

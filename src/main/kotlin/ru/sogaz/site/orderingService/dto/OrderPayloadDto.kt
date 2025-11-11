@@ -15,6 +15,10 @@ data class OrderPayloadDto(
     val subscriptionId: String,
     @field:EmailValid
     val recipientEmail: String?, // email страхователя
+    @field:NotBlank
+    val bank: String,
+    @field:NotBlank
+    val paymentType: String?,
     val recipientPhone: String?, // телефон страхователя
     val recipientUserId: String?, // ID личного кабинета
     val keyCard: String?, // ключ карты (если recurrent=true)
