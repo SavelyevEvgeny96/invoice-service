@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.service.impl
 
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.loggerFor
@@ -16,15 +17,14 @@ class PaymentEventProducerImpl(
 ) : PaymentEventProducer {
     companion object {
         private const val NO_CONFIRM_LOG = "Нет подтверждения на данный момент: orderId=%s"
-        private const val EMPTY_BATCH_LOG = "Пустая пачка событий — отправка пропущена"
-        private const val PUBLISHED_LOG = "Отправлено сообщение для orderId=%s, eventType=%s"
+        private const val PUBLISHED_LOG = "Отправлено сообщение для orderId=%s"
         private const val PUBLISH_ERROR_LOG = "Ошибка при отправке сообщения orderId=%s: %s"
         private const val BATCH_RESULT_LOG = "Результат отправки: подтверждено=%d, ошибок=%d, неподтверждено=%d"
     }
 
     private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
-    override fun sendBatch(events: List<PaymentCreatedEvent>): PublishResult {
+    override fun sendBatch(events: List<OrderPayloadDto>): PublishResult {
         val errors = ConcurrentHashMap<UUID?, String?>()
         val confirmed = ConcurrentHashMap<UUID?, Boolean>()
         val acked = mutableSetOf<UUID?>()
@@ -32,32 +32,32 @@ class PaymentEventProducerImpl(
         val unconfirmed = mutableSetOf<UUID?>()
 
         events.forEach { event ->
-            val orderId = event.data.orderId
-            val correlationData = CorrelationData(orderId.toString())
+            val orderIdRecurrent = event.orderIdRecurrent
+            val correlationData = CorrelationData(orderIdRecurrent.toString())
 
             try {
                 rabbit.convertAndSend(
                     props.paymentsExchange,
-                    event.eventType,
+                    props.routingKeyPayment,
                     event,
                     { msg ->
-                        msg.messageProperties.correlationId = orderId.toString()
+                        msg.messageProperties.correlationId = orderIdRecurrent.toString()
                         msg
                     },
                     correlationData,
                 )
-                logger.debug(PUBLISHED_LOG.format(orderId, event.eventType))
+                logger.debug(PUBLISHED_LOG.format(orderIdRecurrent))
             } catch (ex: Exception) {
-                logger.error(PUBLISH_ERROR_LOG.format(orderId, ex.message))
-                nAcked[orderId] = ex.message
+                logger.error(PUBLISH_ERROR_LOG.format(orderIdRecurrent, ex.message))
+                nAcked[orderIdRecurrent] = ex.message
             }
 
             when {
-                confirmed.remove(orderId) == true -> acked += orderId
-                errors.containsKey(orderId) -> nAcked[orderId] = errors.remove(orderId)
+                confirmed.remove(orderIdRecurrent) == true -> acked += orderIdRecurrent
+                errors.containsKey(orderIdRecurrent) -> nAcked[orderIdRecurrent] = errors.remove(orderIdRecurrent)
                 else -> {
-                    logger.warn(NO_CONFIRM_LOG.format(orderId))
-                    unconfirmed += orderId
+                    logger.warn(NO_CONFIRM_LOG.format(orderIdRecurrent))
+                    unconfirmed += orderIdRecurrent
                 }
             }
         }
