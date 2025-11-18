@@ -31,14 +31,16 @@ open class BuildBatchConsumerServiceImpl(
     private val logger = loggerFor(javaClass)
 
     @Transactional(rollbackFor = [Exception::class])
-    override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
-        val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()
+    override fun upsertBatch(batch: List<OrderPayloadDto>): List<OrderPayloadDto> {
+        if (batch.isEmpty()) return emptyList()
+
         val (orders, subs) = prepareEntities(batch)
         logger.info(LOG_START.format(batch.size))
+
         if (orders.isNotEmpty()) {
             val orderIds = orderDao.upsertOrdersReturningIds(orders)
-            orders.forEachIndexed { index, o ->
-                o.orderId = orderIds[index]
+            orders.forEachIndexed { index, order ->
+                order.orderId = orderIds[index]
             }
         }
 
@@ -46,9 +48,19 @@ open class BuildBatchConsumerServiceImpl(
             subOrderDao.upsertSubOrders(subs)
         }
 
-        return mapToPaymentEvents(orders, nowIso)
+        // Возвращаем те же DTO, но с заполненным orderIdRecurrent
+        return enrichDtosWithOrderIds(batch, orders)
     }
 
+    private fun enrichDtosWithOrderIds(
+        batch: List<OrderPayloadDto>,
+        orders: List<OrderEntity>,
+    ): List<OrderPayloadDto> =
+        batch.mapIndexed { index, dto ->
+            val orderId = orders.getOrNull(index)?.orderId
+            dto.copy(orderIdRecurrent = orderId)
+        }
+    // Оставляем метод когда все переедет в сервис то будем в очередь отправлять этот DTO
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
         nowIso: String,
