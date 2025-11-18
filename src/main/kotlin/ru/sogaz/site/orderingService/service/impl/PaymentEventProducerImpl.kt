@@ -16,7 +16,7 @@ class PaymentEventProducerImpl(
     private val props: RabbitProps,
 ) : PaymentEventProducer {
     companion object {
-        private const val NO_CONFIRM_LOG = "Нет подтверждения на данный момент: orderId=%s"
+        private const val NO_CONFIRM_LOG = "Нет подтверждения об ошибке на данный момент: orderId=%s"
         private const val PUBLISHED_LOG = "Отправлено сообщение для orderId=%s"
         private const val PUBLISH_ERROR_LOG = "Ошибка при отправке сообщения orderId=%s: %s"
         private const val BATCH_RESULT_LOG = "Результат отправки: подтверждено=%d, ошибок=%d, неподтверждено=%d"

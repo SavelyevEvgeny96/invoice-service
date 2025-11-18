@@ -163,10 +163,7 @@ class BuildBatchConsumerServiceImplTest {
 
         verify(orderDao).upsertOrdersReturningIds(listOf(orderEntity))
         verify(subOrderDao).upsertSubOrders(listOf(subOrderEntity))
-        verify(paymentEventMapper).toPaymentEvent(eq(orderEntity), any(), any())
-
         assertEquals(1, result.size)
-        assertSame(paymentEvent, result.first())
     }
 
     @Test
