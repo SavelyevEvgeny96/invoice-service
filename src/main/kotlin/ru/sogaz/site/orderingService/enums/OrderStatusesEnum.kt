@@ -13,6 +13,7 @@ enum class OrderStatusesEnum(
     OVERDUE("OVERDUE"),
     MARKEDDEL("MARKEDDEL"),
     SUCCESS("SUCCESS"),
+    CANCELED("CANCELED"),
     ;
 
     companion object {

@@ -27,8 +27,8 @@ data class OrdersUserRequest(
     val searchName: OrdersUserSearchNameEnum? = null,
     /** Идентификатор личного кабинета пользователя – обязателен, если searchName=userId */
     val userId: String? = null,
-    /** Идентификатор золотой карточки клиента – обязателен, если searchName=gdId */
-    val gdId: String? = null,
+    /** Идентификатор золотой карточки клиента – обязателен, если searchName=unifiedId */
+    val unifiedId: String? = null,
     /** Email – используется, если searchName=emailOrPhone */
     @field:EmailValid(message = "{validation.ordersUserRequest.email.invalid}")
     val email: String? = null,

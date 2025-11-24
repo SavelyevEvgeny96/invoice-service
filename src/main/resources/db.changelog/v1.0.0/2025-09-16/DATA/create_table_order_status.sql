@@ -5,7 +5,8 @@ CREATE TYPE order_statuses_enum AS ENUM (
     'UPDATE',
     'OVERDUE',
     'MARKEDDEL',
-    'SUCCESS'
+    'SUCCESS',
+    'CANCELED'
 );
 
 CREATE CAST (varchar AS order_statuses_enum) WITH INOUT AS IMPLICIT;
@@ -20,3 +21,4 @@ INSERT INTO order_status_descriptions(status,comment)VALUES('UPDATE','Заказ
 INSERT INTO order_status_descriptions(status,comment)VALUES('OVERDUE','Заказ просрочен');
 INSERT INTO order_status_descriptions(status,comment)VALUES('MARKEDDEL','Заказ помечен на удаление');
 INSERT INTO order_status_descriptions(status,comment)VALUES('SUCCESS','Заказ оплачен');
+INSERT INTO order_status_descriptions(status,comment)VALUES('CANCELED','Заказ отменен');

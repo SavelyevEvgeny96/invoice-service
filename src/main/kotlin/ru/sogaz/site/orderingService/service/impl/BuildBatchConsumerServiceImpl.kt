@@ -60,7 +60,6 @@ open class BuildBatchConsumerServiceImpl(
             val orderId = orders.getOrNull(index)?.orderId
             dto.copy(orderIdRecurrent = orderId)
         }
-
     // Оставляем метод когда все переедет в сервис то будем в очередь отправлять этот DTO
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
@@ -75,7 +74,7 @@ open class BuildBatchConsumerServiceImpl(
             val order = orderMapper.toOrderEntity(dto)
             orders += order
 
-            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order) }
+            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order, dto.managerEmail) }
             subs += subOrders
         }
         return orders to subs

@@ -46,8 +46,8 @@ class OrdersUserServiceImpl(
                     OrdersUserSearchNameEnum.USER_ID ->
                         request.userId?.let { orderDao.findByRecipientUserId(it) }
 
-                    OrdersUserSearchNameEnum.GD_ID ->
-                        request.gdId?.let { orderDao.findByRecipientGdId(it) }
+                    OrdersUserSearchNameEnum.UNIFIED_ID ->
+                        request.unifiedId?.let { orderDao.findByUnifiedId(it) }
 
                     OrdersUserSearchNameEnum.EMAIL_OR_PHONE ->
                         when (request.condition) {
@@ -56,7 +56,7 @@ class OrdersUserServiceImpl(
 
                             OrdersUserConditionEnum.AND ->
                                 if (!request.email.isNullOrBlank() && !request.phone.isNullOrBlank()) {
-                                    orderDao.findByEmailAndPhone(request.email!!, request.phone!!)
+                                    orderDao.findByEmailAndPhone(request.email, request.phone)
                                 } else {
                                     emptyList()
                                 }
@@ -133,7 +133,7 @@ class OrdersUserServiceImpl(
                         it.orderId,
                         it.premiumAmount,
                         subOrdersList = subOrders,
-                        status = it.status.values,
+                        status = it.status?.values,
                     )
                 }
             }

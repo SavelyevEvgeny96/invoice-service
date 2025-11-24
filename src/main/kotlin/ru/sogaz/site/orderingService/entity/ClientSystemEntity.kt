@@ -9,11 +9,11 @@ import java.util.UUID
 
 @Entity
 @Table(name = "client_systems")
-data class ClientSystemEntity(
+class ClientSystemEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    val id: UUID? = null,
+    val id: UUID?,
     @Column(name = "external_system_code", unique = true, length = 50)
     val externalSystemCode: String,
     @Column(name = "external_system_name", nullable = false)

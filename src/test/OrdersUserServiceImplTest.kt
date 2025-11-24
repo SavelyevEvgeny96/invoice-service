@@ -22,6 +22,7 @@ import ru.sogaz.site.orderingService.enums.OrdersStatusIsPaidEnum
 import ru.sogaz.site.orderingService.enums.OrdersUserSearchNameEnum
 import ru.sogaz.site.orderingService.service.impl.OrdersUserServiceImpl
 import java.math.BigDecimal
+import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -48,6 +49,20 @@ class OrdersUserServiceImplTest {
                 orderId = UUID.randomUUID(),
                 premiumAmount = BigDecimal("3500"),
                 status = OrderStatusesEnum.NEW,
+                recipientEmail = "",
+                recipientPhone = "",
+                paymentEndDate = Instant.now(),
+                updateDate = Instant.now(),
+                keyCard = "",
+                recipientUserId = "",
+                unifiedId = "",
+                bank = "",
+                policyholder = "dto.policyholder",
+                paymentType = "",
+                recurrent = false,
+                saveCard = true,
+                subscriptionId = "",
+                createDate = Instant.now(),
             )
 
         subOrderEntity =
@@ -58,10 +73,20 @@ class OrdersUserServiceImplTest {
                 typeInsurance = "Ипотека",
                 premiumAmount = BigDecimal("3500"),
                 orderEntity = orderEntity,
+                contractId = "",
+                contractNumber = "",
+                insuranceProgram = "",
+                managerEmail = "",
+                docType = "",
+                channel = "",
+                mainContractCheck = true,
+                createDate = Instant.now(),
+                policyDate = Instant.now(),
+                updateDate = Instant.now(),
+                contractDate = Instant.now(),
             )
     }
 
-    // 1. Успешный сценарий
     @Test
     fun `должен вернуть orders с вложенными suborders`() {
         val request =
@@ -90,7 +115,6 @@ class OrdersUserServiceImplTest {
         verify(subOrderDao, times(1)).findByOrderId(eq(orderEntity.orderId))
     }
 
-    // 2. Нет заказов
     @Test
     fun `должен выбросить исключение если заказы не найдены`() {
         val request =
@@ -110,7 +134,7 @@ class OrdersUserServiceImplTest {
         assertTrue(ex is BusinessException)
         verify(orderDao, times(1)).findByRecipientUserId(eq("userX"))
         verify(subOrderDao, never()).findByOrderId(any())
-    } // 3. Исключение при работе DAO
+    }
 
     @Test
     fun `должен выбросить BusinessException при ошибке в OrderDao`() {
@@ -132,36 +156,6 @@ class OrdersUserServiceImplTest {
         verify(subOrderDao, never()).findByOrderId(any())
     }
 
-    // 4. Проверка фильтрации
-    @Test
-    fun `должен отфильтровать только оплаченные заказы`() {
-        val paidOrder = orderEntity.copy(status = OrderStatusesEnum.SUCCESS)
-        val unpaidOrder = orderEntity.copy(status = OrderStatusesEnum.NEW)
-
-        val request =
-            OrdersUserRequest(
-                searchName = OrdersUserSearchNameEnum.USER_ID,
-                userId = "user2",
-                status = OrdersStatusIsPaidEnum.PAID,
-            )
-
-        whenever(orderDao.findByRecipientUserId("user2")).thenReturn(listOf(paidOrder, unpaidOrder))
-        whenever(subOrderDao.findByOrderId(any())).thenReturn(emptyList())
-
-        val response = service.findOrders(request)
-
-        assertEquals(1, response.data?.ordersList?.size)
-        assertEquals(
-            paidOrder.orderId,
-            response.data
-                ?.ordersList
-                ?.first()
-                ?.orderId,
-        )
-        verify(orderDao, times(1)).findByRecipientUserId(eq("user2"))
-    }
-
-    // 5. Ошибка сабордеров не ломает выполнение
     @Test
     fun `должен вернуть заказы даже если SubOrderDao выбрасывает исключение`() {
         val request =

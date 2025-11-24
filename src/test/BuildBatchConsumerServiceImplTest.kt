@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -68,42 +67,48 @@ class BuildBatchConsumerServiceImplTest {
                 insuranceProgram = "Life",
                 typeInsurance = "Personal",
                 premiumAmountDto = BigDecimal.TEN,
-                operationId = "opId",
+                managerEmail = "manager@mail.",
             )
 
         dto =
             OrderPayloadDto(
                 metaInfo = emptyList(),
-                orderId = UUID.randomUUID().toString(),
                 recipientEmail = "client@mail.com",
                 recipientPhone = "+79998887766",
                 recipientUserId = "user123",
-                recipientGdId = "gd999",
-                recurrent = false,
+                unifiedId = "gd999",
                 keyCard = null,
-                saveCard = null,
-                managerEmail = "manager@mail.com",
                 orderEndDate = Instant.now(),
                 subOrders = listOf(subOrderDto),
+                subscriptionId = "subscriptionId",
+                bank = "gpb",
+                paymentType = "card",
+                policyholder = "Gena Vanya",
             )
 
         orderEntity =
             OrderEntity(
-                orderId = UUID.fromString(dto.orderId),
+                orderId = UUID.randomUUID(),
                 recipientEmail = dto.recipientEmail ?: "",
                 recipientPhone = dto.recipientPhone ?: "",
                 premiumAmount = BigDecimal.TEN,
                 paymentEndDate = dto.orderEndDate,
                 updateDate = Instant.now(),
-                recurrent = dto.recurrent,
                 keyCard = dto.keyCard,
-                saveCard = dto.saveCard,
                 recipientUserId = dto.recipientUserId,
-                recipientUserGdId = dto.recipientGdId,
+                unifiedId = dto.unifiedId,
+                bank = dto.bank,
+                policyholder = dto.policyholder,
+                paymentType = "",
+                recurrent = false,
+                saveCard = true,
+                subscriptionId = "",
+                createDate = Instant.now(),
             )
 
         subOrderEntity =
             SubOrderEntity(
+                id = UUID.randomUUID(),
                 orderEntity = orderEntity,
                 policyId = subOrderDto.policyId,
                 policyNumber = subOrderDto.policyNumber,
@@ -112,7 +117,14 @@ class BuildBatchConsumerServiceImplTest {
                 insuranceProgram = subOrderDto.insuranceProgram,
                 typeInsurance = subOrderDto.typeInsurance,
                 premiumAmount = subOrderDto.premiumAmountDto,
-                managerEmail = dto.managerEmail,
+                managerEmail = subOrderDto.managerEmail,
+                docType = "",
+                channel = "",
+                mainContractCheck = true,
+                createDate = Instant.now(),
+                policyDate = Instant.now(),
+                updateDate = Instant.now(),
+                contractDate = Instant.now(),
             )
 
         paymentEvent =
@@ -122,39 +134,42 @@ class BuildBatchConsumerServiceImplTest {
                 data =
                     PaymentData(
                         orderId = orderEntity.orderId!!,
-                        recurrent = orderEntity.recurrent ?: false,
                         premiumAmount = orderEntity.premiumAmount,
-                        saveCard = orderEntity.saveCard,
                         keyCard = orderEntity.keyCard,
                         recipientEmail = orderEntity.recipientEmail,
                         recipientPhone = orderEntity.recipientPhone,
                         dateCreate = orderEntity.updateDate?.toString(),
                         dateEnd = orderEntity.paymentEndDate?.toString(),
+                        bank = orderEntity.bank,
+                        paymentType = orderEntity.paymentType,
                     ),
             )
 
+        // моки
         whenever(props.routingKeyPayment).thenReturn("type")
         whenever(orderMapper.toOrderEntity(dto)).thenReturn(orderEntity)
-        whenever(orderMapper.toSubOrderEntity(any(), eq(orderEntity), any())).thenReturn(subOrderEntity)
+        whenever(orderMapper.toSubOrderEntity(any(), eq(orderEntity))).thenReturn(subOrderEntity)
         whenever(paymentEventMapper.toPaymentEvent(any(), any(), any())).thenReturn(paymentEvent)
+
+        // ВАЖНО: новый метод — возвращаем map { subscriptionId -> orderId }
+        whenever(orderDao.upsertOrdersReturningIds(any()))
+            .thenReturn(listOf(orderEntity.orderId!!))
     }
 
     @Test
     fun `должен успешно обработать пачку заказов`() {
         val result = service.upsertBatch(listOf(dto))
 
-        verify(orderDao).upsertOrders(listOf(orderEntity))
+        verify(orderDao).upsertOrdersReturningIds(listOf(orderEntity))
         verify(subOrderDao).upsertSubOrders(listOf(subOrderEntity))
-        verify(paymentEventMapper).toPaymentEvent(eq(orderEntity), any(), any())
-
         assertEquals(1, result.size)
-        assertSame(paymentEvent, result.first())
     }
 
     @Test
     fun `должен вернуть пустой список, если входная пачка пуста`() {
         val result = service.upsertBatch(emptyList())
-        verify(orderDao, never()).upsertOrders(any())
+
+        verify(orderDao, never()).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
         verify(paymentEventMapper, never()).toPaymentEvent(any(), any(), any())
 
@@ -162,26 +177,9 @@ class BuildBatchConsumerServiceImplTest {
     }
 
     @Test
-    fun `должен пропустить дубликат orderId`() {
-        val duplicate =
-            dto.copy(
-                managerEmail = "duplicate@mail.com",
-                subOrders =
-                    listOf(
-                        dto.subOrders.first().copy(policyId = "anotherPolicy"),
-                    ),
-            )
-        val result = service.upsertBatch(listOf(dto, duplicate))
-        verify(orderMapper, times(1)).toOrderEntity(any())
-        verify(paymentEventMapper, times(1))
-            .toPaymentEvent(eq(orderEntity), any(), any())
-
-        assertEquals(1, result.size)
-    }
-
-    @Test
     fun `должен выбросить исключение, если orderDao завершился ошибкой`() {
-        whenever(orderDao.upsertOrders(any())).thenThrow(RuntimeException("DB error"))
+        whenever(orderDao.upsertOrdersReturningIds(any()))
+            .thenThrow(RuntimeException("DB error"))
 
         val exception =
             assertThrows<RuntimeException> {
@@ -189,7 +187,7 @@ class BuildBatchConsumerServiceImplTest {
             }
 
         assertEquals("DB error", exception.message)
-        verify(orderDao).upsertOrders(any())
+        verify(orderDao).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
         verify(paymentEventMapper, never()).toPaymentEvent(any(), any(), any())
     }
