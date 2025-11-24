@@ -90,13 +90,18 @@ class OrdersUserServiceImpl(
                 OrdersStatusIsPaidEnum.PAID ->
                     foundOrders.filter { it?.status?.isPaidFor() == true }
 
-                OrdersStatusIsPaidEnum.ALL -> foundOrders.filter {
-                    it?.status in setOf(
-                        OrderStatusesEnum.NEW, OrderStatusesEnum.UPDATE,
-                        OrderStatusesEnum.CANCELED, OrderStatusesEnum.SUCCESS,
-                        OrderStatusesEnum.MARKEDDEL, OrderStatusesEnum.OVERDUE
-                    )
-                }
+                OrdersStatusIsPaidEnum.ALL ->
+                    foundOrders.filter {
+                        it?.status in
+                            setOf(
+                                OrderStatusesEnum.NEW,
+                                OrderStatusesEnum.UPDATE,
+                                OrderStatusesEnum.CANCELED,
+                                OrderStatusesEnum.SUCCESS,
+                                OrderStatusesEnum.MARKEDDEL,
+                                OrderStatusesEnum.OVERDUE,
+                            )
+                    }
                 else -> emptyList()
             }.takeIf { it.isNotEmpty() } ?: run {
                 logger.error(STATUS_NOT_FOUND.format(request.status))

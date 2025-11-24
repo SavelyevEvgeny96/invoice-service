@@ -13,8 +13,6 @@ import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.mappers.PaymentEventMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 @Service
 open class BuildBatchConsumerServiceImpl(
@@ -60,6 +58,7 @@ open class BuildBatchConsumerServiceImpl(
             val orderId = orders.getOrNull(index)?.orderId
             dto.copy(orderIdRecurrent = orderId)
         }
+
     // Оставляем метод когда все переедет в сервис то будем в очередь отправлять этот DTO
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
@@ -74,7 +73,7 @@ open class BuildBatchConsumerServiceImpl(
             val order = orderMapper.toOrderEntity(dto)
             orders += order
 
-            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order, dto.managerEmail) }
+            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order) }
             subs += subOrders
         }
         return orders to subs
