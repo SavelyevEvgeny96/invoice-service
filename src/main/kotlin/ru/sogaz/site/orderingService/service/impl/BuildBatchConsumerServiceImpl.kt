@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.service.impl
 
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
@@ -14,8 +15,8 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 
+@Service
 open class BuildBatchConsumerServiceImpl(
     private val orderDao: OrderDao,
     private val subOrderDao: SubOrderDao,
@@ -24,50 +25,59 @@ open class BuildBatchConsumerServiceImpl(
     private val paymentEventMapper: PaymentEventMapper,
 ) : BuildBatchConsumerService {
     companion object {
-        const val DUPLICATE = "Дубликат orderId в пачке, пропускаем: %s"
+        private const val LOG_START = "Старт batch upsertOrders: size=%d"
     }
 
-    private val logger = loggerFor(BuildBatchConsumerServiceImpl::class.java)
-
-    override fun upsertBatch(batch: List<OrderPayloadDto>): List<PaymentCreatedEvent> {
-        val nowIso = OffsetDateTime.now(ZoneOffset.UTC).toString()
-        val orders = saveBatchTransactional(batch)
-        return mapToPaymentEvents(orders, nowIso)
-    }
+    private val logger = loggerFor(javaClass)
 
     @Transactional(rollbackFor = [Exception::class])
-    protected fun saveBatchTransactional(batch: List<OrderPayloadDto>): List<OrderEntity> {
+    override fun upsertBatch(batch: List<OrderPayloadDto>): List<OrderPayloadDto> {
+        if (batch.isEmpty()) return emptyList()
+
         val (orders, subs) = prepareEntities(batch)
-        if (orders.isNotEmpty()) orderDao.upsertOrders(orders)
-        if (subs.isNotEmpty()) subOrderDao.upsertSubOrders(subs)
-        return orders
+        logger.info(LOG_START.format(batch.size))
+
+        if (orders.isNotEmpty()) {
+            val orderIds = orderDao.upsertOrdersReturningIds(orders)
+            orders.forEachIndexed { index, order ->
+                order.orderId = orderIds[index]
+            }
+        }
+
+        if (subs.isNotEmpty()) {
+            subOrderDao.upsertSubOrders(subs)
+        }
+
+        // Возвращаем те же DTO, но с заполненным orderIdRecurrent
+        return enrichDtosWithOrderIds(batch, orders)
     }
 
+    private fun enrichDtosWithOrderIds(
+        batch: List<OrderPayloadDto>,
+        orders: List<OrderEntity>,
+    ): List<OrderPayloadDto> =
+        batch.mapIndexed { index, dto ->
+            val orderId = orders.getOrNull(index)?.orderId
+            dto.copy(orderIdRecurrent = orderId)
+        }
+
+    // Оставляем метод когда все переедет в сервис то будем в очередь отправлять этот DTO
     private fun mapToPaymentEvents(
         orders: List<OrderEntity>,
         nowIso: String,
     ): List<PaymentCreatedEvent> = orders.map { paymentEventMapper.toPaymentEvent(it, nowIso, props.routingKeyPayment) }
 
     private fun prepareEntities(batch: List<OrderPayloadDto>): Pair<List<OrderEntity>, List<SubOrderEntity>> {
-        val seenOrderIds = mutableSetOf<UUID>()
         val orders = mutableListOf<OrderEntity>()
         val subs = mutableListOf<SubOrderEntity>()
 
         batch.forEach { dto ->
-            val id = UUID.fromString(dto.orderId)
-
-            if (!seenOrderIds.add(id)) {
-                logger.info(DUPLICATE.format(id))
-                return@forEach
-            }
-
             val order = orderMapper.toOrderEntity(dto)
             orders += order
 
-            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order, dto.managerEmail) }
+            val subOrders = dto.subOrders.map { orderMapper.toSubOrderEntity(it, order) }
             subs += subOrders
         }
-
         return orders to subs
     }
 }

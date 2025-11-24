@@ -3,7 +3,6 @@ package ru.sogaz.site.orderingService.service.impl
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.orderingService.dto.data.PublishResult
-import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.PaymentEventProducer
