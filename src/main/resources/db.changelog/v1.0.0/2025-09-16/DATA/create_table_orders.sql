@@ -10,6 +10,7 @@ CREATE TABLE orders (
    subscription_id VARCHAR(255),                   -- Идентификатор подписки
    url_to_return VARCHAR(255),                     -- URL для перехода после успешной оплаты
    url_to_decline VARCHAR(255),                    -- URL для перехода после неуспешной оплаты
+   client_id VARCHAR(255),                         -- id системы из токена
    bank VARCHAR(255),                              -- Банк в котором была сохранена карта
    payment_type VARCHAR(255),                      -- Источник совершения операции
    policyholder VARCHAR(255),                      -- ФИО страхователя
