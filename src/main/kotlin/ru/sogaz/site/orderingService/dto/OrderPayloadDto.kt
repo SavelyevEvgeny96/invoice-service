@@ -29,7 +29,6 @@ data class OrderPayloadDto(
     val policyholder: String? = null,
     @field:UniqueMainContract
     val subOrders: List<SubOrderDto>, // список полисов внутри заказа
-
     @JsonProperty("order_id_recurrent")
     val orderIdRecurrent: UUID? = null, // новое необязательное поле
 )
