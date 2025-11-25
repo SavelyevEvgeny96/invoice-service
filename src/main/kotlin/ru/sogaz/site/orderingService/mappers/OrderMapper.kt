@@ -6,6 +6,7 @@ import org.mapstruct.Named
 import org.mapstruct.NullValuePropertyMappingStrategy
 import org.mapstruct.ReportingPolicy
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.data.MetaInfoOrder
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
@@ -23,6 +24,7 @@ abstract class OrderMapper {
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
     @Mapping(target = "orderEntity", source = "order")
@@ -36,6 +38,9 @@ abstract class OrderMapper {
     // ---------- Helpers ----------
     @Named("nullToEmpty")
     fun nullToEmpty(value: String?): String = value ?: ""
+
+    @Named("mapClientId")
+    fun mapClientId(metaInfo: List<MetaInfoOrder>): String? = metaInfo.firstOrNull()?.author
 
     @Named("mapPremium")
     fun mapPremium(subOrders: List<SubOrderDto>?): BigDecimal? =

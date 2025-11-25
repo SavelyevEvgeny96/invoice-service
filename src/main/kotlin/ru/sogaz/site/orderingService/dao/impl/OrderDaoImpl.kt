@@ -32,12 +32,13 @@ open class OrderDaoImpl(
 
         // 14 параметров: до bank включительно
         // потом хардкодим save_card = TRUE, recurrent = TRUE, status = 'NEW', update_date = NOW()
-        val tuple = "(" + List(12) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
+        val tuple = "(" + List(13) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
         val sql =
             """
             INSERT INTO orders (
+                client_id,
                 create_date,
                 recipient_email,
                 recipient_phone,
@@ -62,6 +63,7 @@ open class OrderDaoImpl(
         // 14 параметров на каждую запись
         val args = ArrayList<Any?>(orders.size * 14)
         orders.forEach { o ->
+            args += o.clientId
             args += o.createDate?.let { Timestamp.from(it) } // create_date
             args += o.recipientEmail // recipient_email
             args += o.recipientPhone // recipient_phone
