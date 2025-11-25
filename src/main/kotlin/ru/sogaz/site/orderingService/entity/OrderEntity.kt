@@ -24,6 +24,8 @@ class OrderEntity(
     var orderId: UUID?,
     @Column(name = "unified_id")
     var unifiedId: String?,
+    @Column(name = "client_id")
+    var clientId: String? = null,
     @Column(name = "bank")
     var bank: String?,
     @Column(name = "policyholder")
