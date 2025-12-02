@@ -1,0 +1,18 @@
+package ru.sogaz.site.orderingService.controller
+
+import jakarta.validation.Valid
+import org.springframework.web.bind.annotation.RestController
+import ru.sogaz.site.orderingService.apiDoc.OrdersUserApi
+import ru.sogaz.site.orderingService.dto.request.OrdersUserRequest
+import ru.sogaz.site.orderingService.dto.response.OrdersUserResponse
+import ru.sogaz.site.orderingService.service.OrdersUserService
+import ru.sogaz.siter.models.resonses.Response
+
+@RestController
+class OrdersUserController(
+    private val ordersUserService: OrdersUserService,
+) : OrdersUserApi {
+    override fun getClientOrders(
+        @Valid request: OrdersUserRequest,
+    ): Response<OrdersUserResponse> = ordersUserService.findOrders(request)
+}
