@@ -1,0 +1,112 @@
+
+spring:
+  application:
+    name: ordering-service
+  profiles:
+    active: ${ENVIRONMENT:local}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+  liquibase:
+    change-log: db.changelog/db.changelog-master.yaml
+    enabled: true
+  output:
+    ansi:
+      enabled: ALWAYS
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: ${RABBIT_USERNAME:}
+    password: ${RABBIT_PASSWORD:}
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: auto
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+
+server:
+  port: ${SERVER_PORT:8080}
+  use-forward-headers: true
+  forward-headers-strategy: framework
+  main.allow-bean-definition-overriding: true
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true     # навязывать UTF-8 и для ответа, и для запроса
+      enabled: true
+
+app:
+  info:
+    application_name: ${PROJECT_NAME:ordering service}
+    version: ${PROJECT_VERSION:1.0.0}
+    description: ${PROJECT_DESCRIPTION:ordering Service}
+    artifact_Id: ${PROJECT_ARTIFACTID:ordering-service}
+    group_Id: ${PROJECT_GROUPID:ru.sogaz.site}
+    app_profile: ${ENVIRONMENT:local}
+    java-version: ${JAVA_VERSION:21}
+  rabbit:
+    orders-exchange: ${ORDER_EXCHANGE:order.exchange}
+    payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
+    queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
+    queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
+    queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
+    routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
+    routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
+    listener:
+      batch-size: 100
+      prefetch: 100
+      concurrency: 3
+      max-concurrency: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: ${HOSTNAME:localhost}
+    export:
+      prometheus:
+        enabled: true
+
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  server:
+    port: ${MANAGEMENT_SERVICE_PORT:8091}
+  health:
+    livenessState:
+      enable: true
+    readinessState:
+      enable: true
+#local debug
+#logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
+#logging.level.org.hibernate.stat: DEBUG
+#spring.jpa.properties.hibernate.generate_statistics: true
+#logging:
+#  level:
+#    ru:
+#      sogaz:
+#        site:
+#          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
+logging:
+  level:
+    org.springframework.jdbc: DEBUG
+    org.springframework.transaction: DEBUG
+#    org.springframework.amqp.rabbit.*: DEBUG
+    logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
+
+
+logstash:
+  host: ${LOG_SERVER_HOST:localhost}
+  port: ${LOG_SERVER_PORT:12201}
+  level: ${LOG_LEVEL:INFO}
+  level_local: ${LOG_LEVEL_LOCAL:INFO}
