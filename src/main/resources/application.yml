@@ -63,6 +63,10 @@ app:
       concurrency: 3
       max-concurrency: 10
 
+api:
+  payment:
+    paymentUrl: ${PAYMENT_URL:STUB}
+
 management:
   endpoints:
     web:

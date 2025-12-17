@@ -19,4 +19,6 @@ interface OrderDao {
     ): List<OrderEntity?>
 
     fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID>
+
+    fun save(order: OrderEntity): OrderEntity
 }

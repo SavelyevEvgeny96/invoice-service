@@ -30,7 +30,7 @@ abstract class PaymentEventMapper {
             recipientPhone = order.recipientPhone,
             dateCreate = order.createDate?.atOffset(ZoneOffset.UTC)?.toString(),
             dateEnd = order.paymentEndDate?.atOffset(ZoneOffset.UTC)?.toString(),
-            bank = order.bank,
+            bank = order.bank.toString(),
             paymentType = order.paymentType,
         )
 }
