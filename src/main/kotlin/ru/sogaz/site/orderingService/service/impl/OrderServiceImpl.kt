@@ -22,10 +22,10 @@ class OrderServiceImpl(
     private val payBasePath: String,
 ) : OrderService {
     /**
-     * Метод для создания платежа.
+     * Метод для создания заказа.
      * @param orderRequest Данные о заказе(содержит внутри лист subOrderRequest)
      * @throws Exception Если данные невалидны или произошла ошибка при сохранении
-     * @return Объект RDataOrder, содержащий информацию о платежном запросе
+     * @return Объект DataOrder, содержащий информацию о платежном запросе
      */
     @Transactional
     override fun createOrder(orderRequest: OrderRequest): Response<DataOrder> {

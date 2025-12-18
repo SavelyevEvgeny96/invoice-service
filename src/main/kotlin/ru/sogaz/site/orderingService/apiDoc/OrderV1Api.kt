@@ -21,12 +21,12 @@ import ru.sogaz.siter.models.resonses.Response
 
 interface OrderV1Api {
     @Operation(
-        summary = "Создать заявку на оплату",
+        summary = "Создать заказ",
         description = "Создает заявку и возвращает ссылку на оплату.",
     )
     @ApiResponse(
         responseCode = "200",
-        description = "Успешное создание платежа",
+        description = "Успешное создание заказа",
         content = [
             Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -56,7 +56,7 @@ interface OrderV1Api {
     @PostMapping("order/create", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun createOrder(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Заявка на оплату",
+            description = "Заявка на создание заказа",
             required = true,
             content = [
                 Content(
