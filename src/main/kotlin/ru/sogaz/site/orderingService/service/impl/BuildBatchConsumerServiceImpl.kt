@@ -29,7 +29,7 @@ open class BuildBatchConsumerServiceImpl(
     private val logger = loggerFor(javaClass)
 
     @Transactional(rollbackFor = [Exception::class])
-    override fun upsertBatch(batch: List<OrderPayloadDto>): List<OrderPayloadDto> {
+    override fun insertBatchOrderCreated(batch: List<OrderPayloadDto>): List<OrderPayloadDto> {
         if (batch.isEmpty()) return emptyList()
 
         val (orders, subs) = prepareEntities(batch)
