@@ -4,5 +4,5 @@ import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 
 interface PaymentEventProducer {
-    fun sendBatch(events: List<OrderPayloadDto>): PublishResult
+    fun sendBatchOrderCreated(events: List<OrderPayloadDto>): PublishResult
 }

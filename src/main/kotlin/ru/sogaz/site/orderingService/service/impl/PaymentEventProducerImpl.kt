@@ -23,7 +23,7 @@ class PaymentEventProducerImpl(
 
     private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
-    override fun sendBatch(events: List<OrderPayloadDto>): PublishResult {
+    override fun sendBatchOrderCreated(events: List<OrderPayloadDto>): PublishResult {
         val errors = ConcurrentHashMap<UUID?, String?>()
         val confirmed = ConcurrentHashMap<UUID?, Boolean>()
         val acked = mutableSetOf<UUID?>()
