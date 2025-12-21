@@ -107,10 +107,7 @@ class OrderBatchConsumerImpl(
                     order to p.dto
                 }
 
-                val events = buildBatchConsumerService.handleRefunds(inputs) // пример
-                if (events.isNotEmpty()) {
-                    paymentProducer.sendBatch(events)
-                }
+
 
                 found.forEach { channel.basicAck(it.tag, false) }
             }
@@ -120,9 +117,6 @@ class OrderBatchConsumerImpl(
 
         } catch (ex: Exception) {
             logger.error("Ошибка при обработке батча: ${ex.message}", ex)
-            // если упали — решай стратегию:
-            // 1) reject(false) чтобы в DLQ, или
-            // 2) reject(true) чтобы ре-queue (но осторожно с бесконечными ретраями)
             parsed.forEach { channel.basicReject(it.tag, false) }
         }
     }
