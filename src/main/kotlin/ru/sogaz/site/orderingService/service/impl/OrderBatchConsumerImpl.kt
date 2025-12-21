@@ -75,15 +75,9 @@ class OrderBatchConsumerImpl(
         }
 
         try {
-            // 1) Собрали UUID
-            val orderIds = parsed.asSequence().map { it.dto.orderId }.distinct().toList()
-
-            // 2) Достали ордера и сделали map для быстрых lookup
-            val ordersById = orderDao.findByIds(orderIds).associateBy { it.orderId }
-
-            // 3) Разделили сообщения: найден / не найден
-            val (found, missing) = parsed.partition { ordersById.containsKey(it.dto.orderId) }
-
+            val resultOrder = buildBatchConsumerService.searchAndPreparationOrder(parsed)
+            val missing = resultOrder.missing
+            val found = resultOrder.found
             // 4) Для missing: отправили в очередь ошибок, и только ПОСЛЕ успеха — ack их тегов
             if (missing.isNotEmpty()) {
                 val errorDtos = missing.map { p ->
@@ -103,8 +97,7 @@ class OrderBatchConsumerImpl(
             // 5) Для found: твоя бизнес-логика + send + ack
             if (found.isNotEmpty()) {
                 val inputs = found.map { p ->
-                    val order = ordersById.getValue(p.dto.orderId)
-                    order to p.dto
+
                 }
 
 

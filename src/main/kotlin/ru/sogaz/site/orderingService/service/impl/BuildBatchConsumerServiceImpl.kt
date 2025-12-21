@@ -5,7 +5,10 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.data.Parsed
+import ru.sogaz.site.orderingService.dto.data.Split
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
+import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -15,7 +18,7 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
 
 @Service
-open class BuildBatchConsumerServiceImpl(
+class BuildBatchConsumerServiceImpl(
     private val orderDao: OrderDao,
     private val subOrderDao: SubOrderDao,
     private val props: RabbitProps,
@@ -48,6 +51,18 @@ open class BuildBatchConsumerServiceImpl(
 
         // Возвращаем те же DTO, но с заполненным orderIdRecurrent
         return enrichDtosWithOrderIds(batch, orders)
+    }
+
+    override fun searchAndPreparationOrder(parsed: List<Parsed<RefundPayloadDto>>): Split<RefundPayloadDto> {
+        // 1) Собрали UUID
+        val orderIds = parsed.asSequence().map { it.dto.orderId }.distinct().toList()
+
+        // 2) Достали ордера и сделали map для быстрых lookup
+        val ordersById = orderDao.findByIds(orderIds).associateBy { it.orderId }
+
+        // 3) Разделили сообщения: найден / не найден
+        val (found, missing) = parsed.partition { ordersById.containsKey(it.dto.orderId) }
+        return Split(found, missing)
     }
 
     private fun enrichDtosWithOrderIds(
