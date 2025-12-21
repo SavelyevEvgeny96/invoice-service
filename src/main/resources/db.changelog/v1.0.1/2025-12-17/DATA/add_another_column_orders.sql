@@ -1,0 +1,2 @@
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS skip_sending_errors_queue BOOLEAN DEFAULT FALSE;

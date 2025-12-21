@@ -72,6 +72,8 @@ class OrderEntity(
     var skipSendingQueue: Boolean? = false,
     @Column(name = "skip_sending_receipt")
     var skipSendingReceipt: Boolean? = false,
+    @Column(name = "skip_sending_errors_queue")
+    var skipSendingErrorsQueue: Boolean? = false,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant?,

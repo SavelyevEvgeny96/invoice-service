@@ -14,11 +14,15 @@ class OrderManualMapper(
         val NON_ALPHANUMERIC_REGEX = Regex("[^A-Za-zА-Яа-яЁё0-9]")
     }
 
-    fun toOrderEntity(orderRequest: OrderRequest): OrderEntity =
+    fun toOrderEntity(
+        orderRequest: OrderRequest,
+        skipSendingErrors: Boolean,
+    ): OrderEntity =
         orderMapper.fromRequestDto(orderRequest).apply {
             val subOrders = attachSubOrders(this, orderRequest.orders)
             this.subOrders.addAll(subOrders)
 
+            skipSendingErrorsQueue = skipSendingErrors
             queueStatusResultName = buildQueueStatusResultName(clientId)
             premiumAmount = calculatePremiumAmount()
         }

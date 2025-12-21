@@ -6,6 +6,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.verify
+import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.request.OrderRequest
 import ru.sogaz.site.orderingService.entity.OrderEntity
@@ -21,11 +22,15 @@ class OrderServiceImplTest {
     lateinit var orderDao: OrderDao
 
     @Mock
+    lateinit var clientSystemDao: ClientSystemDao
+
+    @Mock
     lateinit var orderManualMapper: OrderManualMapper
 
     private lateinit var service: OrderServiceImpl
 
     private val payBasePath = "https://pay.test/"
+    private val skipSendingErrors = false
 
     @BeforeEach
     fun setUp() {
@@ -33,6 +38,7 @@ class OrderServiceImplTest {
             OrderServiceImpl(
                 orderDao = orderDao,
                 orderManualMapper = orderManualMapper,
+                clientSystemDao = clientSystemDao,
                 payBasePath = payBasePath,
             )
     }
@@ -45,7 +51,7 @@ class OrderServiceImplTest {
         val savedOrder = mock(OrderEntity::class.java)
         val orderId = UUID.randomUUID()
 
-        `when`(orderManualMapper.toOrderEntity(request)).thenReturn(orderEntity)
+        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(orderId)
 
@@ -64,7 +70,7 @@ class OrderServiceImplTest {
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
 
-        `when`(orderManualMapper.toOrderEntity(request)).thenReturn(orderEntity)
+        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(UUID.randomUUID())
 
@@ -72,7 +78,7 @@ class OrderServiceImplTest {
         service.createOrder(request)
 
         // then
-        verify(orderManualMapper).toOrderEntity(request)
+        verify(orderManualMapper).toOrderEntity(request, skipSendingErrors)
         verify(orderDao).save(orderEntity)
     }
 }

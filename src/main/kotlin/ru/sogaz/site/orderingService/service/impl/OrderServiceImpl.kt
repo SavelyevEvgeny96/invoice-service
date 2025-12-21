@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.filterStarter.services.RequestInfo
+import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.OrderRequest
@@ -17,6 +18,7 @@ import ru.sogaz.siter.models.resonses.getSuccessResponse
 @Service
 class OrderServiceImpl(
     private val orderDao: OrderDao,
+    private val clientSystemDao: ClientSystemDao,
     private val orderManualMapper: OrderManualMapper,
     @Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
@@ -29,7 +31,13 @@ class OrderServiceImpl(
      */
     @Transactional
     override fun createOrder(orderRequest: OrderRequest): Response<DataOrder> {
-        val order = orderManualMapper.toOrderEntity(orderRequest)
+        val skipSendingErrorsQueue =
+            clientSystemDao
+                .findBySystemCode(orderRequest.clientId)
+                ?.skipSendingErrorsQueue
+                ?: false
+
+        val order = orderManualMapper.toOrderEntity(orderRequest, skipSendingErrorsQueue)
         val savedOrder = orderDao.save(order)
 
         return getSuccessResponse(
