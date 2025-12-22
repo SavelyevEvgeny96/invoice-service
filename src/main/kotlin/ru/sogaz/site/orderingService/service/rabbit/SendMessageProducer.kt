@@ -7,6 +7,6 @@ interface SendMessageProducer {
         routingKey: String,
         paidOrderMessage: Any,
         exchange: String,
-        orderId: UUID
+        orderId: UUID?
     )
 }

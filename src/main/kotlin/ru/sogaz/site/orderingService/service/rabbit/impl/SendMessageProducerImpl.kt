@@ -5,11 +5,10 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
-import ru.sogaz.site.paymentService.dto.request.PaidOrderMessage
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.UUID
+import java.util.*
 
 @Service
 class SendMessageProducerImpl(
@@ -25,7 +24,7 @@ class SendMessageProducerImpl(
         routingKey: String,
         paidOrderMessage: Any,
         exchange: String,
-        orderId: UUID
+        orderId: UUID?
     ) {
         val timestamp =
             OffsetDateTime

@@ -1,18 +1,19 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
-import java.util.UUID
+import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class PaymentEventProducerImpl(
     private val rabbit: RabbitTemplate,
     private val props: RabbitProps,
+    private val sendMessageProducer: SendMessageProducer
 ) : PaymentEventProducer {
     companion object {
         private const val NO_CONFIRM_LOG = "Нет подтверждения об ошибке на данный момент: orderId=%s"
@@ -32,18 +33,12 @@ class PaymentEventProducerImpl(
 
         events.forEach { event ->
             val orderIdRecurrent = event.orderIdRecurrent
-            val correlationData = CorrelationData(orderIdRecurrent.toString())
-
             try {
-                rabbit.convertAndSend(
-                    props.paymentsExchange,
+                sendMessageProducer.sendMessage(
                     props.routingKeyPayment,
                     event,
-                    { msg ->
-                        msg.messageProperties.correlationId = orderIdRecurrent.toString()
-                        msg
-                    },
-                    correlationData,
+                    props.paymentsExchange,
+                    orderIdRecurrent
                 )
                 logger.debug(PUBLISHED_LOG.format(orderIdRecurrent))
             } catch (ex: Exception) {
