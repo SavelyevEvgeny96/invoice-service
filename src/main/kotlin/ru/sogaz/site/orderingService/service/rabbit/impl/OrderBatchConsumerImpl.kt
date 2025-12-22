@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
-import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
-import ru.sogaz.site.orderingService.dto.data.Parsed
+import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
 import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
@@ -21,17 +20,17 @@ class OrderBatchConsumerImpl(
     private val paymentProducer: PaymentEventProducer,
     private val objectMapper: ObjectMapper,
     private val rabbitProps: RabbitProps,
-    private val sendMessageProducer: SendMessageProducer
+    private val sendMessageProducer: SendMessageProducer,
 ) : OrderBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
             "Итог обработки пачки: количество=%d, длительность(мс)=%d"
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                    " в батче по созданию заказа"
+                " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                    "в батче по возврату заказа "
+                "в батче по возврату заказа "
         private const val ORDER_NOT_FOUND = "Номер счета не найден"
         private const val ERROR = "error"
     }
@@ -91,12 +90,13 @@ class OrderBatchConsumerImpl(
                 missing.forEach { miss ->
                     val errorRefund = miss.dto
                     val rk = errorRefund.routingKey ?: ""
-                    val errorDto = RefundErrorDto(
-                        errorRefund.metaInfo,
-                        errorRefund.orderId,
-                        ERROR,
-                        ORDER_NOT_FOUND,
-                    )
+                    val errorDto =
+                        RefundErrorDto(
+                            errorRefund.metaInfo,
+                            errorRefund.orderId,
+                            ERROR,
+                            ORDER_NOT_FOUND,
+                        )
                     sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
                     // ack только после успешной отправки
                     channel.basicAck(miss.tag, false)
@@ -108,12 +108,13 @@ class OrderBatchConsumerImpl(
                 found.forEach { f ->
                     val errorRefund = f.dto
                     val rk = errorRefund.routingKey ?: ""
-                    val errorDto = RefundErrorDto(
-                        errorRefund.metaInfo,
-                        errorRefund.orderId,
-                        ERROR,
-                        ORDER_NOT_FOUND,
-                    )
+                    val errorDto =
+                        RefundErrorDto(
+                            errorRefund.metaInfo,
+                            errorRefund.orderId,
+                            ERROR,
+                            ORDER_NOT_FOUND,
+                        )
                     sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
                     // ack только после успешной отправки
                     channel.basicAck(f.tag, false)
@@ -132,8 +133,8 @@ class OrderBatchConsumerImpl(
         messages: List<Message>,
         channel: Channel,
         dtoClass: Class<T>,
-    ): List<Parsed<T>> {
-        val result = mutableListOf<Parsed<T>>()
+    ): List<ParsedData<T>> {
+        val result = mutableListOf<ParsedData<T>>()
 
         messages.forEach { msg ->
             val tag = msg.messageProperties.deliveryTag
@@ -141,7 +142,7 @@ class OrderBatchConsumerImpl(
             try {
                 val body = String(msg.body, Charsets.UTF_8)
                 val dto = objectMapper.readValue(body, dtoClass)
-                result += Parsed(tag = tag, dto = dto, messageId = messageId)
+                result += ParsedData(tag = tag, dto = dto, messageId = messageId)
             } catch (ex: Exception) {
                 logger.error("Ошибка парсинга сообщения: $messageId (tag=$tag)", ex)
                 channel.basicReject(tag, false)

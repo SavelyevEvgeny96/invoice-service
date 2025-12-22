@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
-import ru.sogaz.site.orderingService.dto.data.Parsed
+import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.Split
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
 import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
@@ -27,7 +27,7 @@ class BuildBatchConsumerServiceImpl(
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
-        private const val PREFIX_REFUND_ROUTING_KEY ="order.status.refund.%d.created"
+        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.refund.%d.created"
     }
 
     private val logger = loggerFor(javaClass)
@@ -54,10 +54,9 @@ class BuildBatchConsumerServiceImpl(
         return enrichDtosWithOrderIds(batch, orders)
     }
 
-    override fun searchAndPreparationOrder(parsed: List<Parsed<RefundPayloadDto>>): Split<RefundPayloadDto> {
-
+    override fun searchAndPreparationOrder(parsed: List<ParsedData<RefundPayloadDto>>): Split<RefundPayloadDto> {
         // 0) Сначала проставляем routingKey для каждого сообщения (и для found, и для missing)
-        val prepared: List<Parsed<RefundPayloadDto>> =
+        val prepared: List<ParsedData<RefundPayloadDto>> =
             parsed.map { p ->
                 val author = p.dto.metaInfo.author
                 val rk = buildRoutingKeyByCustomerId(author, PREFIX_REFUND_ROUTING_KEY)
@@ -82,7 +81,10 @@ class BuildBatchConsumerServiceImpl(
         return Split(found, missing)
     }
 
-    private fun buildRoutingKeyByCustomerId(clientId: String?, prefix: String): String? {
+    private fun buildRoutingKeyByCustomerId(
+        clientId: String?,
+        prefix: String,
+    ): String? {
         if (clientId.isNullOrBlank()) return null
 
         val normalizedClientId = clientId.replace(Regex("[^A-Za-zА-Яа-яЁё0-9]"), ".")

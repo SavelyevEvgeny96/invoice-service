@@ -1,19 +1,19 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+@Service
 class PaymentEventProducerImpl(
-    private val rabbit: RabbitTemplate,
     private val props: RabbitProps,
-    private val sendMessageProducer: SendMessageProducer
+    private val sendMessageProducer: SendMessageProducer,
 ) : PaymentEventProducer {
     companion object {
         private const val NO_CONFIRM_LOG = "Нет подтверждения об ошибке на данный момент: orderId=%s"
@@ -38,7 +38,7 @@ class PaymentEventProducerImpl(
                     props.routingKeyPayment,
                     event,
                     props.paymentsExchange,
-                    orderIdRecurrent
+                    orderIdRecurrent,
                 )
                 logger.debug(PUBLISHED_LOG.format(orderIdRecurrent))
             } catch (ex: Exception) {

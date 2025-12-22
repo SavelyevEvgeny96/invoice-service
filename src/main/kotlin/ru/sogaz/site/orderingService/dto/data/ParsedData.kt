@@ -1,6 +1,6 @@
 package ru.sogaz.site.orderingService.dto.data
 
-data class Parsed<T>(
+data class ParsedData<T>(
     val tag: Long,
     val dto: T,
     val messageId: String?,

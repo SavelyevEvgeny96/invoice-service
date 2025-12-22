@@ -8,7 +8,7 @@ import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 @Service
 class SendMessageProducerImpl(
@@ -24,7 +24,7 @@ class SendMessageProducerImpl(
         routingKey: String,
         paidOrderMessage: Any,
         exchange: String,
-        orderId: UUID?
+        orderId: UUID?,
     ) {
         val timestamp =
             OffsetDateTime

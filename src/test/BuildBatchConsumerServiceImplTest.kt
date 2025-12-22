@@ -158,7 +158,7 @@ class BuildBatchConsumerServiceImplTest {
 
     @Test
     fun `должен успешно обработать пачку заказов`() {
-        val result = service.upsertBatch(listOf(dto))
+        val result = service.insertBatchOrderCreated(listOf(dto))
 
         verify(orderDao).upsertOrdersReturningIds(listOf(orderEntity))
         verify(subOrderDao).upsertSubOrders(listOf(subOrderEntity))
@@ -167,7 +167,7 @@ class BuildBatchConsumerServiceImplTest {
 
     @Test
     fun `должен вернуть пустой список, если входная пачка пуста`() {
-        val result = service.upsertBatch(emptyList())
+        val result = service.insertBatchOrderCreated(emptyList())
 
         verify(orderDao, never()).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
@@ -183,7 +183,7 @@ class BuildBatchConsumerServiceImplTest {
 
         val exception =
             assertThrows<RuntimeException> {
-                service.upsertBatch(listOf(dto))
+                service.insertBatchOrderCreated(listOf(dto))
             }
 
         assertEquals("DB error", exception.message)
