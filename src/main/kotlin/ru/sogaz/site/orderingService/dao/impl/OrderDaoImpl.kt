@@ -21,8 +21,9 @@ open class OrderDaoImpl(
         email: String?,
         phone: String?,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
-    override fun findByIds(ids: Collection<UUID>): List<OrderEntity> =
-        orderRepository.findAllById(ids).toList()
+
+    override fun findByIds(ids: Collection<UUID>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
+
     override fun findByEmailAndPhone(
         email: String,
         phone: String,

@@ -23,7 +23,7 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.mappers.PaymentEventMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.impl.BuildBatchConsumerServiceImpl
+import ru.sogaz.site.orderingService.service.rabbit.impl.BuildBatchConsumerServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID

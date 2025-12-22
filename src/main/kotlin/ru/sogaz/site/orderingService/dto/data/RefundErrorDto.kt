@@ -6,5 +6,5 @@ data class RefundErrorDto(
     val metaInfo: MetaInfoOrder,
     val orderId: UUID,
     val status: String,
-    val errorText: String
+    val errorText: String,
 )

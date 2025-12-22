@@ -1,4 +1,4 @@
-package ru.sogaz.site.orderingService.service.impl
+package ru.sogaz.site.orderingService.service.rabbit.impl
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +15,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.mappers.PaymentEventMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
+import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
 
 @Service
 class BuildBatchConsumerServiceImpl(
@@ -27,6 +27,7 @@ class BuildBatchConsumerServiceImpl(
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
+        private const val PREFIX_REFUND_ROUTING_KEY ="order.status.refund.%d.created"
     }
 
     private val logger = loggerFor(javaClass)
@@ -54,15 +55,39 @@ class BuildBatchConsumerServiceImpl(
     }
 
     override fun searchAndPreparationOrder(parsed: List<Parsed<RefundPayloadDto>>): Split<RefundPayloadDto> {
+
+        // 0) Сначала проставляем routingKey для каждого сообщения (и для found, и для missing)
+        val prepared: List<Parsed<RefundPayloadDto>> =
+            parsed.map { p ->
+                val author = p.dto.metaInfo.author
+                val rk = buildRoutingKeyByCustomerId(author, PREFIX_REFUND_ROUTING_KEY)
+
+                p.copy(dto = p.dto.copy(routingKey = rk))
+            }
+
         // 1) Собрали UUID
-        val orderIds = parsed.asSequence().map { it.dto.orderId }.distinct().toList()
+        val orderIds =
+            prepared
+                .asSequence()
+                .map { it.dto.orderId }
+                .distinct()
+                .toList()
 
         // 2) Достали ордера и сделали map для быстрых lookup
         val ordersById = orderDao.findByIds(orderIds).associateBy { it.orderId }
 
         // 3) Разделили сообщения: найден / не найден
-        val (found, missing) = parsed.partition { ordersById.containsKey(it.dto.orderId) }
+        val (found, missing) = prepared.partition { ordersById.containsKey(it.dto.orderId) }
+
         return Split(found, missing)
+    }
+
+    private fun buildRoutingKeyByCustomerId(clientId: String?, prefix: String): String? {
+        if (clientId.isNullOrBlank()) return null
+
+        val normalizedClientId = clientId.replace(Regex("[^A-Za-zА-Яа-яЁё0-9]"), ".")
+
+        return prefix.format(normalizedClientId)
     }
 
     private fun enrichDtosWithOrderIds(

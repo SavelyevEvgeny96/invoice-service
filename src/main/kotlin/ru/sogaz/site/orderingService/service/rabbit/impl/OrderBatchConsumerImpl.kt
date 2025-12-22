@@ -1,33 +1,39 @@
-package ru.sogaz.site.orderingService.service.impl
+package ru.sogaz.site.orderingService.service.rabbit.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
-import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.Parsed
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
 import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
-import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
-import ru.sogaz.site.orderingService.service.OrderBatchConsumer
-import ru.sogaz.site.orderingService.service.PaymentEventProducer
+import ru.sogaz.site.orderingService.properties.RabbitProps
+import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
+import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
+import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
+import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 
 class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val paymentProducer: PaymentEventProducer,
     private val objectMapper: ObjectMapper,
-    private val orderDao: OrderDao
+    private val rabbitProps: RabbitProps,
+    private val sendMessageProducer: SendMessageProducer
 ) : OrderBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
             "Итог обработки пачки: количество=%d, длительность(мс)=%d"
-        private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED = "Нет валидных сообщений для обработки" +
-                " в батче по созданию заказа"
-        private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER = "Нет валидных сообщений для обработки " +
-                "в батче по возврату заказа "
+        private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
+            "Нет валидных сообщений для обработки" +
+                    " в батче по созданию заказа"
+        private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
+            "Нет валидных сообщений для обработки " +
+                    "в батче по возврату заказа "
+        private const val ORDER_NOT_FOUND = "Номер счета не найден"
+        private const val ERROR = "error"
     }
 
     private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
@@ -65,7 +71,10 @@ class OrderBatchConsumerImpl(
         queues = ["\${app.rabbit.queue-order-refund}"],
         containerFactory = "batchContainerFactory",
     )
-    override fun handleBatchRefundCreated(messages: List<Message>, channel: Channel) {
+    override fun handleBatchRefundCreated(
+        messages: List<Message>,
+        channel: Channel,
+    ) {
         val started = System.nanoTime()
 
         val parsed = parseBatch(messages, channel, RefundPayloadDto::class.java)
@@ -78,36 +87,41 @@ class OrderBatchConsumerImpl(
             val resultOrder = buildBatchConsumerService.searchAndPreparationOrder(parsed)
             val missing = resultOrder.missing
             val found = resultOrder.found
-            // 4) Для missing: отправили в очередь ошибок, и только ПОСЛЕ успеха — ack их тегов
             if (missing.isNotEmpty()) {
-                val errorDtos = missing.map { p ->
-                    RefundErrorDto( // пример
-                        p.dto.metaInfo,
-                        p.dto.orderId,
-                        "error",
-                        ""
-
+                missing.forEach { miss ->
+                    val errorRefund = miss.dto
+                    val rk = errorRefund.routingKey ?: ""
+                    val errorDto = RefundErrorDto(
+                        errorRefund.metaInfo,
+                        errorRefund.orderId,
+                        ERROR,
+                        ORDER_NOT_FOUND,
                     )
+                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
+                    // ack только после успешной отправки
+                    channel.basicAck(miss.tag, false)
                 }
-
-                errorProducer.sendBatch(errorDtos)   // или цикл send(...)
-                missing.forEach { channel.basicAck(it.tag, false) }
             }
 
-            // 5) Для found: твоя бизнес-логика + send + ack
+            // 5) Для found:
             if (found.isNotEmpty()) {
-                val inputs = found.map { p ->
-
+                found.forEach { f ->
+                    val errorRefund = f.dto
+                    val rk = errorRefund.routingKey ?: ""
+                    val errorDto = RefundErrorDto(
+                        errorRefund.metaInfo,
+                        errorRefund.orderId,
+                        ERROR,
+                        ORDER_NOT_FOUND,
+                    )
+                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
+                    // ack только после успешной отправки
+                    channel.basicAck(f.tag, false)
                 }
-
-
-
-                found.forEach { channel.basicAck(it.tag, false) }
             }
 
             val tookMs = (System.nanoTime() - started) / 1_000_000
             logger.info(BATCH_SUMMARY.format(parsed.size, tookMs))
-
         } catch (ex: Exception) {
             logger.error("Ошибка при обработке батча: ${ex.message}", ex)
             parsed.forEach { channel.basicReject(it.tag, false) }

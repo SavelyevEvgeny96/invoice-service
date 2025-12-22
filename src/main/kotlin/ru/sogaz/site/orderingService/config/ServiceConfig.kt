@@ -8,13 +8,13 @@ import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.BuildBatchConsumerService
-import ru.sogaz.site.orderingService.service.OrderBatchConsumer
 import ru.sogaz.site.orderingService.service.OrdersUserService
-import ru.sogaz.site.orderingService.service.PaymentEventProducer
-import ru.sogaz.site.orderingService.service.impl.OrderBatchConsumerImpl
 import ru.sogaz.site.orderingService.service.impl.OrdersUserServiceImpl
-import ru.sogaz.site.orderingService.service.impl.PaymentEventProducerImpl
+import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
+import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
+import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
+import ru.sogaz.site.orderingService.service.rabbit.impl.OrderBatchConsumerImpl
+import ru.sogaz.site.orderingService.service.rabbit.impl.PaymentEventProducerImpl
 
 @Configuration
 class ServiceConfig {
