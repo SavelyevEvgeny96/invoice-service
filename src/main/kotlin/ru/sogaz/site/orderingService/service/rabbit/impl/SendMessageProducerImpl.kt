@@ -34,16 +34,16 @@ class SendMessageProducerImpl(
         val noAccess = resultOrder.noAccess
         if (missing.isNotEmpty()) {
             missing.forEach { miss ->
-                val errorRefund = miss.dto
-                val rk = errorRefund.routingKeyStatus ?: ""
+                val payloadErrorRefund = miss.dto
+                val rk = payloadErrorRefund.routingKeyStatus ?: ""
                 val errorDto =
                     RefundErrorDto(
-                        errorRefund.metaInfo,
-                        errorRefund.orderId,
+                        payloadErrorRefund.metaInfo,
+                        payloadErrorRefund.orderId,
                         ERROR,
                         ORDER_NOT_FOUND,
                     )
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
+                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payloadErrorRefund.orderId)
                 // ack только после успешной отправки
                 channel.basicAck(miss.tag, false)
             }
