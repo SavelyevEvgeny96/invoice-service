@@ -21,8 +21,7 @@ class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val paymentProducer: PaymentEventProducer,
     private val objectMapper: ObjectMapper,
-    private val rabbitProps: RabbitProps,
-    private val sendMessageProducer: SendMessageProducer,
+    private val sendMessageProducer: SendMessageProducer
 ) : OrderBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
@@ -33,8 +32,7 @@ class OrderBatchConsumerImpl(
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
                     "в батче по возврату заказа "
-        private const val ORDER_NOT_FOUND = "Номер счета не найден"
-        private const val ERROR = "error"
+
     }
 
     private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
@@ -77,68 +75,13 @@ class OrderBatchConsumerImpl(
         channel: Channel,
     ) {
         val started = System.nanoTime()
-
         val parsed = parseBatch(messages, channel, RefundPayloadDto::class.java)
         if (parsed.isEmpty()) {
             logger.warn(NOT_VALID_BATCH_MESSAGE_REFUND_ORDER)
             return
         }
-
         try {
-            val resultOrder = buildBatchConsumerService.searchAndPreparationOrder(parsed)
-            val missing = resultOrder.missing
-            val found = resultOrder.found
-            val noAccess = resultOrder.noAccess
-            if (missing.isNotEmpty()) {
-                missing.forEach { miss ->
-                    val errorRefund = miss.dto
-                    val rk = errorRefund.routingKeyStatus ?: ""
-                    val errorDto =
-                        RefundErrorDto(
-                            errorRefund.metaInfo,
-                            errorRefund.orderId,
-                            ERROR,
-                            ORDER_NOT_FOUND,
-                        )
-                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
-                    // ack только после успешной отправки
-                    channel.basicAck(miss.tag, false)
-                }
-            }
-            if (noAccess.isNotEmpty()) {
-                noAccess.forEach { noAcc ->
-                    val errorRefund = noAcc.dto
-                    val rk = errorRefund.routingKeyStatus ?: ""
-                    val noAccDto =
-                        RefundErrorDto(
-                            errorRefund.metaInfo,
-                            errorRefund.orderId,
-                            ERROR,
-                            ORDER_NOT_FOUND,
-                        )
-                    sendMessageProducer.sendMessage(rk, noAccDto, rabbitProps.ordersExchange, errorRefund.orderId)
-                    // ack только после успешной отправки
-                    channel.basicAck(noAcc.tag, false)
-                }
-            }
-            // 5) Для found:
-            if (found.isNotEmpty()) {
-                found.forEach { f ->
-                    val refund = f.dto
-                    val rk = refund.routingKeyStatus ?: ""
-                    val errorDto =
-                        RefundErrorDto(
-                            refund.metaInfo,
-                            refund.orderId,
-                            ERROR,
-                            ORDER_NOT_FOUND,
-                        )
-                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, refund.orderId)
-                    // ack только после успешной отправки
-                    channel.basicAck(f.tag, false)
-                }
-            }
-
+            sendMessageProducer.sendMessageRefund(buildBatchConsumerService.searchAndPreparationOrder(parsed), channel)
             val tookMs = (System.nanoTime() - started) / 1_000_000
             logger.info(BATCH_SUMMARY.format(parsed.size, tookMs))
         } catch (ex: Exception) {
