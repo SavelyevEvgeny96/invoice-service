@@ -6,7 +6,7 @@ import java.util.UUID
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class RefundPayloadDto(
-    val metaInfo: MetaInfoOrder,
+    val metaInfo: List<MetaInfoOrder>,
     val orderId: UUID,
-    val routingKey: String? = null,
+    val routingKeyStatus: String? = null,
 )

@@ -27,7 +27,7 @@ class BuildBatchConsumerServiceImpl(
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
-        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.refund.%d.created"
+        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.refund.%s.created"
     }
 
     private val logger = loggerFor(javaClass)
@@ -58,10 +58,10 @@ class BuildBatchConsumerServiceImpl(
         // 0) Сначала проставляем routingKey для каждого сообщения (и для found, и для missing)
         val prepared: List<ParsedData<RefundPayloadDto>> =
             parsed.map { p ->
-                val author = p.dto.metaInfo.author
+                val author = p.dto.metaInfo.firstOrNull()?.author
                 val rk = buildRoutingKeyByCustomerId(author, PREFIX_REFUND_ROUTING_KEY)
 
-                p.copy(dto = p.dto.copy(routingKey = rk))
+                p.copy(dto = p.dto.copy(routingKeyStatus = rk))
             }
 
         // 1) Собрали UUID
@@ -74,6 +74,9 @@ class BuildBatchConsumerServiceImpl(
 
         // 2) Достали ордера и сделали map для быстрых lookup
         val ordersById = orderDao.findByIds(orderIds).associateBy { it.orderId }
+
+
+
 
         // 3) Разделили сообщения: найден / не найден
         val (found, missing) = prepared.partition { ordersById.containsKey(it.dto.orderId) }

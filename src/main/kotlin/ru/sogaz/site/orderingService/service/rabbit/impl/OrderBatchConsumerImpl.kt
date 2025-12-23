@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
@@ -15,6 +16,7 @@ import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
 import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 
+@Service
 class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val paymentProducer: PaymentEventProducer,
@@ -27,10 +29,10 @@ class OrderBatchConsumerImpl(
             "Итог обработки пачки: количество=%d, длительность(мс)=%d"
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                " в батче по созданию заказа"
+                    " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                "в батче по возврату заказа "
+                    "в батче по возврату заказа "
         private const val ORDER_NOT_FOUND = "Номер счета не найден"
         private const val ERROR = "error"
     }
@@ -89,7 +91,7 @@ class OrderBatchConsumerImpl(
             if (missing.isNotEmpty()) {
                 missing.forEach { miss ->
                     val errorRefund = miss.dto
-                    val rk = errorRefund.routingKey ?: ""
+                    val rk = errorRefund.routingKeyStatus ?: ""
                     val errorDto =
                         RefundErrorDto(
                             errorRefund.metaInfo,
@@ -106,16 +108,16 @@ class OrderBatchConsumerImpl(
             // 5) Для found:
             if (found.isNotEmpty()) {
                 found.forEach { f ->
-                    val errorRefund = f.dto
-                    val rk = errorRefund.routingKey ?: ""
+                    val refund = f.dto
+                    val rk = refund.routingKeyStatus ?: ""
                     val errorDto =
                         RefundErrorDto(
-                            errorRefund.metaInfo,
-                            errorRefund.orderId,
+                            refund.metaInfo,
+                            refund.orderId,
                             ERROR,
                             ORDER_NOT_FOUND,
                         )
-                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, errorRefund.orderId)
+                    sendMessageProducer.sendMessage(rk, errorDto, rabbitProps.ordersExchange, refund.orderId)
                     // ack только после успешной отправки
                     channel.basicAck(f.tag, false)
                 }
