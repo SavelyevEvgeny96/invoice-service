@@ -39,7 +39,7 @@ class RabbitConfig(
     private val confirmed = ConcurrentHashMap<UUID, Boolean>()
     private val errors = ConcurrentHashMap<UUID, String?>()
 
-    @Bean
+    @Bean("customRabbitTemplate")
     fun rabbitTemplate(
         connectionFactory: ConnectionFactory,
         messageConverter: MessageConverter,

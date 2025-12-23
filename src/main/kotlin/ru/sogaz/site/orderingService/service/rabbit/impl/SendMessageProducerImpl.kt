@@ -1,6 +1,7 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.loggerFor
@@ -12,6 +13,7 @@ import java.util.UUID
 
 @Service
 class SendMessageProducerImpl(
+    @Qualifier("customRabbitTemplate")
     private val rabbitTemplate: RabbitTemplate,
 ) : SendMessageProducer {
     private val logger = loggerFor(SendMessageProducerImpl::class.java)
