@@ -5,5 +5,5 @@ import ru.sogaz.site.orderingService.entity.ClientSystemEntity
 import java.util.*
 
 interface ClientSystemRepository : JpaRepository<ClientSystemEntity, UUID> {
-    fun existsByExternalSystemCodeAndPermissionReturnTrue(code: String): Boolean
+    fun findAllByExternalSystemCodeInAndPermissionReturnTrue(codes: Collection<String>): List<ClientSystemEntity>
 }

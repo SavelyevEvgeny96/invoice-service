@@ -88,6 +88,7 @@ class OrderBatchConsumerImpl(
             val resultOrder = buildBatchConsumerService.searchAndPreparationOrder(parsed)
             val missing = resultOrder.missing
             val found = resultOrder.found
+            val noAccess = resultOrder.noAccess
             if (missing.isNotEmpty()) {
                 missing.forEach { miss ->
                     val errorRefund = miss.dto
@@ -104,7 +105,22 @@ class OrderBatchConsumerImpl(
                     channel.basicAck(miss.tag, false)
                 }
             }
-
+            if (noAccess.isNotEmpty()) {
+                noAccess.forEach { noAcc ->
+                    val errorRefund = noAcc.dto
+                    val rk = errorRefund.routingKeyStatus ?: ""
+                    val noAccDto =
+                        RefundErrorDto(
+                            errorRefund.metaInfo,
+                            errorRefund.orderId,
+                            ERROR,
+                            ORDER_NOT_FOUND,
+                        )
+                    sendMessageProducer.sendMessage(rk, noAccDto, rabbitProps.ordersExchange, errorRefund.orderId)
+                    // ack только после успешной отправки
+                    channel.basicAck(noAcc.tag, false)
+                }
+            }
             // 5) Для found:
             if (found.isNotEmpty()) {
                 found.forEach { f ->
