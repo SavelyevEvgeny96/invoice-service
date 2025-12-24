@@ -9,4 +9,11 @@ interface SendMessageProducer {
         resultOrder: RefundPreparationResult,
         channel: Channel
     )
+
+    fun sendMessage(
+        routingKey: String,
+        paidOrderMessage: Any,
+        exchange: String,
+        orderId: UUID?,
+    )
 }

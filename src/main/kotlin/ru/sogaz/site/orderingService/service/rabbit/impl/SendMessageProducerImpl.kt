@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
+import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.time.OffsetDateTime
@@ -18,7 +20,8 @@ import java.util.*
 @Service
 class SendMessageProducerImpl(
     private val rabbitTemplate: RabbitTemplate,
-    private val rabbitProps: RabbitProps
+    private val rabbitProps: RabbitProps,
+    private val refundErrorMapper: RefundErrorMapper
 ) : SendMessageProducer {
     private val logger = loggerFor(SendMessageProducerImpl::class.java)
 
@@ -34,33 +37,20 @@ class SendMessageProducerImpl(
         val noAccess = resultOrder.noAccess
         if (missing.isNotEmpty()) {
             missing.forEach { miss ->
-                val payloadErrorRefund = miss.dto
-                val rk = payloadErrorRefund.routingKeyStatus ?: ""
-                val errorDto =
-                    RefundErrorDto(
-                        payloadErrorRefund.metaInfo,
-                        payloadErrorRefund.orderId,
-                        ERROR,
-                        ORDER_NOT_FOUND,
-                    )
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payloadErrorRefund.orderId)
-                // ack только после успешной отправки
+                val payload = miss.dto
+                val rk = payload.routingKeyStatus.orEmpty()
+                val errorDto = refundErrorMapper.toErrorDto(payload, RefundErrorReason.ORDER_NOT_FOUND)
+                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
                 channel.basicAck(miss.tag, false)
             }
         }
+
         if (noAccess.isNotEmpty()) {
             noAccess.forEach { noAcc ->
-                val errorRefund = noAcc.dto
-                val rk = errorRefund.routingKeyStatus ?: ""
-                val noAccDto =
-                    RefundErrorDto(
-                        errorRefund.metaInfo,
-                        errorRefund.orderId,
-                        ERROR,
-                        ORDER_NOT_FOUND,
-                    )
-                sendMessage(rk, noAccDto, rabbitProps.ordersExchange, errorRefund.orderId)
-                // ack только после успешной отправки
+                val payload = noAcc.dto
+                val rk = payload.routingKeyStatus.orEmpty()
+                val errorDto = refundErrorMapper.toErrorDto(payload, RefundErrorReason.NO_ACCESS)
+                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
                 channel.basicAck(noAcc.tag, false)
             }
         }
@@ -84,7 +74,7 @@ class SendMessageProducerImpl(
 
     }
 
-    private fun sendMessage(
+    override fun sendMessage(
         routingKey: String,
         paidOrderMessage: Any,
         exchange: String,
