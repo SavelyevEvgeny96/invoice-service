@@ -84,15 +84,24 @@ class RabbitConfig(
     fun ordersQueue(): Queue =
         QueueBuilder
             .durable(props.queueOrder)
+            .quorum()
             .withArgument("x-dead-letter-exchange", "")
             .withArgument("x-dead-letter-routing-key", "${props.queueOrder}.dlq")
             .build()
 
     @Bean(name = ["ordersDlq"])
-    fun ordersDlq(): Queue = QueueBuilder.durable("${props.queueOrder}.dlq").build()
+    fun ordersDlq(): Queue =
+        QueueBuilder
+            .durable("${props.queueOrder}.dlq")
+            .quorum()
+            .build()
 
     @Bean(name = ["paymentsQueue"])
-    fun paymentsQueue(): Queue = QueueBuilder.durable(props.queuePayment).build()
+    fun paymentsQueue(): Queue =
+        QueueBuilder
+            .durable(props.queuePayment)
+            .quorum()
+            .build()
 
     @Bean
     fun ordersBinding(
