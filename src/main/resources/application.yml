@@ -99,8 +99,8 @@ management:
 #          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
 logging:
   level:
-    org.springframework.jdbc: DEBUG
-    org.springframework.transaction: DEBUG
+    org.springframework.jdbc: INFO
+    org.springframework.transaction: INFO
 #    org.springframework.amqp.rabbit.*: DEBUG
     logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
 
