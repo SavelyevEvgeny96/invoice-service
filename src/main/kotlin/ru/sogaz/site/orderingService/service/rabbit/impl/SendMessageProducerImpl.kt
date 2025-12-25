@@ -5,8 +5,10 @@ import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
+import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import ru.sogaz.site.orderingService.dto.data.RefundSuccessDto
+import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -59,123 +61,41 @@ class SendMessageProducerImpl(
      * @param resultOrder Результат подготовки, содержащий сгруппированные элементы
      * @param channel RabbitMQ Channel, через который делается manual-ack входных сообщений
      */
-    override fun sendMessageRefund(
-        resultOrder: RefundPreparationResult,
-        channel: Channel,
-    ) {
-        // --- 0) Извлекаем группы из результата подготовки ---
-        // missing: ордер не найден
-        val missing = resultOrder.missing
+    override fun sendMessageRefund(resultOrder: RefundPreparationResult, channel: Channel) {
 
-        // found: ордер найден, доступ есть, оплачен -> успех
-        val found = resultOrder.found
+        // 1) Ошибочные группы сводим в одну мапу "причина -> список"
+        val errorBatches: Map<RefundErrorReason, List<ParsedData<RefundPayloadDto>>> = mapOf(
+            RefundErrorReason.ORDER_NOT_FOUND to resultOrder.missing,
+            RefundErrorReason.NOT_PAID_FOR to resultOrder.notForPaid,
+            RefundErrorReason.NO_ACCESS to resultOrder.noAccess,
+        )
 
-        // noAccess: ордер найден, но author не имеет доступа
-        val noAccess = resultOrder.noAccess
-
-        // notPaidFor: ордер найден, доступ есть, но не оплачен
-        val notPaidFor = resultOrder.notForPaid
-
-        // --- 1) Обработка missing (ORDER_NOT_FOUND) ---
-        // Сюда попадают элементы, по которым нет записи Order в БД.
-        // Мы формируем errorDto с причиной ORDER_NOT_FOUND и отправляем в очередь.
-        if (missing.isNotEmpty()) {
-            missing.forEach { miss ->
-
-                // 1.1) Payload (то, что пришло из входного сообщения после парсинга)
-                val payload = miss.dto
-
-                // 1.2) Routing key, подготовленный ранее (если null -> пустая строка)
-                // В идеале routingKey не должен быть пустым: тогда сообщение пойдёт "в никуда"
+        // 2) Обрабатываем все ошибки одинаково
+        errorBatches.forEach { (reason, batch) ->
+            batch.forEach { item ->
+                val payload = item.dto
                 val rk = payload.routingKeyStatus.orEmpty()
 
-                // 1.3) Маппим ошибку в единый формат ответа
-                val errorDto = refundErrorMapper.toErrorDto(payload, RefundErrorReason.ORDER_NOT_FOUND)
-
-                // 1.4) Отправляем errorDto в exchange
+                val errorDto = refundErrorMapper.toErrorDto(payload, reason)
                 sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
 
-                // 1.5) Подтверждаем обработку конкретного входного сообщения
-                // second parameter (multiple=false) -> подтверждаем ровно одно сообщение.
-                channel.basicAck(miss.tag, false)
+                channel.basicAck(item.tag, false)
             }
         }
 
-        // --- 2) Обработка notPaidFor (ORDER_NOT_PAID / NOT_PAID) ---
-        // Сюда попадают элементы, где ордер найден, но статус не SUCCESS (например NEW/OVERDUE/CANCELED и т.п.).
-        // Тут важно выбрать правильную причину (в твоём коде стоит NO_ACCESS — вероятно, это временно/ошибка).
-        if (notPaidFor.isNotEmpty()) {
-            notPaidFor.forEach { notPaid ->
+        // 3) Успех отдельно (тут другой DTO)
+        resultOrder.found.forEach { item ->
+            val payload = item.dto
+            val rk = payload.routingKeyStatus.orEmpty()
 
-                // 2.1) Payload исходного сообщения
-                val payload = notPaid.dto
+            val successDto = RefundSuccessDto(
+                payload.metaInfo,
+                payload.orderId,
+                payload.bank,
+            )
+            sendMessage(rk, successDto, rabbitProps.ordersExchange, payload.orderId)
 
-                // 2.2) Routing key
-                val rk = payload.routingKeyStatus.orEmpty()
-
-                // 2.3) Формируем errorDto.
-                // ВАЖНО: сейчас указано RefundErrorReason.NO_ACCESS — скорее всего нужна отдельная причина,
-                val errorDto = refundErrorMapper.toErrorDto(payload, RefundErrorReason.NOT_PAID_FOR)
-
-                // 2.4) Отправляем в exchange
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
-
-                // 2.5) Ack входного сообщения
-                channel.basicAck(notPaid.tag, false)
-            }
-        }
-
-        // --- 3) Обработка noAccess (NO_ACCESS) ---
-        // Сюда попадают элементы, по которым ордер есть, но у author нет прав делать refund.
-        if (noAccess.isNotEmpty()) {
-            noAccess.forEach { noAcc ->
-
-                // 3.1) Payload исходного сообщения
-                val payload = noAcc.dto
-
-                // 3.2) Routing key
-                val rk = payload.routingKeyStatus.orEmpty()
-
-                // 3.3) Формируем errorDto с причиной NO_ACCESS
-                val errorDto = refundErrorMapper.toErrorDto(payload, RefundErrorReason.NO_ACCESS)
-
-                // 3.4) Отправляем в exchange
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
-
-                // 3.5) Ack входного сообщения
-                channel.basicAck(noAcc.tag, false)
-            }
-        }
-
-        // --- 4) Обработка found (SUCCESS) ---
-        // Сюда попадают элементы, где:
-        // - ордер существует
-        // - доступ у author есть
-        // - ордер оплачен (status == SUCCESS)
-        // - bank уже должен быть проставлен в dto на этапе подготовки
-        if (found.isNotEmpty()) {
-            found.forEach { f ->
-
-                // 4.1) Извлекаем refund payload
-                val refund = f.dto
-
-                // 4.2) Routing key
-                val rk = refund.routingKeyStatus.orEmpty()
-
-                // 4.3) Формируем DTO успешного ответа
-                val successDto =
-                    RefundSuccessDto(
-                        refund.metaInfo,
-                        refund.orderId,
-                        refund.bank,
-                    )
-
-                // 4.4) Отправляем успех
-                sendMessage(rk, successDto, rabbitProps.ordersExchange, refund.orderId)
-
-                // 4.5) Ack входного сообщения только после отправки
-                channel.basicAck(f.tag, false)
-            }
+            channel.basicAck(item.tag, false)
         }
     }
 
