@@ -10,9 +10,9 @@ interface SendMessageProducer {
         channel: Channel
     )
 
-    fun sendMessage(
+    fun <T : Any> sendMessage(
         routingKey: String,
-        paidOrderMessage: Any,
+        payload: T,
         exchange: String,
         orderId: UUID?,
     )

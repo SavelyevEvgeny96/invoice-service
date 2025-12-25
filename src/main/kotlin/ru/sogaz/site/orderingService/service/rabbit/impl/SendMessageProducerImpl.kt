@@ -74,34 +74,28 @@ class SendMessageProducerImpl(
 
     }
 
-    override fun sendMessage(
+    override fun <T : Any> sendMessage(
         routingKey: String,
-        paidOrderMessage: Any,
+        payload: T,
         exchange: String,
         orderId: UUID?,
     ) {
-        val timestamp =
-            OffsetDateTime
-                .now(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        logger.info(
-            START_LOG_MESSAGE_QUEUE.format(
-                routingKey,
-                exchange,
-            ),
-        )
-        val cd = CorrelationData(orderId.toString())
+        val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        val cd = CorrelationData(orderId?.toString() ?: UUID.randomUUID().toString())
+
         rabbitTemplate.convertAndSend(
             exchange,
             routingKey,
-            paidOrderMessage,
+            payload,
             { message ->
                 message.messageProperties.headers["author"] = "payService"
                 message.messageProperties.headers["flowCode"] = "ResultPay"
                 message.messageProperties.headers["timestamp"] = timestamp
                 message.messageProperties.headers[RabbitLogConst.HDR_X_EXCHANGE] = exchange
                 message.messageProperties.headers[RabbitLogConst.HDR_X_ROUTINGKEY] = routingKey
-                message.messageProperties.correlationId = orderId.toString()
+                message.messageProperties.correlationId = orderId?.toString()
                 message
             },
             cd
