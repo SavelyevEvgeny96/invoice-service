@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.service.impl
 
+import org.springframework.stereotype.Service
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_GET_LIST_ORDER
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_GET_LIST_ORDER_STATUS_NOT_FOUND
@@ -20,6 +21,7 @@ import ru.sogaz.site.orderingService.service.OrdersUserService
 import ru.sogaz.siter.models.resonses.Response
 import ru.sogaz.siter.models.resonses.getSuccessResponse
 
+@Service
 class OrdersUserServiceImpl(
     private val orderDao: OrderDao,
     private val subOrderDao: SubOrderDao,
@@ -102,6 +104,7 @@ class OrdersUserServiceImpl(
                                 OrderStatusesEnum.OVERDUE,
                             )
                     }
+
                 else -> emptyList()
             }.takeIf { it.isNotEmpty() } ?: run {
                 logger.error(STATUS_NOT_FOUND.format(request.status))

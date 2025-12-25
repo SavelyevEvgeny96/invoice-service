@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    username: ${RABBIT_USERNAME:}
-    password: ${RABBIT_PASSWORD:}
+    username: ${RABBIT_USERNAME:dev}
+    password: ${RABBIT_PASSWORD:dev}
     virtual-host: /
     listener:
       simple:
@@ -53,6 +53,7 @@ app:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
+    queue-order-refund: ${ORDER_CREATED_REFUND_QUEUE:order.refund.queue}
     queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
@@ -87,16 +88,7 @@ management:
       enable: true
     readinessState:
       enable: true
-#local debug
-#logging.level.org.hibernate.engine.jdbc.batch.internal: DEBUG
-#logging.level.org.hibernate.stat: DEBUG
-#spring.jpa.properties.hibernate.generate_statistics: true
-#logging:
-#  level:
-#    ru:
-#      sogaz:
-#        site:
-#          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
+
 logging:
   level:
     org.springframework.jdbc: INFO

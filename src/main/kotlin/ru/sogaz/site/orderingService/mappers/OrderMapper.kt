@@ -23,13 +23,13 @@ abstract class OrderMapper {
     @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
     @Mapping(target = "status", constant = "NEW")
-    @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "createDate", expression = "java(Instant.now())")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
     @Mapping(target = "orderEntity", source = "order")
     @Mapping(target = "premiumAmount", source = "dto.premiumAmountDto")
-    @Mapping(target = "createDate", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "createDate", expression = "java(Instant.now())")
     abstract fun toSubOrderEntity(
         dto: SubOrderDto,
         order: OrderEntity,

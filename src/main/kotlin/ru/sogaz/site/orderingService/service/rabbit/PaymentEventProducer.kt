@@ -1,8 +1,8 @@
-package ru.sogaz.site.orderingService.service
+package ru.sogaz.site.orderingService.service.rabbit
 
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 
 interface PaymentEventProducer {
-    fun sendBatch(events: List<OrderPayloadDto>): PublishResult
+    fun sendBatchOrderCreated(events: List<OrderPayloadDto>): PublishResult
 }

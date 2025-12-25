@@ -9,7 +9,6 @@ import org.springframework.amqp.core.QueueBuilder
 import org.springframework.amqp.core.TopicExchange
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.amqp.support.converter.MessageConverter
 import org.springframework.beans.factory.annotation.Qualifier
@@ -34,44 +33,6 @@ class RabbitConfig(
         private const val N_ACK_LOG = " Сообщение отклонено брокером: orderId=%s, причина=%s"
         private const val RETURNED_LOG = " Сообщение возвращено брокером: %s, reply=%s"
     }
-
-    private val logger = loggerFor(RabbitConfig::class.java)
-    private val confirmed = ConcurrentHashMap<UUID, Boolean>()
-    private val errors = ConcurrentHashMap<UUID, String?>()
-
-    @Bean
-    fun rabbitTemplate(
-        connectionFactory: ConnectionFactory,
-        messageConverter: MessageConverter,
-    ): RabbitTemplate {
-        val template = RabbitTemplate(connectionFactory)
-        template.messageConverter = messageConverter
-
-        template.setConfirmCallback { correlation, ack, cause ->
-            val id = correlation?.id ?: return@setConfirmCallback
-            val orderId = UUID.fromString(id)
-
-            if (ack) {
-                confirmed[orderId] = true
-                logger.debug(CONFIRMED_LOG.format(orderId))
-            } else {
-                errors[orderId] = cause
-                logger.error(N_ACK_LOG.format(orderId, cause))
-            }
-        }
-
-        template.setReturnsCallback { returned ->
-            logger.error(RETURNED_LOG.format(returned.message, returned.replyText))
-        }
-
-        return template
-    }
-
-    @Bean
-    fun confirmedMap(): ConcurrentHashMap<UUID, Boolean> = confirmed
-
-    @Bean
-    fun errorsMap(): ConcurrentHashMap<UUID, String?> = errors
 
     @Bean(name = ["ordersExchange"])
     fun ordersExchange(): TopicExchange = TopicExchange(props.ordersExchange, true, false)
@@ -131,7 +92,7 @@ class RabbitConfig(
             setConcurrentConsumers(propsListener.concurrency)
             setMaxConcurrentConsumers(propsListener.maxConcurrency)
             setAcknowledgeMode(AcknowledgeMode.MANUAL)
-            setChannelTransacted(true)
+            setChannelTransacted(false)
             setDefaultRequeueRejected(false)
 
             setMessageConverter(noOpMessageConverter)

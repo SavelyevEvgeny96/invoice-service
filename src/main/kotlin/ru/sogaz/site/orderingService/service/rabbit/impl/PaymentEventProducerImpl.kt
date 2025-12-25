@@ -1,18 +1,19 @@
-package ru.sogaz.site.orderingService.service.impl
+package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import org.springframework.amqp.rabbit.connection.CorrelationData
-import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.PublishResult
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.PaymentEventProducer
+import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
+import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+@Service
 class PaymentEventProducerImpl(
-    private val rabbit: RabbitTemplate,
     private val props: RabbitProps,
+    private val sendMessageProducer: SendMessageProducer,
 ) : PaymentEventProducer {
     companion object {
         private const val NO_CONFIRM_LOG = "Нет подтверждения об ошибке на данный момент: orderId=%s"
@@ -23,7 +24,7 @@ class PaymentEventProducerImpl(
 
     private val logger = loggerFor(PaymentEventProducerImpl::class.java)
 
-    override fun sendBatch(events: List<OrderPayloadDto>): PublishResult {
+    override fun sendBatchOrderCreated(events: List<OrderPayloadDto>): PublishResult {
         val errors = ConcurrentHashMap<UUID?, String?>()
         val confirmed = ConcurrentHashMap<UUID?, Boolean>()
         val acked = mutableSetOf<UUID?>()
@@ -32,18 +33,12 @@ class PaymentEventProducerImpl(
 
         events.forEach { event ->
             val orderIdRecurrent = event.orderIdRecurrent
-            val correlationData = CorrelationData(orderIdRecurrent.toString())
-
             try {
-                rabbit.convertAndSend(
-                    props.paymentsExchange,
+                sendMessageProducer.sendMessage(
                     props.routingKeyPayment,
                     event,
-                    { msg ->
-                        msg.messageProperties.correlationId = orderIdRecurrent.toString()
-                        msg
-                    },
-                    correlationData,
+                    props.paymentsExchange,
+                    orderIdRecurrent,
                 )
                 logger.debug(PUBLISHED_LOG.format(orderIdRecurrent))
             } catch (ex: Exception) {
