@@ -24,6 +24,9 @@ interface RefundErrorMapper {
 
                 RefundErrorReason.ORDER_NOT_FOUND ->
                     "Номер счета не найден"
+
+                RefundErrorReason.NOT_PAID_FOR ->
+                    "Счет не оплачен"
             }
     }
 

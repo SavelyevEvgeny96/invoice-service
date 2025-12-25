@@ -84,7 +84,6 @@ class BuildBatchConsumerServiceImpl(
             .mapNotNull { it.dto.metaInfo.firstOrNull()?.author }
             .distinct()
 
-        // если author null — считаем что доступа нет (можешь поменять правило)
         val allowedAuthors: Set<String> =
             if (authors.isEmpty()) emptySet()
             else clientSystemDao.checkingRefundAccess(authors)
@@ -92,15 +91,25 @@ class BuildBatchConsumerServiceImpl(
                 .toSet()
 
         // 4) noAccess / found (ТОЛЬКО среди тех, у кого ордер найден и есть доступ)
-        val (found, noAccess) = existsInDb.partition { p ->
+        val (foundWithAccess, noAccess) = existsInDb.partition { p ->
             val author = p.dto.metaInfo.firstOrNull()?.author
             author != null && author in allowedAuthors
         }
 
+        // 5) notForPaid (НЕ оплаченные) / found (оплаченные)
+        val (foundRaw, notForPaid) = foundWithAccess.partition { p ->
+            val order = ordersById[p.dto.orderId]
+            order != null && order.status?.isPaidFor() == true
+        }
+        val found = foundRaw.map { p ->
+            val order = ordersById[p.dto.orderId]!!
+            p.copy(dto = p.dto.copy(bank = order.bank))
+        }
         return RefundPreparationResult(
             found = found,
             missing = missing,
-            noAccess = noAccess
+            noAccess = noAccess,
+            notForPaid = notForPaid,
         )
     }
 
