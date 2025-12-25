@@ -9,6 +9,7 @@ import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.util.UUID
+
 @Service
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,

@@ -38,10 +38,12 @@ import kotlin.test.assertTrue
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class SendMessageProducerImplTest {
-
     @Mock lateinit var rabbitTemplate: RabbitTemplate
+
     @Mock lateinit var rabbitProps: RabbitProps
+
     @Mock lateinit var refundErrorMapper: RefundErrorMapper
+
     @Mock lateinit var channel: Channel
 
     @InjectMocks
@@ -49,12 +51,13 @@ class SendMessageProducerImplTest {
 
     @Test
     fun `когда все группы пустые - ничего не отправляем и не подтверждаем`() {
-        val result = RefundPreparationResult(
-            found = emptyList(),
-            missing = emptyList(),
-            noAccess = emptyList(),
-            notForPaid = emptyList(),
-        )
+        val result =
+            RefundPreparationResult(
+                found = emptyList(),
+                missing = emptyList(),
+                noAccess = emptyList(),
+                notForPaid = emptyList(),
+            )
 
         producer.sendMessageRefund(result, channel)
 
@@ -65,7 +68,6 @@ class SendMessageProducerImplTest {
 
     @Test
     fun `когда есть missing notForPaid noAccess found - отправляем нужные сообщения и подтверждаем каждое`() {
-
         whenever(rabbitProps.ordersExchange).thenReturn("orders-exchange")
 
         val idMissing = UUID.randomUUID()
@@ -89,24 +91,22 @@ class SendMessageProducerImplTest {
         whenever(payloadFound.orderId).thenReturn(idFound)
         whenever(payloadFound.routingKeyStatus).thenReturn("rk.found")
 
-
         whenever(payloadFound.metaInfo).thenReturn(emptyList())
 
         whenever(payloadFound.bank).thenReturn(null)
-
 
         val miss = ParsedData(tag = 11L, dto = payloadMissing, messageId = "m1")
         val notPaid = ParsedData(tag = 22L, dto = payloadNotPaid, messageId = "m2")
         val noAcc = ParsedData(tag = 33L, dto = payloadNoAccess, messageId = "m3")
         val found = ParsedData(tag = 44L, dto = payloadFound, messageId = "m4")
 
-        val result = RefundPreparationResult(
-            found = listOf(found),
-            missing = listOf(miss),
-            noAccess = listOf(noAcc),
-            notForPaid = listOf(notPaid),
-        )
-
+        val result =
+            RefundPreparationResult(
+                found = listOf(found),
+                missing = listOf(miss),
+                noAccess = listOf(noAcc),
+                notForPaid = listOf(notPaid),
+            )
 
         val errorMissing = org.mockito.kotlin.mock<RefundErrorDto>()
         val errorNotPaid = org.mockito.kotlin.mock<RefundErrorDto>()
@@ -121,13 +121,11 @@ class SendMessageProducerImplTest {
         whenever(refundErrorMapper.toErrorDto(eq(payloadNoAccess), eq(RefundErrorReason.NO_ACCESS)))
             .thenReturn(errorNoAccess)
 
-
         producer.sendMessageRefund(result, channel)
 
         verify(refundErrorMapper).toErrorDto(eq(payloadMissing), eq(RefundErrorReason.ORDER_NOT_FOUND))
         verify(refundErrorMapper).toErrorDto(eq(payloadNotPaid), eq(RefundErrorReason.NOT_PAID_FOR))
         verify(refundErrorMapper).toErrorDto(eq(payloadNoAccess), eq(RefundErrorReason.NO_ACCESS))
-
 
         verify(rabbitTemplate).convertAndSend(
             eq("orders-exchange"),
@@ -171,7 +169,6 @@ class SendMessageProducerImplTest {
         verify(channel).basicAck(22L, false)
         verify(channel).basicAck(33L, false)
         verify(channel).basicAck(44L, false)
-
 
         verify(rabbitTemplate, times(4)).convertAndSend(
             any<String>(),

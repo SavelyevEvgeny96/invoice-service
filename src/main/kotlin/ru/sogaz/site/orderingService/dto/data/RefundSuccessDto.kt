@@ -1,8 +1,8 @@
 package ru.sogaz.site.orderingService.dto.data
 
-import java.util.*
+import java.util.UUID
 
-data class RefundSuccessDto (
+data class RefundSuccessDto(
     val metaInfo: List<MetaInfoOrder>,
     val orderId: UUID,
     val bank: String?,

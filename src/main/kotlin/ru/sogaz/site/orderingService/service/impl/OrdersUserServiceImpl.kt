@@ -95,14 +95,14 @@ class OrdersUserServiceImpl(
                 OrdersStatusIsPaidEnum.ALL ->
                     foundOrders.filter {
                         it?.status in
-                                setOf(
-                                    OrderStatusesEnum.NEW,
-                                    OrderStatusesEnum.UPDATE,
-                                    OrderStatusesEnum.CANCELED,
-                                    OrderStatusesEnum.SUCCESS,
-                                    OrderStatusesEnum.MARKEDDEL,
-                                    OrderStatusesEnum.OVERDUE,
-                                )
+                            setOf(
+                                OrderStatusesEnum.NEW,
+                                OrderStatusesEnum.UPDATE,
+                                OrderStatusesEnum.CANCELED,
+                                OrderStatusesEnum.SUCCESS,
+                                OrderStatusesEnum.MARKEDDEL,
+                                OrderStatusesEnum.OVERDUE,
+                            )
                     }
 
                 else -> emptyList()

@@ -13,7 +13,6 @@ import ru.sogaz.site.orderingService.enums.RefundErrorReason
     builder = Builder(disableBuilder = true),
 )
 interface RefundErrorMapper {
-
     companion object {
         @JvmStatic
         @Named("mapErrorText")
@@ -34,5 +33,8 @@ interface RefundErrorMapper {
     @Mapping(target = "orderId", source = "payload.orderId")
     @Mapping(target = "status", constant = "error")
     @Mapping(target = "errorText", source = "reason", qualifiedByName = ["mapErrorText"])
-    fun toErrorDto(payload: RefundPayloadDto, reason: RefundErrorReason): RefundErrorDto
+    fun toErrorDto(
+        payload: RefundPayloadDto,
+        reason: RefundErrorReason,
+    ): RefundErrorDto
 }

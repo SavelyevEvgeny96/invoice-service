@@ -12,6 +12,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
@@ -44,6 +45,9 @@ class BuildBatchConsumerServiceImplTest {
 
     @Mock
     lateinit var orderMapper: OrderMapper
+
+    @Mock
+    lateinit var clientSystemDao: ClientSystemDao
 
     @Mock
     lateinit var paymentEventMapper: PaymentEventMapper

@@ -1,7 +1,6 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
 import com.rabbitmq.client.Channel
-import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
@@ -15,7 +14,7 @@ import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 /**
  * Producer (отправитель) сообщений в RabbitMQ для сценария Refund.
@@ -34,7 +33,7 @@ import java.util.*
  *
  * Важно:
  * - `basicAck` вызывается после отправки сообщения. Если отправка упадёт исключением — ack не произойдёт,
- *   и сообщение можно будет переобработать (в зависимости от настроек consumer/requeue).
+ *   и сообщение можно будет пере обработать (в зависимости от настроек consumer/requeue).
  * - `CorrelationData` используется для correlation/confirm-логики (если включены publisher confirms).
  */
 @Service
@@ -43,7 +42,6 @@ class SendMessageProducerImpl(
     private val rabbitProps: RabbitProps,
     private val refundErrorMapper: RefundErrorMapper,
 ) : SendMessageProducer {
-
     /**
      * Отправляет сообщения по результатам подготовки refund-заказов.
      *
@@ -61,8 +59,10 @@ class SendMessageProducerImpl(
      * @param resultOrder Результат подготовки, содержащий сгруппированные элементы
      * @param channel RabbitMQ Channel, через который делается manual-ack входных сообщений
      */
-    override fun sendMessageRefund(resultOrder: RefundPreparationResult, channel: Channel) {
-
+    override fun sendMessageRefund(
+        resultOrder: RefundPreparationResult,
+        channel: Channel,
+    ) {
         // --- 0) Извлекаем группы из результата подготовки ---
         // missing: ордер не найден
         val missing = resultOrder.missing
@@ -163,11 +163,12 @@ class SendMessageProducerImpl(
                 val rk = refund.routingKeyStatus.orEmpty()
 
                 // 4.3) Формируем DTO успешного ответа
-                val successDto = RefundSuccessDto(
-                    refund.metaInfo,
-                    refund.orderId,
-                    refund.bank,
-                )
+                val successDto =
+                    RefundSuccessDto(
+                        refund.metaInfo,
+                        refund.orderId,
+                        refund.bank,
+                    )
 
                 // 4.4) Отправляем успех
                 sendMessage(rk, successDto, rabbitProps.ordersExchange, refund.orderId)
@@ -206,9 +207,10 @@ class SendMessageProducerImpl(
         orderId: UUID?,
     ) {
         // --- 1) Формируем timestamp в UTC для заголовков ---
-        val timestamp = OffsetDateTime
-            .now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val timestamp =
+            OffsetDateTime
+                .now(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         // --- 2) Формируем correlationId для confirm/trace ---
         // Если orderId null — используем случайный UUID, чтобы correlation data не было "null".
@@ -222,7 +224,6 @@ class SendMessageProducerImpl(
             exchange,
             routingKey,
             payload,
-
             // --- 4) MessagePostProcessor: дополняем заголовки/свойства перед отправкой ---
             { message ->
 
@@ -244,4 +245,3 @@ class SendMessageProducerImpl(
         )
     }
 }
-

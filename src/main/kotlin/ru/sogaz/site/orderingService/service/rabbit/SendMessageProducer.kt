@@ -7,7 +7,7 @@ import java.util.UUID
 interface SendMessageProducer {
     fun sendMessageRefund(
         resultOrder: RefundPreparationResult,
-        channel: Channel
+        channel: Channel,
     )
 
     fun <T : Any> sendMessage(
