@@ -86,14 +86,13 @@ class SendMessageProducerImpl(
         // 3) Успех отдельно (тут другой DTO)
         resultOrder.found.forEach { item ->
             val payload = item.dto
-            val rk = payload.routingKeyStatus.orEmpty()
 
             val successDto = RefundSuccessDto(
                 payload.metaInfo,
                 payload.orderId,
                 payload.bank,
             )
-            sendMessage(rk, successDto, rabbitProps.ordersExchange, payload.orderId)
+            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, payload.orderId)
 
             channel.basicAck(item.tag, false)
         }

@@ -58,6 +58,7 @@ app:
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
+    routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
     listener:
       batch-size: 100
       prefetch: 100
