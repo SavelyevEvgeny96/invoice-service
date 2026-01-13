@@ -18,4 +18,8 @@ class ClientSystemEntity(
     val externalSystemCode: String,
     @Column(name = "external_system_name", nullable = false)
     val externalSystemName: String,
+    @Column(name = "permission_return")
+    var permissionReturn: Boolean? = false,
+    @Column(name = "skip_sending_errors_queue")
+    var skipSendingErrorsQueue: Boolean? = false,
 )
