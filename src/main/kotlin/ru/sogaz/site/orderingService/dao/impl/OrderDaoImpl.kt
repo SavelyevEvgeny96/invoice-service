@@ -11,6 +11,7 @@ import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
@@ -21,6 +22,8 @@ open class OrderDaoImpl(
     companion object {
         private const val LOG_ERROR_ORDER_SAVE = "Не удалось сохранить данные по заказу"
     }
+
+    override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()
 
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 

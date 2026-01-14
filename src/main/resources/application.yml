@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    username: ${RABBIT_USERNAME:}
-    password: ${RABBIT_PASSWORD:}
+    username: ${RABBIT_USERNAME:dev}
+    password: ${RABBIT_PASSWORD:dev}
     virtual-host: /
     listener:
       simple:
@@ -62,6 +62,9 @@ app:
       prefetch: 100
       concurrency: 3
       max-concurrency: 10
+  payment:
+    client:
+      basePath: https://test-gateway-site-dmz.sogaz.ru
 
 api:
   payment:
