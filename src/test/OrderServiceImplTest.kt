@@ -13,6 +13,7 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
+import ru.sogaz.site.orderingService.service.payment.PaymentService
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -20,6 +21,9 @@ import kotlin.test.assertEquals
 class OrderServiceImplTest {
     @Mock
     lateinit var orderDao: OrderDao
+
+    @Mock
+    private lateinit var paymentService: PaymentService
 
     @Mock
     lateinit var clientSystemDao: ClientSystemDao
@@ -37,6 +41,7 @@ class OrderServiceImplTest {
         service =
             OrderServiceImpl(
                 orderDao = orderDao,
+                paymentService = paymentService,
                 orderManualMapper = orderManualMapper,
                 clientSystemDao = clientSystemDao,
                 payBasePath = payBasePath,

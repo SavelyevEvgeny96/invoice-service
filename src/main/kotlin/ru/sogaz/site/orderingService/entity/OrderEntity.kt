@@ -51,7 +51,7 @@ class OrderEntity(
     var regCard: Boolean = false,
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    var status: OrderStatusesEnum? = OrderStatusesEnum.NEW,
+    var status: OrderStatusesEnum = OrderStatusesEnum.NEW,
     @Column(name = "recurrent")
     var recurrent: Boolean?,
     @Column(name = "payment_end_date")
