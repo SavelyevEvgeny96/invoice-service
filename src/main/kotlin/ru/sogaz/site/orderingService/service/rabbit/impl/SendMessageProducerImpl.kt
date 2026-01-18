@@ -61,14 +61,17 @@ class SendMessageProducerImpl(
      * @param resultOrder Результат подготовки, содержащий сгруппированные элементы
      * @param channel RabbitMQ Channel, через который делается manual-ack входных сообщений
      */
-    override fun sendMessageRefund(resultOrder: RefundPreparationResult, channel: Channel) {
-
+    override fun sendMessageRefund(
+        resultOrder: RefundPreparationResult,
+        channel: Channel,
+    ) {
         // 1) Ошибочные группы сводим в одну мапу "причина -> список"
-        val errorBatches: Map<RefundErrorReason, List<ParsedData<RefundPayloadDto>>> = mapOf(
-            RefundErrorReason.ORDER_NOT_FOUND to resultOrder.missing,
-            RefundErrorReason.NOT_PAID_FOR to resultOrder.notForPaid,
-            RefundErrorReason.NO_ACCESS to resultOrder.noAccess,
-        )
+        val errorBatches: Map<RefundErrorReason, List<ParsedData<RefundPayloadDto>>> =
+            mapOf(
+                RefundErrorReason.ORDER_NOT_FOUND to resultOrder.missing,
+                RefundErrorReason.NOT_PAID_FOR to resultOrder.notForPaid,
+                RefundErrorReason.NO_ACCESS to resultOrder.noAccess,
+            )
 
         // 2) Обрабатываем все ошибки одинаково
         errorBatches.forEach { (reason, batch) ->
@@ -86,14 +89,14 @@ class SendMessageProducerImpl(
         // 3) Успех отдельно (тут другой DTO)
         resultOrder.found.forEach { item ->
             val payload = item.dto
-            val rk = payload.routingKeyStatus.orEmpty()
 
-            val successDto = RefundSuccessDto(
-                payload.metaInfo,
-                payload.orderId,
-                payload.bank,
-            )
-            sendMessage(rk, successDto, rabbitProps.ordersExchange, payload.orderId)
+            val successDto =
+                RefundSuccessDto(
+                    payload.metaInfo,
+                    payload.orderId,
+                    payload.bank,
+                )
+            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, payload.orderId)
 
             channel.basicAck(item.tag, false)
         }

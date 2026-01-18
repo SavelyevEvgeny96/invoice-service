@@ -16,11 +16,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import ru.sogaz.site.orderingService.converters.NoOpMessageConverter
-import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitListenerProps
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 @Configuration
 class RabbitConfig(
