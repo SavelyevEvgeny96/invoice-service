@@ -15,7 +15,6 @@ class RabbitProps {
     lateinit var routingKeyPayment: String
     lateinit var routingKeyRefundPayment: String
 
-
     @PostConstruct
     fun postConstruct() {
         logger.info("PostConstruct:")

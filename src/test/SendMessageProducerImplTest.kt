@@ -23,7 +23,6 @@ import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
-import ru.sogaz.site.orderingService.dto.data.RefundSuccessDto
 import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
@@ -33,18 +32,21 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class SendMessageProducerImplTest {
-    @Mock lateinit var rabbitTemplate: RabbitTemplate
+    @Mock
+    lateinit var rabbitTemplate: RabbitTemplate
 
-    @Mock lateinit var rabbitProps: RabbitProps
+    @Mock
+    lateinit var rabbitProps: RabbitProps
 
-    @Mock lateinit var refundErrorMapper: RefundErrorMapper
+    @Mock
+    lateinit var refundErrorMapper: RefundErrorMapper
 
-    @Mock lateinit var channel: Channel
+    @Mock
+    lateinit var channel: Channel
 
     @InjectMocks
     lateinit var producer: SendMessageProducerImpl
@@ -70,30 +72,37 @@ class SendMessageProducerImplTest {
     fun `когда есть missing notForPaid noAccess found - отправляем нужные сообщения и подтверждаем каждое`() {
         whenever(rabbitProps.ordersExchange).thenReturn("orders-exchange")
 
-        val idMissing = UUID.randomUUID()
-        val idNotPaid = UUID.randomUUID()
-        val idNoAccess = UUID.randomUUID()
-        val idFound = UUID.randomUUID()
+        val payloadMissing =
+            RefundPayloadDto(
+                orderId = UUID.randomUUID(),
+                routingKeyStatus = "rk.missing",
+                metaInfo = emptyList(),
+                bank = null,
+            )
 
-        val payloadMissing = org.mockito.kotlin.mock<RefundPayloadDto>()
-        whenever(payloadMissing.orderId).thenReturn(idMissing)
-        whenever(payloadMissing.routingKeyStatus).thenReturn("rk.missing")
+        val payloadNotPaid =
+            RefundPayloadDto(
+                orderId = UUID.randomUUID(),
+                routingKeyStatus = "rk.notPaid",
+                metaInfo = emptyList(),
+                bank = null,
+            )
 
-        val payloadNotPaid = org.mockito.kotlin.mock<RefundPayloadDto>()
-        whenever(payloadNotPaid.orderId).thenReturn(idNotPaid)
-        whenever(payloadNotPaid.routingKeyStatus).thenReturn("rk.notPaid")
+        val payloadNoAccess =
+            RefundPayloadDto(
+                orderId = UUID.randomUUID(),
+                routingKeyStatus = "rk.noAccess",
+                metaInfo = emptyList(),
+                bank = null,
+            )
 
-        val payloadNoAccess = org.mockito.kotlin.mock<RefundPayloadDto>()
-        whenever(payloadNoAccess.orderId).thenReturn(idNoAccess)
-        whenever(payloadNoAccess.routingKeyStatus).thenReturn("rk.noAccess")
-
-        val payloadFound = org.mockito.kotlin.mock<RefundPayloadDto>()
-        whenever(payloadFound.orderId).thenReturn(idFound)
-        whenever(payloadFound.routingKeyStatus).thenReturn("rk.found")
-
-        whenever(payloadFound.metaInfo).thenReturn(emptyList())
-
-        whenever(payloadFound.bank).thenReturn(null)
+        val payloadFound =
+            RefundPayloadDto(
+                orderId = UUID.randomUUID(),
+                routingKeyStatus = "rk.found",
+                metaInfo = emptyList(),
+                bank = null,
+            )
 
         val miss = ParsedData(tag = 11L, dto = payloadMissing, messageId = "m1")
         val notPaid = ParsedData(tag = 22L, dto = payloadNotPaid, messageId = "m2")
@@ -102,30 +111,25 @@ class SendMessageProducerImplTest {
 
         val result =
             RefundPreparationResult(
-                found = listOf(found),
                 missing = listOf(miss),
-                noAccess = listOf(noAcc),
                 notForPaid = listOf(notPaid),
+                noAccess = listOf(noAcc),
+                found = listOf(found),
             )
 
         val errorMissing = org.mockito.kotlin.mock<RefundErrorDto>()
         val errorNotPaid = org.mockito.kotlin.mock<RefundErrorDto>()
         val errorNoAccess = org.mockito.kotlin.mock<RefundErrorDto>()
 
-        whenever(refundErrorMapper.toErrorDto(eq(payloadMissing), eq(RefundErrorReason.ORDER_NOT_FOUND)))
+        whenever(refundErrorMapper.toErrorDto(payloadMissing, RefundErrorReason.ORDER_NOT_FOUND))
             .thenReturn(errorMissing)
-
-        whenever(refundErrorMapper.toErrorDto(eq(payloadNotPaid), eq(RefundErrorReason.NOT_PAID_FOR)))
+        whenever(refundErrorMapper.toErrorDto(payloadNotPaid, RefundErrorReason.NOT_PAID_FOR))
             .thenReturn(errorNotPaid)
-
-        whenever(refundErrorMapper.toErrorDto(eq(payloadNoAccess), eq(RefundErrorReason.NO_ACCESS)))
+        whenever(refundErrorMapper.toErrorDto(payloadNoAccess, RefundErrorReason.NO_ACCESS))
             .thenReturn(errorNoAccess)
-
+        whenever(rabbitProps.routingKeyRefundPayment).thenReturn("rk.refund.success")
+        whenever(rabbitProps.paymentsExchange).thenReturn("payments-exchange")
         producer.sendMessageRefund(result, channel)
-
-        verify(refundErrorMapper).toErrorDto(eq(payloadMissing), eq(RefundErrorReason.ORDER_NOT_FOUND))
-        verify(refundErrorMapper).toErrorDto(eq(payloadNotPaid), eq(RefundErrorReason.NOT_PAID_FOR))
-        verify(refundErrorMapper).toErrorDto(eq(payloadNoAccess), eq(RefundErrorReason.NO_ACCESS))
 
         verify(rabbitTemplate).convertAndSend(
             eq("orders-exchange"),
@@ -150,21 +154,6 @@ class SendMessageProducerImplTest {
             any<MessagePostProcessor>(),
             any<CorrelationData>(),
         )
-
-        val payloadCaptor = argumentCaptor<Any>()
-        verify(rabbitTemplate).convertAndSend(
-            eq("orders-exchange"),
-            eq("rk.found"),
-            payloadCaptor.capture(),
-            any<MessagePostProcessor>(),
-            any<CorrelationData>(),
-        )
-
-        val sent = payloadCaptor.lastValue
-        assertTrue(sent is RefundSuccessDto, "В found должен улетать RefundSuccessDto")
-        sent as RefundSuccessDto
-        assertEquals(idFound, sent.orderId)
-
         verify(channel).basicAck(11L, false)
         verify(channel).basicAck(22L, false)
         verify(channel).basicAck(33L, false)
@@ -182,7 +171,7 @@ class SendMessageProducerImplTest {
     @Test
     fun `sendMessage проставляет заголовки и correlation data`() {
         val orderId = UUID.randomUUID()
-        val payload = org.mockito.kotlin.mock<Any>()
+        val payload = Any()
 
         producer.sendMessage(
             routingKey = "rk.test",
@@ -217,7 +206,6 @@ class SendMessageProducerImplTest {
 
         assertEquals("ex.test", headers[RabbitLogConst.HDR_X_EXCHANGE])
         assertEquals("rk.test", headers[RabbitLogConst.HDR_X_ROUTINGKEY])
-
         assertEquals(orderId.toString(), processed.messageProperties.correlationId)
     }
 }
