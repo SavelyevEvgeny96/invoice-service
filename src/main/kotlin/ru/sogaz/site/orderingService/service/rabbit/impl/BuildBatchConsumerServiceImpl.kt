@@ -7,9 +7,9 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedData
+import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import ru.sogaz.site.orderingService.dto.request.PaymentCreatedEvent
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -118,8 +118,8 @@ class BuildBatchConsumerServiceImpl(
             }
         val found =
             foundRaw.map { p ->
-                val order = ordersById[p.dto.orderId]!!
-                p.copy(dto = p.dto.copy(bank = order.bank))
+                val orderId = ordersById[p.dto.orderId]!!
+                p.copy(dto = p.dto.copy(orderId = orderId.orderId))
             }
         return RefundPreparationResult(
             found = found,

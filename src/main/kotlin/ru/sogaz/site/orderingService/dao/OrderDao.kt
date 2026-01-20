@@ -8,7 +8,7 @@ interface OrderDao {
 
     fun findByUnifiedId(unifiedId: String): List<OrderEntity?>
 
-    fun findByIds(ids: Collection<UUID>): List<OrderEntity>
+    fun findByIds(ids: List<UUID?>): List<OrderEntity>
 
     fun findByEmailOrPhone(
         email: String?,

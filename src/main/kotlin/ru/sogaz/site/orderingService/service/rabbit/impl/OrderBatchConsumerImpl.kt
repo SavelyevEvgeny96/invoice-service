@@ -7,7 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedData
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
+import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
 import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer

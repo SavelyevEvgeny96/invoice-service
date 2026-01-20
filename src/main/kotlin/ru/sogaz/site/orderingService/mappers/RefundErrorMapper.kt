@@ -5,7 +5,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
+import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 
 @Mapper(

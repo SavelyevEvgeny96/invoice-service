@@ -22,8 +22,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
+import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -76,32 +76,28 @@ class SendMessageProducerImplTest {
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.missing",
-                metaInfo = emptyList(),
-                bank = null,
+                metaInfo = emptyList()
             )
 
         val payloadNotPaid =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.notPaid",
-                metaInfo = emptyList(),
-                bank = null,
+                metaInfo = emptyList()
             )
 
         val payloadNoAccess =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.noAccess",
-                metaInfo = emptyList(),
-                bank = null,
+                metaInfo = emptyList()
             )
 
         val payloadFound =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.found",
-                metaInfo = emptyList(),
-                bank = null,
+                metaInfo = emptyList()
             )
 
         val miss = ParsedData(tag = 11L, dto = payloadMissing, messageId = "m1")

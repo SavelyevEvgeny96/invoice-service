@@ -6,9 +6,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.ParsedData
+import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
-import ru.sogaz.site.orderingService.dto.data.RefundSuccessDto
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -91,10 +90,9 @@ class SendMessageProducerImpl(
             val payload = item.dto
 
             val successDto =
-                RefundSuccessDto(
+                RefundPayloadDto(
                     payload.metaInfo,
                     payload.orderId,
-                    payload.bank,
                 )
             sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, payload.orderId)
 
