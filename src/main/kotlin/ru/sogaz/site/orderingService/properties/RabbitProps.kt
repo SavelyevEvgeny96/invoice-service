@@ -23,9 +23,11 @@ class RabbitProps {
         logger.info("paymentsExchange = $paymentsExchange")
         logger.info("ordersExchange = $ordersExchange")
         logger.info("queueOrder = $queueOrder")
+        logger.info("queueOrderRefund = $queueOrderRefund")
         logger.info("queuePayment = $queuePayment")
         logger.info("routingKeyOrder = $routingKeyOrder")
         logger.info("routingKeyPayment = $routingKeyPayment")
+        logger.info("routingKeyOrderRefund = $routingKeyOrderRefund")
         logger.info("routingKeyRefundPayment = $routingKeyRefundPayment")
     }
 }
