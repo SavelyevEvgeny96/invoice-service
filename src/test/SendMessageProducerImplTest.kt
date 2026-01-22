@@ -76,28 +76,28 @@ class SendMessageProducerImplTest {
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.missing",
-                metaInfo = emptyList()
+                metaInfo = emptyList(),
             )
 
         val payloadNotPaid =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.notPaid",
-                metaInfo = emptyList()
+                metaInfo = emptyList(),
             )
 
         val payloadNoAccess =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.noAccess",
-                metaInfo = emptyList()
+                metaInfo = emptyList(),
             )
 
         val payloadFound =
             RefundPayloadDto(
                 orderId = UUID.randomUUID(),
                 routingKeyStatus = "rk.found",
-                metaInfo = emptyList()
+                metaInfo = emptyList(),
             )
 
         val miss = ParsedData(tag = 11L, dto = payloadMissing, messageId = "m1")

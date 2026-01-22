@@ -1,11 +1,9 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import com.rabbitmq.client.Channel
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
-import ru.sogaz.site.orderingService.dto.data.ParsedData
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
@@ -21,21 +19,19 @@ import java.util.UUID
  * Producer (отправитель) сообщений в RabbitMQ для сценария Refund.
  *
  * Основная ответственность класса:
- * 1) Разобрать результат подготовки (`RefundPreparationResult`) на группы (missing / noAccess / notPaidFor / found).
+ * 1) Разобрать результат подготовки (RefundPreparationResult) на группы (missing / noAccess / notPaidFor / found).
  * 2) Для каждой группы сформировать DTO (ошибка или успех) и отправить его в RabbitMQ.
- * 3) Подтвердить (ack) сообщение в RabbitMQ через `Channel.basicAck()` только после обработки конкретного входного сообщения.
  *
  * Ключевые детали:
- * - Для каждой записи из результата мы определяем routing key из `dto.routingKeyStatus`.
- * - Ошибки маппим через `RefundErrorMapper` (единая логика формирования ошибок).
- * - Успешный ответ собираем как `RefundSuccessDto`.
- * - Публикация в RabbitMQ делается через `RabbitTemplate.convertAndSend`.
+ * - Для каждой записи из результата мы определяем routing key из dto.routingKeyStatus.
+ * - Ошибки маппим через RefundErrorMapper (единая логика формирования ошибок).
+ * - Успешный ответ собираем как RefundPayloadDto.
+ * - Публикация в RabbitMQ делается через RabbitTemplate.convertAndSend.
  * - В сообщение добавляются технические headers для трассировки (author, flowCode, timestamp и т.п.).
  *
  * Важно:
- * - `basicAck` вызывается после отправки сообщения. Если отправка упадёт исключением — ack не произойдёт,
- *   и сообщение можно будет пере обработать (в зависимости от настроек consumer/requeue).
- * - `CorrelationData` используется для correlation/confirm-логики (если включены publisher confirms).
+ * - Сообщения отправляются по всем элементам батча.
+ * - CorrelationData может использоваться для correlation/confirm-логики (если включены publisher confirms).
  */
 @Service
 class SendMessageProducerImpl(
@@ -47,25 +43,20 @@ class SendMessageProducerImpl(
      * Отправляет сообщения по результатам подготовки refund-заказов.
      *
      * На вход получает результат, который уже содержит разнесение по сценариям:
-     * - `missing`     — ордер не найден в БД
-     * - `noAccess`    — нет прав/доступа у author
-     * - `notForPaid`  — ордер существует, но не оплачен (или статус не SUCCESS)
-     * - `found`       — ордер найден, доступ есть, статус корректный -> отправляем успех
+     * - missing     — ордер не найден в БД
+     * - noAccess    — нет прав/доступа у author
+     * - notForPaid  — ордер существует, но не оплачен (или статус не SUCCESS)
+     * - found       — ордер найден, доступ есть, статус корректный -> отправляем успех
      *
      * Для каждой записи:
      * - Формируем ответный DTO (error/success)
      * - Отправляем в exchange
-     * - Ack исходного сообщения по `tag` (подтверждаем брокеру, что оно обработано)
      *
      * @param resultOrder Результат подготовки, содержащий сгруппированные элементы
-     * @param channel RabbitMQ Channel, через который делается manual-ack входных сообщений
      */
-    override fun sendMessageRefund(
-        resultOrder: RefundPreparationResult,
-        channel: Channel,
-    ) {
+    override fun sendMessageRefund(resultOrder: RefundPreparationResult) {
         // 1) Ошибочные группы сводим в одну мапу "причина -> список"
-        val errorBatches: Map<RefundErrorReason, List<ParsedData<RefundPayloadDto>>> =
+        val errorBatches: Map<RefundErrorReason, List<RefundPayloadDto>> =
             mapOf(
                 RefundErrorReason.ORDER_NOT_FOUND to resultOrder.missing,
                 RefundErrorReason.NOT_PAID_FOR to resultOrder.notForPaid,
@@ -75,28 +66,20 @@ class SendMessageProducerImpl(
         // 2) Обрабатываем все ошибки одинаково
         errorBatches.forEach { (reason, batch) ->
             batch.forEach { item ->
-                val payload = item.dto
-                val rk = payload.routingKeyStatus.orEmpty()
-
-                val errorDto = refundErrorMapper.toErrorDto(payload, reason)
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, payload.orderId)
-
-                channel.basicAck(item.tag, false)
+                val rk = item.routingKeyStatus.orEmpty()
+                val errorDto = refundErrorMapper.toErrorDto(item, reason)
+                sendMessage(rk, errorDto, rabbitProps.ordersExchange, item.orderId)
             }
         }
 
         // 3) Успех отдельно (тут другой DTO)
         resultOrder.found.forEach { item ->
-            val payload = item.dto
-
             val successDto =
                 RefundPayloadDto(
-                    payload.metaInfo,
-                    payload.orderId,
+                    item.metaInfo,
+                    item.orderId,
                 )
-            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, payload.orderId)
-
-            channel.basicAck(item.tag, false)
+            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
         }
     }
 

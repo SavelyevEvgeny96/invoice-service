@@ -62,8 +62,9 @@ app:
     listener:
       batch-size: 100
       prefetch: 100
-      concurrency: 3
-      max-concurrency: 10
+      concurrency: 1
+      max-concurrency: 1
+      batch-receive-timeout: 2000
 
 management:
   endpoints:

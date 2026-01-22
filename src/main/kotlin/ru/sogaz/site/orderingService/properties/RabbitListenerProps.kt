@@ -8,4 +8,5 @@ data class RabbitListenerProps(
     var prefetch: Int?,
     var concurrency: Int?,
     var maxConcurrency: Int?,
+    var batchReceiveTimeout: Long?,
 )
