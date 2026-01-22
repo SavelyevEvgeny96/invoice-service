@@ -5,10 +5,10 @@ import ru.sogaz.site.jwt.starter.dto.JwtClaims
 import ru.sogaz.site.jwt.starter.service.JwtService
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.entity.ClientSystemEntity
+import ru.sogaz.site.orderingService.exceptions.ForbiddenBusinessException
+import ru.sogaz.site.orderingService.exceptions.UnauthorizedBusinessException
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.AuthorizationService
-import ru.sogaz.site.paymentService.exceptions.ForbiddenBusinessException
-import ru.sogaz.site.paymentService.exceptions.UnauthorizedBusinessException
 
 class AuthorizationServiceImpl(
     private val clientSystemDao: ClientSystemDao,

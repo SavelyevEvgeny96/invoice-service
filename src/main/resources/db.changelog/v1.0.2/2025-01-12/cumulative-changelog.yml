@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-002-alter-table
+      author: Sokolov Danila
+      changes:
+        - tagDatabase:
+            tag: backend-002-alter-table
+  - include:
+      file: db.changelog/v1.0.2/2025-01-12/DATA/add_column_orders.sql

@@ -108,6 +108,7 @@ class PaymentServiceTest {
             queueStatusResultName = "",
             skipSendingQueue = false,
             skipSendingReceipt = false,
+            depersonalization = false,
         ).apply {
             subOrders.add(createSubOrder())
         }

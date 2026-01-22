@@ -1,4 +1,4 @@
-package ru.sogaz.site.paymentService.exceptions
+package ru.sogaz.site.orderingService.exceptions
 
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomPaymentErrors.Companion.CODE_ERROR_FORBIDDEN
