@@ -67,6 +67,7 @@ class OrdersUserServiceImplTest {
                 urlToReturn = "",
                 refundDate = Instant.now(),
                 queueStatusResultName = "",
+                depersonalization = false,
             )
 
         subOrderEntity =

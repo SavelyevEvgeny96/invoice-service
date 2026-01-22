@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.core.AcknowledgeMode
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
+import org.springframework.amqp.core.FanoutExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.QueueBuilder
 import org.springframework.amqp.core.TopicExchange
@@ -79,20 +80,49 @@ class RabbitConfig(
     @Bean(name = ["paymentsExchange"])
     fun paymentsExchange(): TopicExchange = TopicExchange(props.paymentsExchange, true, false)
 
+    @Bean
+    fun paymentCompletedFanoutExchange(): FanoutExchange = FanoutExchange(props.paymentsCompletedExchange)
+
+    @Bean
+    fun receiptExchange(): TopicExchange = TopicExchange(props.receiptExchange)
+
     // Основная очередь заказов с DLQ
     @Bean(name = ["ordersQueue"])
     fun ordersQueue(): Queue =
         QueueBuilder
             .durable(props.queueOrder)
-            .withArgument("x-dead-letter-exchange", "")
-            .withArgument("x-dead-letter-routing-key", "${props.queueOrder}.dlq")
+            .quorum()
+            .deadLetterExchange(props.ordersExchange)
+            .deadLetterRoutingKey(props.routingKeyOrderDlq)
             .build()
 
     @Bean(name = ["ordersDlq"])
-    fun ordersDlq(): Queue = QueueBuilder.durable("${props.queueOrder}.dlq").build()
+    fun ordersDlq(): Queue =
+        QueueBuilder
+            .durable(props.queueOrderDlq)
+            .quorum()
+            .build()
 
     @Bean(name = ["paymentsQueue"])
-    fun paymentsQueue(): Queue = QueueBuilder.durable(props.queuePayment).build()
+    fun paymentsQueue(): Queue =
+        QueueBuilder
+            .durable(props.queuePayment)
+            .quorum()
+            .build()
+
+    @Bean
+    fun orderStatusChangeQueue(): Queue =
+        QueueBuilder
+            .durable(props.queueChangeStatusOrder)
+            .quorum()
+            .build()
+
+    @Bean
+    fun orderReceiptSendQueue(): Queue =
+        QueueBuilder
+            .durable(props.queueSendReceiptOrder)
+            .quorum()
+            .build()
 
     @Bean
     fun ordersBinding(
@@ -101,10 +131,34 @@ class RabbitConfig(
     ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrder)
 
     @Bean
+    fun ordersDlqBinding(
+        @Qualifier("ordersDlq") queue: Queue,
+        @Qualifier("ordersExchange")exchange: TopicExchange,
+    ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrderDlq)
+
+    @Bean
     fun paymentsBinding(
         @Qualifier("paymentsQueue") queue: Queue,
         @Qualifier("paymentsExchange")exchange: TopicExchange,
     ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyPayment)
+
+    @Bean
+    fun orderStatusChangeBinding(
+        orderStatusChangeQueue: Queue,
+        paymentCompletedExchange: FanoutExchange,
+    ): Binding =
+        BindingBuilder
+            .bind(orderStatusChangeQueue)
+            .to(paymentCompletedExchange)
+
+    @Bean
+    fun orderReceiptSendBinding(
+        orderReceiptSendQueue: Queue,
+        paymentCompletedExchange: FanoutExchange,
+    ): Binding =
+        BindingBuilder
+            .bind(orderReceiptSendQueue)
+            .to(paymentCompletedExchange)
 
     @Bean
     @Primary
@@ -126,5 +180,18 @@ class RabbitConfig(
             setDefaultRequeueRejected(false)
 
             setMessageConverter(noOpMessageConverter)
+        }
+
+    @Bean
+    fun concurrentContainerFactory(
+        connectionFactory: ConnectionFactory,
+        jacksonMessageConverter: MessageConverter,
+    ): SimpleRabbitListenerContainerFactory =
+        SimpleRabbitListenerContainerFactory().apply {
+            setConnectionFactory(connectionFactory)
+            setMessageConverter(jacksonMessageConverter)
+            setChannelTransacted(true)
+            setConcurrentConsumers(propsListener.concurrency)
+            setMaxConcurrentConsumers(propsListener.maxConcurrency)
         }
 }

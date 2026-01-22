@@ -15,6 +15,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -74,6 +75,11 @@ class OrderEntity(
     var skipSendingReceipt: Boolean? = false,
     @Column(name = "skip_sending_errors_queue")
     var skipSendingErrorsQueue: Boolean? = false,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "receipt_state")
+    var receiptState: ReceiptState = ReceiptState.NONE,
+    @Column(name = "depersonalization")
+    var depersonalization: Boolean,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant?,
