@@ -1,14 +1,21 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
+import com.rabbitmq.client.AMQP
+import com.rabbitmq.client.Channel
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
+import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
+import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -38,7 +45,10 @@ class SendMessageProducerImpl(
     private val rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
     private val refundErrorMapper: RefundErrorMapper,
+    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) : SendMessageProducer {
+    private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
+
     /**
      * Отправляет сообщения по результатам подготовки refund-заказов.
      *
@@ -80,6 +90,86 @@ class SendMessageProducerImpl(
                     item.orderId,
                 )
             sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
+        }
+    }
+
+    override fun processErrorMessages(
+        errorParsed: ParsedResult.Error<OrderPayloadDto>,
+        channel: Channel,
+        exchange: String,
+    ) {
+        try {
+            logger.warn("Битое сообщение от автора=${errorParsed.author}: ${errorParsed.rawMessage}")
+
+            val rKey =
+                queueStatusResultNameNormalizeService
+                    .buildQueueStatusResultName(PAYMENT_STATUS_PATTERN, errorParsed.author)
+
+            // Отправка с подтверждением
+            sendRawMessageWithConfirm(channel, exchange, rKey, errorParsed.rawMessage)
+
+            // Только после успешного подтверждения делаем ack
+            channel.basicAck(errorParsed.tag, false)
+        } catch (ex: Exception) {
+            logger.error("Ошибка при обработке сообщения ${errorParsed.tag} от автора=${errorParsed.author}", ex)
+            // не делаем basicAck, сообщение вернется в очередь
+        }
+    }
+
+    /**
+     * Отправляет сообщение в RabbitMQ БЕЗ сериализации payload.
+     *
+     * <p>
+     * В отличие от {@code sendConvertedMessage}, данный метод предназначен
+     * для отправки уже готового тела сообщения (raw payload), например:
+     * <ul>
+     *   <li>битого или неполного JSON</li>
+     *   <li>сообщений, полученных из RabbitMQ и переотправляемых дальше</li>
+     *   <li>форензики / DLQ / технических очередей</li>
+     * </ul>
+     *
+     * <p>
+     * Метод НЕ использует {@link org.springframework.amqp.support.converter.MessageConverter}
+     * и отправляет сообщение как массив байт, сохраняя тело в исходном виде
+     * (без экранирования, без double-encoding).
+     *
+     * <p>
+     * Ответственность за корректность формата payload (JSON / text / broken JSON)
+     * полностью лежит на вызывающей стороне.
+     *
+     * <p>
+     * Что делает метод:
+     * <ol>
+     *   <li>Формирует технические headers (author, flowCode, timestamp)</li>
+     *   <li>Устанавливает {@code contentType=application/json} и {@code UTF-8 encoding}</li>
+     *   <li>Устанавливает {@code correlationId} для трассировки и publisher confirms</li>
+     *   <li>Отправляет сообщение через {@link org.springframework.amqp.rabbit.core.RabbitTemplate#send}</li>
+     * </ol>
+     *
+     * @param routingKey routing key, по которому маршрутизируется сообщение
+     * @param rawBody тело сообщения в виде строки (отправляется без сериализации)
+     * @param exchange exchange, в который публикуется сообщение
+     * @param orderId бизнес-корреляция сообщения (если {@code null}, используется случайный UUID)
+     */
+    override fun sendRawMessageWithConfirm(
+        channel: Channel,
+        exchange: String,
+        routingKey: String,
+        rawBody: String,
+    ) {
+        val props =
+            AMQP.BasicProperties
+                .Builder()
+                .contentType("application/json")
+                .deliveryMode(2) // persistent
+                .build()
+
+        channel.confirmSelect() // включаем подтверждения
+        channel.basicPublish(exchange, routingKey, props, rawBody.toByteArray(Charsets.UTF_8))
+
+        // Ждем синхронно подтверждения брокера
+        if (!channel.waitForConfirms(3000)) {
+            throw RuntimeException("Сообщение не подтверждено брокером")
         }
     }
 

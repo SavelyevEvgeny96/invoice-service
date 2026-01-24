@@ -7,22 +7,18 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
-import ru.sogaz.site.orderingService.dto.data.PublishResult
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_REFUND_PATTERN
-import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
 import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
-import ru.sogaz.site.orderingService.service.rabbit.PaymentEventProducer
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 
 @Service
 class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
-    private val paymentProducer: PaymentEventProducer,
     private val objectMapper: ObjectMapper,
     private val sendMessageProducer: SendMessageProducer,
     private val props: RabbitProps,
@@ -37,6 +33,11 @@ class OrderBatchConsumerImpl(
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
                 "в батче по возврату заказа "
+        private val AUTHOR_REGEX =
+            Regex(
+                """"author"\s*:\s*"([^"]+)"""",
+                RegexOption.IGNORE_CASE,
+            )
     }
 
     private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
@@ -81,8 +82,8 @@ class OrderBatchConsumerImpl(
         messages: List<Message>,
         channel: Channel,
     ) {
-        val started = System.nanoTime()
-
+        val started = System.nanoTime() // старт замера времени
+        logger.info("BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}")
         // parseBatch теперь возвращает ParsedResult.Success и ParsedResult.Error
         val parsedResults = parseBatch(messages, channel, OrderPayloadDto::class.java)
 
@@ -98,40 +99,47 @@ class OrderBatchConsumerImpl(
         try {
             // --- Обработка валидных сообщений ---
             if (successMessages.isNotEmpty()) {
-                val dtos = successMessages.map { it.dto }
-                val events = buildBatchConsumerService.insertBatchOrderCreated(dtos)
-                if (events.isNotEmpty()) {
-                    val result = paymentProducer.sendBatchOrderCreated(events)
+                val successWithTag = successMessages.map { it.tag to it.dto } // List<Pair<Long, OrderPayloadDto>>
+                val eventsWithTag =
+                    buildBatchConsumerService
+                        .insertBatchOrderCreated(successWithTag.map { it.second })
+                        .zip(successWithTag.map { it.first }) // List<Pair<Event, tag>>
 
-                    // Один ACK на весь batch валидных сообщений
-                    if (result.allConfirmed()) {
-                        val lastTag = successMessages.last().tag
-                        channel.basicAck(lastTag, true)
-                    } else {
-                        logger.warn("Не все сообщения подтверждены, batch не ACK")
+                if (eventsWithTag.isNotEmpty()) {
+                    eventsWithTag.forEach { (event, tag) ->
+                        sendMessageProducer.sendMessage(
+                            props.routingKeyPayment,
+                            event,
+                            props.paymentsExchange,
+                            event.orderIdRecurrent,
+                        )
+                        channel.basicAck(tag, false) // ACK по одному сообщению
                     }
-
-                    val tookMs = (System.nanoTime() - started) / 1_000_000
-                    logger.info(BATCH_SUMMARY.format(successMessages.size, tookMs))
+                } else {
+                    logger.warn("Не все сообщения подтверждены, batch не ACK")
                 }
             }
 
             // --- Обработка битых сообщений с author ---
             errorMessages.forEach { err ->
-                logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage.take(100)}")
-                val rKey =
-                    queueStatusResultNameNormalizeService.buildQueueStatusResultName(PAYMENT_STATUS_PATTERN, err.author)
-                sendMessageProducer.sendMessage(rKey, err.rawMessage, props.paymentsExchange, null)
+                logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage}")
+                sendMessageProducer.processErrorMessages(err, channel, props.paymentsExchange)
             }
         } catch (ex: Exception) {
             logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}", ex)
-
             // Reject всех успешных сообщений, чтобы они вернулись в очередь
-            successMessages.forEach { (tag, _) -> channel.basicReject(tag, false) }
+            successMessages.forEach { success ->
+                channel.basicReject(success.tag, false)
+            }
+        } finally {
+            // --- Лог времени обработки всей пачки ---
+            val tookMs = (System.nanoTime() - started) / 1_000_000
+            val totalMessages = successMessages.size + errorMessages.size
+            logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
         }
     }
 
-    /**
+/**
      * Обрабатывает batch сообщений по возвратам заказов из очереди.
      *
      * <p>Метод получает список сообщений из RabbitMQ и делит их на два типа:
@@ -202,7 +210,10 @@ class OrderBatchConsumerImpl(
             errorMessages.forEach { err ->
                 logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage.take(100)}")
                 val rKey =
-                    queueStatusResultNameNormalizeService.buildQueueStatusResultName(ORDER_STATUS_REFUND_PATTERN, err.author)
+                    queueStatusResultNameNormalizeService.buildQueueStatusResultName(
+                        ORDER_STATUS_REFUND_PATTERN,
+                        err.author,
+                    )
                 sendMessageProducer.sendMessage(rKey, err.rawMessage, props.ordersExchange, null)
             }
         } catch (ex: Exception) {
@@ -224,22 +235,15 @@ class OrderBatchConsumerImpl(
             val tag = msg.messageProperties.deliveryTag
             val messageId = msg.messageProperties.messageId
             val body = String(msg.body, Charsets.UTF_8)
-
             try {
                 val dto = objectMapper.readValue(body, dtoClass)
                 result += ParsedResult.Success(tag, dto, messageId)
             } catch (ex: Exception) {
-                // Пытаемся вытянуть author вручную
-                val author =
-                    runCatching {
-                        val node = objectMapper.readTree(body)
-                        node["metaInfo"]?.firstOrNull()?.get("author")?.asText()
-                    }.getOrNull()
-
+                val author = extractAuthorUnsafe(body)
                 if (author != null) {
-                    // Добавляем в Error, НЕ реджектим
                     result += ParsedResult.Error(tag, body, author, messageId)
                 } else {
+                    channel.basicReject(tag, false)
                     // author не нашли → реджектим
                     try {
                         channel.basicReject(tag, false)
@@ -253,5 +257,25 @@ class OrderBatchConsumerImpl(
         return result
     }
 
-    fun PublishResult.allConfirmed(): Boolean = nAcked.isEmpty() && unconfirmed.isEmpty()
+    private fun extractAuthorUnsafe(body: String): String? {
+        // 1. Пытаемся по-человечески
+        runCatching {
+            val node = objectMapper.readTree(body)
+            val json =
+                if (node.isTextual) objectMapper.readTree(node.asText()) else node
+
+            return json
+                .path("metaInfo")
+                .firstOrNull()
+                ?.path("author")
+                ?.asText()
+        }
+
+        // 2. Fallback — режем строку
+        return AUTHOR_REGEX
+            .find(body)
+            ?.groupValues
+            ?.getOrNull(1)
+    }
+
 }

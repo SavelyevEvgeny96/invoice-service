@@ -61,11 +61,11 @@ app:
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
     listener:
-      batch-size: 100
-      prefetch: 100
+      batch-size: 50
+      prefetch: 50
       concurrency: 1
       max-concurrency: 1
-      batch-receive-timeout: 2000
+      batch-receive-timeout: 5000
 
 management:
   endpoints:
