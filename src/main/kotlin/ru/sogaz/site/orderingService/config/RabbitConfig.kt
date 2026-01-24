@@ -93,21 +93,17 @@ class RabbitConfig(
     fun batchContainerFactory(noOpMessageConverter: NoOpMessageConverter): SimpleRabbitListenerContainerFactory =
         SimpleRabbitListenerContainerFactory().apply {
             setConnectionFactory(connectionFactory)
-            // === BATCH ===
             setBatchListener(true)
+            setConsumerBatchEnabled(true)
+            setDeBatchingEnabled(true)
             setBatchSize(propsListener.batchSize)
-            // === PREFETCH ===
             setPrefetchCount(propsListener.prefetch)
-            // === CONSUMERS ===
             setConcurrentConsumers(propsListener.concurrency)
             setMaxConcurrentConsumers(propsListener.maxConcurrency)
-            // === ACK ===
             setAcknowledgeMode(AcknowledgeMode.MANUAL)
-            setDefaultRequeueRejected(false)
-            // === PERFORMANCE ===
             setChannelTransacted(false)
-            setBatchReceiveTimeout(propsListener.batchReceiveTimeout)
-            // === CONVERTER ===
+            setDefaultRequeueRejected(false)
+
             setMessageConverter(noOpMessageConverter)
         }
 }

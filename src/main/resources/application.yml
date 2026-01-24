@@ -65,7 +65,6 @@ app:
       prefetch: 50
       concurrency: 1
       max-concurrency: 1
-      batch-receive-timeout: 5000
 
 management:
   endpoints:
