@@ -23,7 +23,7 @@ spring:
     virtual-host: /
     listener:
       simple:
-        acknowledge-mode: auto
+        acknowledge-mode: manual
   jackson:
     serialization:
       write-dates-as-timestamps: false

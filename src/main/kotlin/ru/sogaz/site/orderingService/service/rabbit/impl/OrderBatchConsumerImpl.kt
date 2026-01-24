@@ -84,6 +84,7 @@ class OrderBatchConsumerImpl(
     ) {
         val started = System.nanoTime() // старт замера времени
         logger.info("BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}")
+
         // parseBatch теперь возвращает ParsedResult.Success и ParsedResult.Error
         val parsedResults = parseBatch(messages, channel, OrderPayloadDto::class.java)
 
@@ -99,38 +100,41 @@ class OrderBatchConsumerImpl(
         try {
             // --- Обработка валидных сообщений ---
             if (successMessages.isNotEmpty()) {
-                val successWithTag = successMessages.map { it.tag to it.dto } // List<Pair<Long, OrderPayloadDto>>
-                val eventsWithTag =
-                    buildBatchConsumerService
-                        .insertBatchOrderCreated(successWithTag.map { it.second })
-                        .zip(successWithTag.map { it.first }) // List<Pair<Event, tag>>
+                val successDtos = successMessages.map { it.dto }
+                val events = buildBatchConsumerService.insertBatchOrderCreated(successDtos)
 
-                if (eventsWithTag.isNotEmpty()) {
-                    eventsWithTag.forEach { (event, tag) ->
+                // Отправка сообщений и ACK всего батча одним вызовом
+                if (events.isNotEmpty()) {
+                    events.forEach { event ->
                         sendMessageProducer.sendMessage(
                             props.routingKeyPayment,
                             event,
                             props.paymentsExchange,
-                            event.orderIdRecurrent,
+                            event.orderIdRecurrent
                         )
-                        channel.basicAck(tag, false) // ACK по одному сообщению
                     }
+
+                    // Берём последний deliveryTag из успешных сообщений
+                    val lastTag = successMessages.last().tag
+                    channel.basicAck(lastTag, true) // true → ack всех до lastTag
                 } else {
                     logger.warn("Не все сообщения подтверждены, batch не ACK")
                 }
             }
 
             // --- Обработка битых сообщений с author ---
-            errorMessages.forEach { err ->
-                logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage}")
-                sendMessageProducer.processErrorMessages(err, channel, props.paymentsExchange)
+            if (errorMessages.isNotEmpty()) {
+                errorMessages.forEach { err ->
+                    logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage}")
+                    sendMessageProducer.processErrorMessages(err, channel, props.paymentsExchange)
+                }
             }
+
         } catch (ex: Exception) {
             logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}", ex)
             // Reject всех успешных сообщений, чтобы они вернулись в очередь
-            successMessages.forEach { success ->
-                channel.basicReject(success.tag, false)
-            }
+            val lastTag = successMessages.lastOrNull()?.tag
+            lastTag?.let { channel.basicReject(it, true) } // true → requeue
         } finally {
             // --- Лог времени обработки всей пачки ---
             val tookMs = (System.nanoTime() - started) / 1_000_000
@@ -139,7 +143,7 @@ class OrderBatchConsumerImpl(
         }
     }
 
-/**
+    /**
      * Обрабатывает batch сообщений по возвратам заказов из очереди.
      *
      * <p>Метод получает список сообщений из RabbitMQ и делит их на два типа:
@@ -241,10 +245,10 @@ class OrderBatchConsumerImpl(
             } catch (ex: Exception) {
                 val author = extractAuthorUnsafe(body)
                 if (author != null) {
+                    // Сообщение битое, передаём в handleBatch для обработки
                     result += ParsedResult.Error(tag, body, author, messageId)
                 } else {
-                    channel.basicReject(tag, false)
-                    // author не нашли → реджектим
+                    // author не нашли → реджектим один раз
                     try {
                         channel.basicReject(tag, false)
                     } catch (ackEx: Exception) {
@@ -277,5 +281,4 @@ class OrderBatchConsumerImpl(
             ?.groupValues
             ?.getOrNull(1)
     }
-
 }
