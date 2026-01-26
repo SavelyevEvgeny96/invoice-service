@@ -93,63 +93,117 @@ class SendMessageProducerImpl(
         }
     }
 
+    /**
+     * Обрабатывает битое сообщение, из которого удалось извлечь {@code author}.
+     *
+     * <p>Метод предназначен для сообщений, которые:
+     * <ul>
+     *     <li>не соответствуют целевому DTO</li>
+     *     <li>не должны попадать в DLQ</li>
+     *     <li>должны быть перенаправлены во внешнюю техническую очередь
+     *         для дальнейшего анализа или ручной обработки</li>
+     * </ul>
+     *
+     * <p><b>Алгоритм обработки:</b>
+     * <ol>
+     *     <li>Формируется routing key на основе {@code author}.</li>
+     *     <li>Сообщение переотправляется в указанный exchange в «сыром» виде
+     *         (без сериализации).</li>
+     *     <li>Используется publisher confirms для гарантии доставки.</li>
+     *     <li>Только после подтверждения брокером выполняется
+     *         {@link Channel#basicAck(long, boolean)} для исходного сообщения.</li>
+     * </ol>
+     *
+     * <p><b>Поведение при ошибках:</b>
+     * <ul>
+     *     <li>Если отправка или confirm завершаются ошибкой — ACK не выполняется.</li>
+     *     <li>Сообщение остаётся unacked и будет переотправлено RabbitMQ.</li>
+     * </ul>
+     *
+     * @param errorParsed результат парсинга битого сообщения
+     * @param channel     RabbitMQ channel, используемый для publish и ACK
+     * @param exchange    exchange, в который отправляется битое сообщение
+     */
     override fun processErrorMessages(
         errorParsed: ParsedResult.Error<OrderPayloadDto>,
         channel: Channel,
         exchange: String,
     ) {
         try {
-            logger.warn("Битое сообщение от автора=${errorParsed.author}: ${errorParsed.rawMessage}")
+            // Логируем битое сообщение для трассировки
+            logger.warn(
+                "Битое сообщение от автора=${errorParsed.author}: ${errorParsed.rawMessage}"
+            )
 
+            // Формируем routing key для технической очереди
             val rKey =
                 queueStatusResultNameNormalizeService
-                    .buildQueueStatusResultName(PAYMENT_STATUS_PATTERN, errorParsed.author)
+                    .buildQueueStatusResultName(
+                        PAYMENT_STATUS_PATTERN,
+                        errorParsed.author
+                    )
 
-            // Отправка с подтверждением
-            sendRawMessageWithConfirm(channel, exchange, rKey, errorParsed.rawMessage)
+            // Переотправляем raw payload с подтверждением от брокера
+            sendRawMessageWithConfirm(
+                channel,
+                exchange,
+                rKey,
+                errorParsed.rawMessage
+            )
 
-            // Только после успешного подтверждения делаем ack
+            // ACK исходного сообщения выполняется
+            // ТОЛЬКО после успешного publisher confirm
             channel.basicAck(errorParsed.tag, false)
         } catch (ex: Exception) {
-            logger.error("Ошибка при обработке сообщения ${errorParsed.tag} от автора=${errorParsed.author}", ex)
-            // не делаем basicAck, сообщение вернется в очередь
+            logger.error(
+                "Ошибка при обработке сообщения ${errorParsed.tag} от автора=${errorParsed.author}",
+                ex
+            )
+            // ACK не выполняем → сообщение останется unacked
+            // и будет переотправлено RabbitMQ
         }
     }
-
     /**
-     * Отправляет сообщение в RabbitMQ БЕЗ сериализации payload.
+     * Отправляет сообщение в RabbitMQ в «сыром» виде (без сериализации payload)
+     * с использованием publisher confirms.
      *
-     * <p>
-     * В отличие от {@code sendConvertedMessage}, данный метод предназначен
-     * для отправки уже готового тела сообщения (raw payload), например:
+     * <p>Метод предназначен для переотправки уже сформированного тела сообщения,
+     * например:
      * <ul>
-     *   <li>битого или неполного JSON</li>
-     *   <li>сообщений, полученных из RabbitMQ и переотправляемых дальше</li>
-     *   <li>форензики / DLQ / технических очередей</li>
+     *     <li>битого или неполного JSON</li>
+     *     <li>сообщений, полученных из RabbitMQ и пересылаемых дальше</li>
+     *     <li>форензики, технических очередей, внешней обработки</li>
      * </ul>
      *
-     * <p>
-     * Метод НЕ использует {@link org.springframework.amqp.support.converter.MessageConverter}
-     * и отправляет сообщение как массив байт, сохраняя тело в исходном виде
-     * (без экранирования, без double-encoding).
+     * <p><b>Особенности:</b>
+     * <ul>
+     *     <li>Сообщение отправляется как {@code byte[]} без участия
+     *         {@link org.springframework.amqp.support.converter.MessageConverter}.</li>
+     *     <li>Payload сохраняется в исходном виде (без экранирования и double-encoding).</li>
+     *     <li>Используется синхронное ожидание publisher confirm от брокера.</li>
+     * </ul>
      *
-     * <p>
-     * Ответственность за корректность формата payload (JSON / text / broken JSON)
-     * полностью лежит на вызывающей стороне.
-     *
-     * <p>
-     * Что делает метод:
+     * <p><b>Алгоритм:</b>
      * <ol>
-     *   <li>Формирует технические headers (author, flowCode, timestamp)</li>
-     *   <li>Устанавливает {@code contentType=application/json} и {@code UTF-8 encoding}</li>
-     *   <li>Устанавливает {@code correlationId} для трассировки и publisher confirms</li>
-     *   <li>Отправляет сообщение через {@link org.springframework.amqp.rabbit.core.RabbitTemplate#send}</li>
+     *     <li>Формируются базовые {@link AMQP.BasicProperties}
+     *         (contentType, deliveryMode).</li>
+     *     <li>Включается режим publisher confirms для канала.</li>
+     *     <li>Сообщение публикуется через {@link Channel#basicPublish}.</li>
+     *     <li>Метод блокируется до получения подтверждения от брокера.</li>
+     *     <li>При отсутствии подтверждения выбрасывается исключение.</li>
      * </ol>
      *
-     * @param routingKey routing key, по которому маршрутизируется сообщение
-     * @param rawBody тело сообщения в виде строки (отправляется без сериализации)
-     * @param exchange exchange, в который публикуется сообщение
-     * @param orderId бизнес-корреляция сообщения (если {@code null}, используется случайный UUID)
+     * <p><b>Гарантии:</b><br>
+     * Метод либо завершается успешно (сообщение подтверждено брокером),
+     * либо выбрасывает исключение, позволяя вызывающему коду
+     * не выполнять ACK исходного сообщения.
+     *
+     * @param channel    RabbitMQ channel, используемый для publish и confirms
+     * @param exchange   exchange, в который публикуется сообщение
+     * @param routingKey routing key для маршрутизации сообщения
+     * @param rawBody    тело сообщения в виде строки (отправляется без сериализации)
+     *
+     * @throws RuntimeException если брокер не подтвердил публикацию
      */
     override fun sendRawMessageWithConfirm(
         channel: Channel,
@@ -157,17 +211,26 @@ class SendMessageProducerImpl(
         routingKey: String,
         rawBody: String,
     ) {
+        // Минимальный набор AMQP properties
         val props =
             AMQP.BasicProperties
                 .Builder()
                 .contentType("application/json")
-                .deliveryMode(2) // persistent
+                .deliveryMode(2) // persistent message
                 .build()
 
-        channel.confirmSelect() // включаем подтверждения
-        channel.basicPublish(exchange, routingKey, props, rawBody.toByteArray(Charsets.UTF_8))
+        // Включаем publisher confirms для канала
+        channel.confirmSelect()
 
-        // Ждем синхронно подтверждения брокера
+        // Публикуем raw payload без сериализации
+        channel.basicPublish(
+            exchange,
+            routingKey,
+            props,
+            rawBody.toByteArray(Charsets.UTF_8)
+        )
+
+        // Синхронно ожидаем подтверждения от брокера
         if (!channel.waitForConfirms(3000)) {
             throw RuntimeException("Сообщение не подтверждено брокером")
         }

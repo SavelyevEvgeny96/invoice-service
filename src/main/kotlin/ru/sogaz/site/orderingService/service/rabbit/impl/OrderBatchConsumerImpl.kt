@@ -27,12 +27,13 @@ class OrderBatchConsumerImpl(
     companion object {
         private const val BATCH_SUMMARY =
             "Итог обработки пачки: количество=%d, длительность(мс)=%d"
+        private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                " в батче по созданию заказа"
+                    " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                "в батче по возврату заказа "
+                    "в батче по возврату заказа "
         private val AUTHOR_REGEX =
             Regex(
                 """"author"\s*:\s*"([^"]+)"""",
@@ -82,29 +83,41 @@ class OrderBatchConsumerImpl(
         messages: List<Message>,
         channel: Channel,
     ) {
-        val started = System.nanoTime() // старт замера времени
-        logger.info("BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}")
-
-        // parseBatch теперь возвращает ParsedResult.Success и ParsedResult.Error
+        // Замер общего времени обработки batch
+        val started = System.nanoTime()
+        // Логируем deliveryTag каждого сообщения — важно для отладки ACK/Reject
+        logger.info(
+            "BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}"
+        )
+        // Парсинг batch:
+        //  - Success -> валидные DTO + deliveryTag
+        //  - Error   -> битые сообщения, где удалось извлечь author
+        // Сообщения без author могут быть сразу rejected внутри parseBatch
         val parsedResults = parseBatch(messages, channel, OrderPayloadDto::class.java)
 
-        val successMessages = parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
-        val errorMessages = parsedResults.filterIsInstance<ParsedResult.Error<OrderPayloadDto>>()
+        val successMessages =
+            parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
+        val errorMessages =
+            parsedResults.filterIsInstance<ParsedResult.Error<OrderPayloadDto>>()
 
-        // Если нет валидных сообщений — логируем и выходим
+        // Если batch не содержит ни валидных, ни обработанных битых сообщений — выходим
         if (successMessages.isEmpty() && errorMessages.isEmpty()) {
             logger.warn(NOT_VALID_BATCH_MESSAGE_ORDER_CREATED)
             return
         }
-
         try {
-            // --- Обработка валидных сообщений ---
+            // ---------- Обработка валидных сообщений ----------
             if (successMessages.isNotEmpty()) {
-                val successDtos = successMessages.map { it.dto }
-                val events = buildBatchConsumerService.insertBatchOrderCreated(successDtos)
 
-                // Отправка сообщений и ACK всего батча одним вызовом
+                // Извлекаем DTO для пакетной вставки в БД
+                val successDtos = successMessages.map { it.dto }
+
+                // Сохраняем данные и получаем события для отправки
+                val events =
+                    buildBatchConsumerService.insertBatchOrderCreated(successDtos)
+
                 if (events.isNotEmpty()) {
+                    // Отправка всех событий в payments exchange
                     events.forEach { event ->
                         sendMessageProducer.sendMessage(
                             props.routingKeyPayment,
@@ -113,30 +126,45 @@ class OrderBatchConsumerImpl(
                             event.orderIdRecurrent
                         )
                     }
-
-                    // Берём последний deliveryTag из успешных сообщений
+                    // ACK выполняется по deliveryTag последнего успешного сообщения
+                    // multiple=true -> подтверждаются все сообщения с меньшим deliveryTag
                     val lastTag = successMessages.last().tag
-                    channel.basicAck(lastTag, true) // true → ack всех до lastTag
+                    channel.basicAck(lastTag, true)
                 } else {
+                    // Ситуация, когда БД отработала, но события не сформированы
+                    // ACK в этом случае не выполняется
                     logger.warn("Не все сообщения подтверждены, batch не ACK")
                 }
             }
-
-            // --- Обработка битых сообщений с author ---
+            // ---------- Обработка битых сообщений с author ----------
             if (errorMessages.isNotEmpty()) {
                 errorMessages.forEach { err ->
-                    logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage}")
-                    sendMessageProducer.processErrorMessages(err, channel, props.paymentsExchange)
+                    logger.warn(
+                        ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage)
+                    )
+
+                    // Передача битого сообщения во внешнюю систему
+                    // (не через DLQ)
+                    sendMessageProducer.processErrorMessages(
+                        err,
+                        channel,
+                        props.paymentsExchange
+                    )
                 }
             }
-
         } catch (ex: Exception) {
-            logger.error("Ошибка при обработке валидных сообщений батча: ${ex.message}", ex)
-            // Reject всех успешных сообщений, чтобы они вернулись в очередь
+            logger.error(
+                "Ошибка при обработке валидных сообщений батча: ${ex.message}",
+                ex
+            )
+            // При ошибке возвращаем ВСЕ валидные сообщения в очередь
+            // basicReject с multiple=true откатит их для повторной обработки
             val lastTag = successMessages.lastOrNull()?.tag
-            lastTag?.let { channel.basicReject(it, true) } // true → requeue
+            lastTag?.let {
+                channel.basicReject(it, true)
+            }
         } finally {
-            // --- Лог времени обработки всей пачки ---
+            // Итоговый лог по batch
             val tookMs = (System.nanoTime() - started) / 1_000_000
             val totalMessages = successMessages.size + errorMessages.size
             logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
@@ -212,7 +240,9 @@ class OrderBatchConsumerImpl(
 
             // --- Обработка битых сообщений с author ---
             errorMessages.forEach { err ->
-                logger.warn("Битое сообщение от автора=${err.author}: ${err.rawMessage.take(100)}")
+                logger.warn(
+                    ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage)
+                )
                 val rKey =
                     queueStatusResultNameNormalizeService.buildQueueStatusResultName(
                         ORDER_STATUS_REFUND_PATTERN,
