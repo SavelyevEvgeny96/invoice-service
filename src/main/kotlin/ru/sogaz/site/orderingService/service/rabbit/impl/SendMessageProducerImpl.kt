@@ -1,7 +1,9 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Channel
+import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
@@ -17,6 +19,7 @@ import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
+import ru.sogaz.site.orderingService.service.rabbit.impl.OrderBatchConsumerImpl.Companion.AUTHOR_REGEX
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -44,6 +47,7 @@ import java.util.UUID
 class SendMessageProducerImpl(
     private val rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
+    private val objectMapper: ObjectMapper,
     private val refundErrorMapper: RefundErrorMapper,
     private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) : SendMessageProducer {
@@ -124,10 +128,11 @@ class SendMessageProducerImpl(
      * @param channel     RabbitMQ channel, используемый для publish и ACK
      * @param exchange    exchange, в который отправляется битое сообщение
      */
-    override fun processErrorMessages(
-        errorParsed: ParsedResult.Error<OrderPayloadDto>,
+    override fun <T : Any> processErrorMessages(
+        errorParsed: ParsedResult.Error<T>,
         channel: Channel,
         exchange: String,
+        statusPattern: String
     ) {
         try {
             // Логируем битое сообщение для трассировки
@@ -139,7 +144,7 @@ class SendMessageProducerImpl(
             val rKey =
                 queueStatusResultNameNormalizeService
                     .buildQueueStatusResultName(
-                        PAYMENT_STATUS_PATTERN,
+                        statusPattern,
                         errorParsed.author
                     )
 
@@ -163,6 +168,7 @@ class SendMessageProducerImpl(
             // и будет переотправлено RabbitMQ
         }
     }
+
     /**
      * Отправляет сообщение в RabbitMQ в «сыром» виде (без сериализации payload)
      * с использованием publisher confirms.
@@ -300,5 +306,58 @@ class SendMessageProducerImpl(
             },
             cd,
         )
+    }
+     override fun <T : Any> parseBatch(
+        messages: List<Message>,
+        channel: Channel,
+        dtoClass: Class<T>,
+    ): List<ParsedResult<T>> {
+        val result = mutableListOf<ParsedResult<T>>()
+
+        messages.forEach { msg ->
+            val tag = msg.messageProperties.deliveryTag
+            val messageId = msg.messageProperties.messageId
+            val body = String(msg.body, Charsets.UTF_8)
+            try {
+                val dto = objectMapper.readValue(body, dtoClass)
+                result += ParsedResult.Success(tag, dto, messageId)
+            } catch (ex: Exception) {
+                val author = extractAuthorUnsafe(body)
+                if (author != null) {
+                    // Сообщение битое, передаём в handleBatch для обработки
+                    result += ParsedResult.Error(tag, body, author, messageId)
+                } else {
+                    // author не нашли → реджектим один раз
+                    try {
+                        channel.basicReject(tag, false)
+                    } catch (ackEx: Exception) {
+                        logger.error("Не удалось сделать basicReject для tag=$tag", ackEx)
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+     override fun extractAuthorUnsafe(body: String): String? {
+        // 1. Пытаемся по-человечески
+        runCatching {
+            val node = objectMapper.readTree(body)
+            val json =
+                if (node.isTextual) objectMapper.readTree(node.asText()) else node
+
+            return json
+                .path("metaInfo")
+                .firstOrNull()
+                ?.path("author")
+                ?.asText()
+        }
+
+        // 2. Fallback — режем строку
+        return AUTHOR_REGEX
+            .find(body)
+            ?.groupValues
+            ?.getOrNull(1)
     }
 }

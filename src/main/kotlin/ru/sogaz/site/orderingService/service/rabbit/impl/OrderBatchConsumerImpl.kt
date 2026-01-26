@@ -12,6 +12,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_REFUND_PATTERN
+import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
 import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
@@ -22,7 +23,6 @@ class OrderBatchConsumerImpl(
     private val objectMapper: ObjectMapper,
     private val sendMessageProducer: SendMessageProducer,
     private val props: RabbitProps,
-    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) : OrderBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
@@ -34,7 +34,7 @@ class OrderBatchConsumerImpl(
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
                     "в батче по возврату заказа "
-        private val AUTHOR_REGEX =
+        val AUTHOR_REGEX =
             Regex(
                 """"author"\s*:\s*"([^"]+)"""",
                 RegexOption.IGNORE_CASE,
@@ -93,7 +93,7 @@ class OrderBatchConsumerImpl(
         //  - Success -> валидные DTO + deliveryTag
         //  - Error   -> битые сообщения, где удалось извлечь author
         // Сообщения без author могут быть сразу rejected внутри parseBatch
-        val parsedResults = parseBatch(messages, channel, OrderPayloadDto::class.java)
+        val parsedResults = sendMessageProducer.parseBatch(messages, channel, OrderPayloadDto::class.java)
 
         val successMessages =
             parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
@@ -148,7 +148,8 @@ class OrderBatchConsumerImpl(
                     sendMessageProducer.processErrorMessages(
                         err,
                         channel,
-                        props.paymentsExchange
+                        props.paymentsExchange,
+                        PAYMENT_STATUS_PATTERN
                     )
                 }
             }
@@ -171,144 +172,5 @@ class OrderBatchConsumerImpl(
         }
     }
 
-    /**
-     * Обрабатывает batch сообщений по возвратам заказов из очереди.
-     *
-     * <p>Метод получает список сообщений из RabbitMQ и делит их на два типа:
-     * <ul>
-     *     <li>{@link ParsedResult.Success} — валидные сообщения, которые удалось распарсить в DTO.</li>
-     *     <li>{@link ParsedResult.Error} — битые сообщения, которые не соответствуют DTO,
-     *         но из которых удалось извлечь поле "author".</li>
-     * </ul>
-     *
-     * <p>Для валидных сообщений выполняется:
-     * <ol>
-     *     <li>Подготовка данных через {@link BuildBatchConsumerService#searchAndPreparationOrder}.</li>
-     *     <li>Отправка сообщений через {@link SendMessageProducer#sendMessageRefund}.</li>
-     *     <li>ACK всех валидных сообщений одним вызовом {@link Channel#basicAck} после успешной отправки.</li>
-     * </ol>
-     *
-     * <p>Для битых сообщений:
-     * <ul>
-     *     <li>Если найден author — логируем и можно передать на внешку (пока не делаем DLQ).</li>
-     *     <li>Если author не найден — реджектим сообщение через {@link Channel#basicReject} (DLQ).</li>
-     * </ul>
-     *
-     * <p>В случае исключения при обработке валидных сообщений:
-     * <ul>
-     *     <li>Все валидные сообщения возвращаются в очередь через {@link Channel#basicReject}.</li>
-     * </ul>
-     *
-     * @param messages Список сообщений RabbitMQ для обработки.
-     * @param channel Канал RabbitMQ, используемый для ACK/Reject сообщений.
-     */
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-order-refund}"],
-        containerFactory = "batchContainerFactory",
-    )
-    override fun handleBatchRefundCreated(
-        messages: List<Message>,
-        channel: Channel,
-    ) {
-        val started = System.nanoTime()
 
-        // parseBatch теперь возвращает ParsedResult.Success и ParsedResult.Error
-        val parsedResults = parseBatch(messages, channel, RefundPayloadDto::class.java)
-
-        val successMessages = parsedResults.filterIsInstance<ParsedResult.Success<RefundPayloadDto>>()
-        val errorMessages = parsedResults.filterIsInstance<ParsedResult.Error<RefundPayloadDto>>()
-
-        // Если нет валидных сообщений — логируем и выходим
-        if (successMessages.isEmpty() && errorMessages.isEmpty()) {
-            logger.warn(NOT_VALID_BATCH_MESSAGE_REFUND_ORDER)
-            return
-        }
-
-        try {
-            // --- Обработка валидных сообщений ---
-            if (successMessages.isNotEmpty()) {
-                val dtos = successMessages.map { it.dto }
-                sendMessageProducer.sendMessageRefund(buildBatchConsumerService.searchAndPreparationOrder(dtos))
-
-                // ACK всех успешных сообщений одним вызовом
-                val lastTag = successMessages.last().tag
-                channel.basicAck(lastTag, true)
-
-                val tookMs = (System.nanoTime() - started) / 1_000_000
-                logger.info(BATCH_SUMMARY.format(successMessages.size, tookMs))
-            }
-
-            // --- Обработка битых сообщений с author ---
-            errorMessages.forEach { err ->
-                logger.warn(
-                    ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage)
-                )
-                val rKey =
-                    queueStatusResultNameNormalizeService.buildQueueStatusResultName(
-                        ORDER_STATUS_REFUND_PATTERN,
-                        err.author,
-                    )
-                sendMessageProducer.sendMessage(rKey, err.rawMessage, props.ordersExchange, null)
-            }
-        } catch (ex: Exception) {
-            logger.error("Ошибка при обработке батча: ${ex.message}", ex)
-
-            // Reject всех успешных сообщений, чтобы они вернулись в очередь
-            successMessages.forEach { channel.basicReject(it.tag, false) }
-        }
-    }
-
-    private fun <T : Any> parseBatch(
-        messages: List<Message>,
-        channel: Channel,
-        dtoClass: Class<T>,
-    ): List<ParsedResult<T>> {
-        val result = mutableListOf<ParsedResult<T>>()
-
-        messages.forEach { msg ->
-            val tag = msg.messageProperties.deliveryTag
-            val messageId = msg.messageProperties.messageId
-            val body = String(msg.body, Charsets.UTF_8)
-            try {
-                val dto = objectMapper.readValue(body, dtoClass)
-                result += ParsedResult.Success(tag, dto, messageId)
-            } catch (ex: Exception) {
-                val author = extractAuthorUnsafe(body)
-                if (author != null) {
-                    // Сообщение битое, передаём в handleBatch для обработки
-                    result += ParsedResult.Error(tag, body, author, messageId)
-                } else {
-                    // author не нашли → реджектим один раз
-                    try {
-                        channel.basicReject(tag, false)
-                    } catch (ackEx: Exception) {
-                        logger.error("Не удалось сделать basicReject для tag=$tag", ackEx)
-                    }
-                }
-            }
-        }
-
-        return result
-    }
-
-    private fun extractAuthorUnsafe(body: String): String? {
-        // 1. Пытаемся по-человечески
-        runCatching {
-            val node = objectMapper.readTree(body)
-            val json =
-                if (node.isTextual) objectMapper.readTree(node.asText()) else node
-
-            return json
-                .path("metaInfo")
-                .firstOrNull()
-                ?.path("author")
-                ?.asText()
-        }
-
-        // 2. Fallback — режем строку
-        return AUTHOR_REGEX
-            .find(body)
-            ?.groupValues
-            ?.getOrNull(1)
-    }
 }

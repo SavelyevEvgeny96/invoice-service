@@ -1,18 +1,26 @@
 package ru.sogaz.site.orderingService.service.rabbit
 
 import com.rabbitmq.client.Channel
+import org.springframework.amqp.core.Message
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import java.util.UUID
 
 interface SendMessageProducer {
+    fun extractAuthorUnsafe(body: String): String?
     fun sendMessageRefund(resultOrder: RefundPreparationResult)
+    fun <T : Any> parseBatch(
+        messages: List<Message>,
+        channel: Channel,
+        dtoClass: Class<T>,
+    ): List<ParsedResult<T>>
 
-    fun processErrorMessages(
-        errorParsed: ParsedResult.Error<OrderPayloadDto>,
+    fun <T : Any> processErrorMessages(
+        errorParsed: ParsedResult.Error<T>,
         channel: Channel,
         exchange: String,
+        statusPattern: String
     )
 
     fun sendRawMessageWithConfirm(
