@@ -7,11 +7,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
-import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
-import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_REFUND_PATTERN
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
 import ru.sogaz.site.orderingService.service.rabbit.OrderBatchConsumer
@@ -30,10 +27,10 @@ class OrderBatchConsumerImpl(
         private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                    " в батче по созданию заказа"
+                " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                    "в батче по возврату заказа "
+                "в батче по возврату заказа "
         val AUTHOR_REGEX =
             Regex(
                 """"author"\s*:\s*"([^"]+)"""",
@@ -87,7 +84,7 @@ class OrderBatchConsumerImpl(
         val started = System.nanoTime()
         // Логируем deliveryTag каждого сообщения — важно для отладки ACK/Reject
         logger.info(
-            "BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}"
+            "BATCH RECEIVED: size=${messages.size}, tags=${messages.map { it.messageProperties.deliveryTag }}",
         )
         // Парсинг batch:
         //  - Success -> валидные DTO + deliveryTag
@@ -108,7 +105,6 @@ class OrderBatchConsumerImpl(
         try {
             // ---------- Обработка валидных сообщений ----------
             if (successMessages.isNotEmpty()) {
-
                 // Извлекаем DTO для пакетной вставки в БД
                 val successDtos = successMessages.map { it.dto }
 
@@ -123,7 +119,7 @@ class OrderBatchConsumerImpl(
                             props.routingKeyPayment,
                             event,
                             props.paymentsExchange,
-                            event.orderIdRecurrent
+                            event.orderIdRecurrent,
                         )
                     }
                     // ACK выполняется по deliveryTag последнего успешного сообщения
@@ -140,7 +136,7 @@ class OrderBatchConsumerImpl(
             if (errorMessages.isNotEmpty()) {
                 errorMessages.forEach { err ->
                     logger.warn(
-                        ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage)
+                        ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage),
                     )
 
                     // Передача битого сообщения во внешнюю систему
@@ -149,14 +145,14 @@ class OrderBatchConsumerImpl(
                         err,
                         channel,
                         props.paymentsExchange,
-                        PAYMENT_STATUS_PATTERN
+                        PAYMENT_STATUS_PATTERN,
                     )
                 }
             }
         } catch (ex: Exception) {
             logger.error(
                 "Ошибка при обработке валидных сообщений батча: ${ex.message}",
-                ex
+                ex,
             )
             // При ошибке возвращаем ВСЕ валидные сообщения в очередь
             // basicReject с multiple=true откатит их для повторной обработки
@@ -171,6 +167,4 @@ class OrderBatchConsumerImpl(
             logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
         }
     }
-
-
 }

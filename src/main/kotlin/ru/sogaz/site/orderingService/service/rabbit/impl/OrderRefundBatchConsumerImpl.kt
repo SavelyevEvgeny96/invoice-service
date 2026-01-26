@@ -25,7 +25,7 @@ class OrderRefundBatchConsumerImpl(
         private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                    "в батче по возврату заказа "
+                "в батче по возврату заказа "
     }
 
     private val logger = loggerFor(OrderRefundBatchConsumerImpl::class.java)
@@ -101,7 +101,7 @@ class OrderRefundBatchConsumerImpl(
             if (errorMessages.isNotEmpty()) {
                 errorMessages.forEach { err ->
                     logger.warn(
-                        ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage)
+                        ERROR_MESSAGE_IN_AUTHOR.format(err.author, err.rawMessage),
                     )
 
                     // Передача битого сообщения во внешнюю систему
@@ -109,15 +109,15 @@ class OrderRefundBatchConsumerImpl(
                     sendMessageProducer.processErrorMessages(
                         err,
                         channel,
-                        props.paymentsExchange,
-                        ORDER_STATUS_REFUND_PATTERN
+                        props.ordersExchange,
+                        ORDER_STATUS_REFUND_PATTERN,
                     )
                 }
             }
         } catch (ex: Exception) {
             logger.error(
                 "Ошибка при обработке валидных сообщений батча: ${ex.message}",
-                ex
+                ex,
             )
             // При ошибке возвращаем ВСЕ валидные сообщения в очередь
             // basicReject с multiple=true откатит их для повторной обработки

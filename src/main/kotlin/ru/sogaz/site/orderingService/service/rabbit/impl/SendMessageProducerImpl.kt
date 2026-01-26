@@ -8,7 +8,6 @@ import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
-import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
@@ -17,7 +16,6 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
-import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import ru.sogaz.site.orderingService.service.rabbit.impl.OrderBatchConsumerImpl.Companion.AUTHOR_REGEX
 import java.time.OffsetDateTime
@@ -132,12 +130,12 @@ class SendMessageProducerImpl(
         errorParsed: ParsedResult.Error<T>,
         channel: Channel,
         exchange: String,
-        statusPattern: String
+        statusPattern: String,
     ) {
         try {
             // Логируем битое сообщение для трассировки
             logger.warn(
-                "Битое сообщение от автора=${errorParsed.author}: ${errorParsed.rawMessage}"
+                "Битое сообщение от автора=${errorParsed.author}: ${errorParsed.rawMessage}",
             )
 
             // Формируем routing key для технической очереди
@@ -145,7 +143,7 @@ class SendMessageProducerImpl(
                 queueStatusResultNameNormalizeService
                     .buildQueueStatusResultName(
                         statusPattern,
-                        errorParsed.author
+                        errorParsed.author,
                     )
 
             // Переотправляем raw payload с подтверждением от брокера
@@ -153,7 +151,7 @@ class SendMessageProducerImpl(
                 channel,
                 exchange,
                 rKey,
-                errorParsed.rawMessage
+                errorParsed.rawMessage,
             )
 
             // ACK исходного сообщения выполняется
@@ -162,7 +160,7 @@ class SendMessageProducerImpl(
         } catch (ex: Exception) {
             logger.error(
                 "Ошибка при обработке сообщения ${errorParsed.tag} от автора=${errorParsed.author}",
-                ex
+                ex,
             )
             // ACK не выполняем → сообщение останется unacked
             // и будет переотправлено RabbitMQ
@@ -233,7 +231,7 @@ class SendMessageProducerImpl(
             exchange,
             routingKey,
             props,
-            rawBody.toByteArray(Charsets.UTF_8)
+            rawBody.toByteArray(Charsets.UTF_8),
         )
 
         // Синхронно ожидаем подтверждения от брокера
@@ -307,7 +305,8 @@ class SendMessageProducerImpl(
             cd,
         )
     }
-     override fun <T : Any> parseBatch(
+
+    override fun <T : Any> parseBatch(
         messages: List<Message>,
         channel: Channel,
         dtoClass: Class<T>,
@@ -340,7 +339,7 @@ class SendMessageProducerImpl(
         return result
     }
 
-     override fun extractAuthorUnsafe(body: String): String? {
+    override fun extractAuthorUnsafe(body: String): String? {
         // 1. Пытаемся по-человечески
         runCatching {
             val node = objectMapper.readTree(body)
