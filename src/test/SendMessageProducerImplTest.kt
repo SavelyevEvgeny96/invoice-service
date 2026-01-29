@@ -1,15 +1,18 @@
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -20,13 +23,11 @@ import org.springframework.amqp.core.MessageProperties
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
-import ru.sogaz.site.orderingService.dto.data.ParsedData
-import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
+import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
-import ru.sogaz.site.orderingService.dto.request.RefundPayloadDto
-import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.rabbit.impl.SendMessageProducerImpl
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -36,6 +37,9 @@ import kotlin.test.assertNotNull
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class SendMessageProducerImplTest {
+    @Mock
+    lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
+
     @Mock
     lateinit var rabbitTemplate: RabbitTemplate
 
@@ -47,6 +51,9 @@ class SendMessageProducerImplTest {
 
     @Mock
     lateinit var channel: Channel
+
+    @Mock
+    lateinit var objectMapper: ObjectMapper
 
     @InjectMocks
     lateinit var producer: SendMessageProducerImpl
@@ -61,111 +68,11 @@ class SendMessageProducerImplTest {
                 notForPaid = emptyList(),
             )
 
-        producer.sendMessageRefund(result, channel)
+        producer.sendMessageRefund(result)
 
         verifyNoInteractions(rabbitTemplate)
         verifyNoInteractions(refundErrorMapper)
         verify(channel, never()).basicAck(any(), any())
-    }
-
-    @Test
-    fun `когда есть missing notForPaid noAccess found - отправляем нужные сообщения и подтверждаем каждое`() {
-        whenever(rabbitProps.ordersExchange).thenReturn("orders-exchange")
-
-        val payloadMissing =
-            RefundPayloadDto(
-                orderId = UUID.randomUUID(),
-                routingKeyStatus = "rk.missing",
-                metaInfo = emptyList(),
-                bank = null,
-            )
-
-        val payloadNotPaid =
-            RefundPayloadDto(
-                orderId = UUID.randomUUID(),
-                routingKeyStatus = "rk.notPaid",
-                metaInfo = emptyList(),
-                bank = null,
-            )
-
-        val payloadNoAccess =
-            RefundPayloadDto(
-                orderId = UUID.randomUUID(),
-                routingKeyStatus = "rk.noAccess",
-                metaInfo = emptyList(),
-                bank = null,
-            )
-
-        val payloadFound =
-            RefundPayloadDto(
-                orderId = UUID.randomUUID(),
-                routingKeyStatus = "rk.found",
-                metaInfo = emptyList(),
-                bank = null,
-            )
-
-        val miss = ParsedData(tag = 11L, dto = payloadMissing, messageId = "m1")
-        val notPaid = ParsedData(tag = 22L, dto = payloadNotPaid, messageId = "m2")
-        val noAcc = ParsedData(tag = 33L, dto = payloadNoAccess, messageId = "m3")
-        val found = ParsedData(tag = 44L, dto = payloadFound, messageId = "m4")
-
-        val result =
-            RefundPreparationResult(
-                missing = listOf(miss),
-                notForPaid = listOf(notPaid),
-                noAccess = listOf(noAcc),
-                found = listOf(found),
-            )
-
-        val errorMissing = org.mockito.kotlin.mock<RefundErrorDto>()
-        val errorNotPaid = org.mockito.kotlin.mock<RefundErrorDto>()
-        val errorNoAccess = org.mockito.kotlin.mock<RefundErrorDto>()
-
-        whenever(refundErrorMapper.toErrorDto(payloadMissing, RefundErrorReason.ORDER_NOT_FOUND))
-            .thenReturn(errorMissing)
-        whenever(refundErrorMapper.toErrorDto(payloadNotPaid, RefundErrorReason.NOT_PAID_FOR))
-            .thenReturn(errorNotPaid)
-        whenever(refundErrorMapper.toErrorDto(payloadNoAccess, RefundErrorReason.NO_ACCESS))
-            .thenReturn(errorNoAccess)
-        whenever(rabbitProps.routingKeyRefundPayment).thenReturn("rk.refund.success")
-        whenever(rabbitProps.paymentsExchange).thenReturn("payments-exchange")
-        producer.sendMessageRefund(result, channel)
-
-        verify(rabbitTemplate).convertAndSend(
-            eq("orders-exchange"),
-            eq("rk.missing"),
-            eq(errorMissing),
-            any<MessagePostProcessor>(),
-            any<CorrelationData>(),
-        )
-
-        verify(rabbitTemplate).convertAndSend(
-            eq("orders-exchange"),
-            eq("rk.notPaid"),
-            eq(errorNotPaid),
-            any<MessagePostProcessor>(),
-            any<CorrelationData>(),
-        )
-
-        verify(rabbitTemplate).convertAndSend(
-            eq("orders-exchange"),
-            eq("rk.noAccess"),
-            eq(errorNoAccess),
-            any<MessagePostProcessor>(),
-            any<CorrelationData>(),
-        )
-        verify(channel).basicAck(11L, false)
-        verify(channel).basicAck(22L, false)
-        verify(channel).basicAck(33L, false)
-        verify(channel).basicAck(44L, false)
-
-        verify(rabbitTemplate, times(4)).convertAndSend(
-            any<String>(),
-            any<String>(),
-            any<Any>(),
-            any<MessagePostProcessor>(),
-            any<CorrelationData>(),
-        )
     }
 
     @Test
@@ -207,5 +114,102 @@ class SendMessageProducerImplTest {
         assertEquals("ex.test", headers[RabbitLogConst.HDR_X_EXCHANGE])
         assertEquals("rk.test", headers[RabbitLogConst.HDR_X_ROUTINGKEY])
         assertEquals(orderId.toString(), processed.messageProperties.correlationId)
+    }
+
+    @Test
+    fun `если брокер не подтвердил сообщение то выбрасывается исключение`() {
+        // given
+        val channel = mock(Channel::class.java)
+
+        whenever(channel.waitForConfirms(3000)).thenReturn(false)
+
+        // when + then
+        assertThrows<RuntimeException> {
+            producer.sendRawMessageWithConfirm(
+                channel = channel,
+                exchange = "ex",
+                routingKey = "rk",
+                rawBody = "body",
+            )
+        }
+
+        verify(channel).confirmSelect()
+        verify(channel).waitForConfirms(3000)
+    }
+
+    @Test
+    fun `битое сообщение переотправляется и подтверждается ack`() {
+        // given
+        val channel = mock(Channel::class.java)
+        val exchange = "test-exchange"
+        val statusPattern = "status.%s.%s"
+        val routingKey = "normalized.key"
+        val errorParsed =
+            ParsedResult.Error<Any>(
+                author = "ordering-client",
+                rawMessage = """{"bad":"json"}""",
+                tag = 42L,
+                messageId = "1",
+            )
+
+        whenever(
+            queueStatusResultNameNormalizeService.buildQueueStatusResultName(
+                statusPattern,
+                errorParsed.author,
+            ),
+        ).thenReturn(routingKey)
+
+        whenever(channel.waitForConfirms(3000)).thenReturn(true)
+
+        // when
+        producer.processErrorMessages(
+            errorParsed = errorParsed,
+            channel = channel,
+            exchange = exchange,
+            statusPattern = statusPattern,
+        )
+
+        // then
+        verify(channel).basicPublish(
+            eq(exchange),
+            eq(routingKey),
+            argThat {
+                contentType == "application/json" &&
+                    deliveryMode == 2
+            },
+            eq(errorParsed.rawMessage.toByteArray(Charsets.UTF_8)),
+        )
+
+        verify(channel).basicAck(errorParsed.tag, false)
+    }
+
+    @Test
+    fun `сообщение публикуется и подтверждается брокером`() {
+        // given
+        val channel = mock(Channel::class.java)
+        val exchange = "test-exchange"
+        val routingKey = "test.routing"
+        val rawBody = """{"test":"ok"}"""
+
+        whenever(channel.waitForConfirms(3000)).thenReturn(true)
+
+        // when
+        producer.sendRawMessageWithConfirm(
+            channel = channel,
+            exchange = exchange,
+            routingKey = routingKey,
+            rawBody = rawBody,
+        )
+
+        verify(channel).basicPublish(
+            eq(exchange),
+            eq(routingKey),
+            argThat {
+                contentType == "application/json" &&
+                    deliveryMode == 2
+            },
+            eq(rawBody.toByteArray(Charsets.UTF_8)),
+        )
+        verify(channel).waitForConfirms(3000)
     }
 }
