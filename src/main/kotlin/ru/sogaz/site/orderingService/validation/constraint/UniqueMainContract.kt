@@ -4,7 +4,7 @@ import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
-import ru.sogaz.site.orderingService.dto.request.SubOrderDto
+import ru.sogaz.site.orderingService.dto.request.HasMainContractCheck
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FIELD)
@@ -16,9 +16,9 @@ annotation class UniqueMainContract(
     val payload: Array<KClass<out Payload>> = [],
 )
 
-class UniqueMainContractValidator : ConstraintValidator<UniqueMainContract, List<SubOrderDto>> {
+class UniqueMainContractValidator : ConstraintValidator<UniqueMainContract, Collection<HasMainContractCheck>> {
     override fun isValid(
-        orders: List<SubOrderDto>,
+        orders: Collection<HasMainContractCheck>,
         context: ConstraintValidatorContext?,
     ): Boolean = orders.count { it.mainContractCheck } <= 1
 }

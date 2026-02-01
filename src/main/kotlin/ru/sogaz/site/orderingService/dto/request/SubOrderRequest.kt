@@ -19,7 +19,7 @@ data class SubOrderRequest(
     val policyNumber: String = "",
     val typeInsurance: String? = null,
     val insuranceProgram: String? = null,
-    val mainContractCheck: Boolean = false,
+    override val mainContractCheck: Boolean = false,
     val sendStatusProduct: Boolean? = false,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     val contractNumber: String? = null,
@@ -34,4 +34,4 @@ data class SubOrderRequest(
     val managerEmail: String = "",
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     val channel: String = "",
-)
+) : HasMainContractCheck
