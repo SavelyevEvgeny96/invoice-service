@@ -299,6 +299,7 @@ class SendMessageProducerImpl(
 
                 // 4.3) CorrelationId внутри message properties (может использоваться consumer’ом)
                 message.messageProperties.correlationId = orderId?.toString()
+                message.messageProperties.headers.remove("__TypeId__")
 
                 message
             },
