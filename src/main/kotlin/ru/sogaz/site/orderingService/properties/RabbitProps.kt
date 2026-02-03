@@ -16,6 +16,7 @@ class RabbitProps {
     lateinit var routingKeyOrderRefund: String
     lateinit var routingKeyPayment: String
     lateinit var routingKeyRefundPayment: String
+    lateinit var routingKeyPaymentStatusRefund: String
 
     @PostConstruct
     fun postConstruct() {
@@ -29,5 +30,6 @@ class RabbitProps {
         logger.info("routingKeyPayment = $routingKeyPayment")
         logger.info("routingKeyOrderRefund = $routingKeyOrderRefund")
         logger.info("routingKeyRefundPayment = $routingKeyRefundPayment")
+        logger.info("routingKeyPaymentStatusRefund = $routingKeyPaymentStatusRefund")
     }
 }

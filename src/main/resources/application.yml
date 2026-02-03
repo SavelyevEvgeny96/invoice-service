@@ -60,6 +60,7 @@ app:
     routing-key-order-refund: ${ROUTING_KEY_ORDER_CREATED:order.refund.created}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
+    routing-key-payment-status-refund: ${ROUTING_KEY_PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.created}
     listener:
       batch-size: 50
       prefetch: 50

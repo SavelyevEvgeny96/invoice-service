@@ -27,10 +27,10 @@ class OrderBatchConsumerImpl(
         private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                " в батче по созданию заказа"
+                    " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                "в батче по возврату заказа "
+                    "в батче по возврату заказа "
         val AUTHOR_REGEX =
             Regex(
                 """"author"\s*:\s*"([^"]+)"""",
@@ -90,15 +90,22 @@ class OrderBatchConsumerImpl(
         //  - Success -> валидные DTO + deliveryTag
         //  - Error   -> битые сообщения, где удалось извлечь author
         // Сообщения без author могут быть сразу rejected внутри parseBatch
-        val parsedResults = sendMessageProducer.parseBatch(messages, channel, OrderPayloadDto::class.java)
-
+        val parsedResults: List<ParsedResult<OrderPayloadDto>> =
+            messages.mapNotNull { msg ->
+                sendMessageProducer.parseBatch(
+                    msg,
+                    channel,
+                    OrderPayloadDto::class.java
+                )
+            }
         val successMessages =
             parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
+
         val errorMessages =
             parsedResults.filterIsInstance<ParsedResult.Error<OrderPayloadDto>>()
 
         // Если batch не содержит ни валидных, ни обработанных битых сообщений — выходим
-        if (successMessages.isEmpty() && errorMessages.isEmpty()) {
+        if (successMessages.isNotEmpty() && errorMessages.isNotEmpty()) {
             logger.warn(NOT_VALID_BATCH_MESSAGE_ORDER_CREATED)
             return
         }
@@ -166,5 +173,12 @@ class OrderBatchConsumerImpl(
             val totalMessages = successMessages.size + errorMessages.size
             logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
         }
+    }
+
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-order}"]
+    )
+    override fun handleMessageToOrderRefundStatus(messages: Message, channel: Channel) {
+        val parsedResult = sendMessageProducer.parseBatch(messages,channel,)
     }
 }
