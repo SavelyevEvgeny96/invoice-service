@@ -90,6 +90,9 @@ class SendMessageProducerImpl(
                 RefundPayloadDto(
                     item.metaInfo,
                     item.orderId,
+                    null,
+                    item.premiumAmount,
+                    item.description
                 )
             sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
         }

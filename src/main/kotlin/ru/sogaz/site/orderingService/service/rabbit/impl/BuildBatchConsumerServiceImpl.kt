@@ -106,8 +106,14 @@ class BuildBatchConsumerServiceImpl(
         val found =
             foundRaw.map { p ->
                 val order = ordersById[p.orderId]!!
-                // Если нужно дополнительно что-то скопировать из ордера, делаем здесь
-                p.copy(orderId = order.orderId)
+                val subOrder =
+                    subOrderDao.findByOrderIdAndMainContractCheck(order.orderId)
+                val description = subOrder?.let { buildRefundDescription(it) }
+                p.copy(
+                    orderId = order.orderId,
+                    description = description,
+                    premiumAmount = order.premiumAmount
+                )
             }
 
         return RefundPreparationResult(
@@ -118,6 +124,9 @@ class BuildBatchConsumerServiceImpl(
         )
     }
 
+    private fun buildRefundDescription(subOrder: SubOrderEntity): String {
+        return "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
+    }
     private fun buildRoutingKeyByCustomerId(
         clientId: String?,
         prefix: String,
