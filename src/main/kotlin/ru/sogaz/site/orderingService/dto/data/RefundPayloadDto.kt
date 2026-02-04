@@ -1,7 +1,6 @@
 package ru.sogaz.site.orderingService.dto.data
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import jdk.jfr.DataAmount
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -11,6 +10,5 @@ data class RefundPayloadDto(
     val orderId: UUID?,
     val routingKeyStatus: String? = null,
     val premiumAmount: BigDecimal?,
-    val description:String?
-
+    val description: String?,
 )

@@ -92,7 +92,7 @@ class SendMessageProducerImpl(
                     item.orderId,
                     null,
                     item.premiumAmount,
-                    item.description
+                    item.description,
                 )
             sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
         }

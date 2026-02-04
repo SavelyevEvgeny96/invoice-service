@@ -112,7 +112,7 @@ class BuildBatchConsumerServiceImpl(
                 p.copy(
                     orderId = order.orderId,
                     description = description,
-                    premiumAmount = order.premiumAmount
+                    premiumAmount = order.premiumAmount,
                 )
             }
 
@@ -124,9 +124,9 @@ class BuildBatchConsumerServiceImpl(
         )
     }
 
-    private fun buildRefundDescription(subOrder: SubOrderEntity): String {
-        return "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
-    }
+    private fun buildRefundDescription(subOrder: SubOrderEntity): String =
+        "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
+
     private fun buildRoutingKeyByCustomerId(
         clientId: String?,
         prefix: String,
