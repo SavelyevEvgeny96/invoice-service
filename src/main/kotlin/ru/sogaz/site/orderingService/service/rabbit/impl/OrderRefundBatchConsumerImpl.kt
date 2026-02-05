@@ -4,8 +4,12 @@ import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
+import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
+import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
+import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_REFUND_PATTERN
@@ -18,6 +22,7 @@ class OrderRefundBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val sendMessageProducer: SendMessageProducer,
     private val props: RabbitProps,
+    private val orderDao: OrderDao
 ) : OrderRefundBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
@@ -25,7 +30,9 @@ class OrderRefundBatchConsumerImpl(
         private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                "в батче по возврату заказа "
+                    "в батче по возврату заказа "
+        private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
+            "Нет валидных сообщений для обработки"
     }
 
     private val logger = loggerFor(OrderRefundBatchConsumerImpl::class.java)
@@ -69,11 +76,17 @@ class OrderRefundBatchConsumerImpl(
         messages: List<Message>,
         channel: Channel,
     ) {
-        val started = System.nanoTime()
 
         // parseBatch теперь возвращает ParsedResult.Success и ParsedResult.Error
-        val parsedResults = sendMessageProducer.parseBatch(messages, channel, RefundPayloadDto::class.java)
-
+        val started = System.nanoTime()
+        val parsedResults: List<ParsedResult<RefundPayloadDto>> =
+            messages.mapNotNull { msg ->
+                sendMessageProducer.parseBatch(
+                    msg,
+                    channel,
+                    RefundPayloadDto::class.java
+                )
+            }
         val successMessages = parsedResults.filterIsInstance<ParsedResult.Success<RefundPayloadDto>>()
         val errorMessages = parsedResults.filterIsInstance<ParsedResult.Error<RefundPayloadDto>>()
 
@@ -130,6 +143,27 @@ class OrderRefundBatchConsumerImpl(
             val tookMs = (System.nanoTime() - started) / 1_000_000
             val totalMessages = successMessages.size + errorMessages.size
             logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
+        }
+    }
+
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-payment-status-refund}"]
+    )
+    override fun handleMessageToOrderRefundStatus(messages: Message, channel: Channel) {
+        val parsedResult = sendMessageProducer.parseBatch(messages, channel, RefundResponseDto::class.java)
+        // Если результат невалидный или пустой — просто логируем и выходим
+        if (parsedResult == null) {
+            logger.warn(NOT_VALID_BATCH_MESSAGE_ORDER_CREATED)
+            return
+        }
+        // Обрабатываем только успешный результат парсинга
+        when (parsedResult) {
+            is ParsedResult.Success -> {
+                val orderEntity = orderDao.findById(parsedResult.dto.orderId)
+                if (orderEntity.isPresent && parsedResult.dto.status == OrderStatusesEnum.SUCCESS.values) {
+orderEntity.get().status = OrderStatusesEnum.
+                }
+            }
         }
     }
 }

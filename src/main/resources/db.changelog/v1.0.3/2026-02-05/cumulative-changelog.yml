@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-001-create-table
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-001-create-table
+  - include:
+      file: db.changelog\v1.0.3\2026-02-05\DATA\add_enum_type.sql
+

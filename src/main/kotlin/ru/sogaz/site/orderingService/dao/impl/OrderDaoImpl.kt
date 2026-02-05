@@ -8,14 +8,20 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
-import java.util.UUID
+import java.util.*
+import kotlin.collections.ArrayList
 
 @Service
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> =
+        orderRepository.findAllByRecipientUserId(userId)
+
+    override fun findById(id: UUID): Optional<OrderEntity> {
+        return orderRepository.findById(id)
+    }
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
 

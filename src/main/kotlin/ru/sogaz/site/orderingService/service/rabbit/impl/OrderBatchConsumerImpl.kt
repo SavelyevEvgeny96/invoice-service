@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
+import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
@@ -175,10 +176,5 @@ class OrderBatchConsumerImpl(
         }
     }
 
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-order}"]
-    )
-    override fun handleMessageToOrderRefundStatus(messages: Message, channel: Channel) {
-        val parsedResult = sendMessageProducer.parseBatch(messages,channel,)
-    }
+
 }

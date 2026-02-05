@@ -11,6 +11,7 @@ class RabbitProps {
     lateinit var paymentsExchange: String
     lateinit var queueOrder: String
     lateinit var queueOrderRefund: String
+    lateinit var queueOrderStatusRefund: String
     lateinit var queuePayment: String
     lateinit var routingKeyOrder: String
     lateinit var routingKeyOrderRefund: String
@@ -25,6 +26,7 @@ class RabbitProps {
         logger.info("ordersExchange = $ordersExchange")
         logger.info("queueOrder = $queueOrder")
         logger.info("queueOrderRefund = $queueOrderRefund")
+        logger.info("queueOrderStatusRefund = $queueOrderStatusRefund")
         logger.info("queuePayment = $queuePayment")
         logger.info("routingKeyOrder = $routingKeyOrder")
         logger.info("routingKeyPayment = $routingKeyPayment")
