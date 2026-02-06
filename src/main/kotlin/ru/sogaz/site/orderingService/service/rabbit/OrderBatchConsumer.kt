@@ -8,5 +8,4 @@ interface OrderBatchConsumer {
         messages: List<Message>,
         channel: Channel,
     )
-
 }

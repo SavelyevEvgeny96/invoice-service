@@ -6,7 +6,9 @@ import java.util.UUID
 
 interface OrderDao {
     fun findByRecipientUserId(userId: String): List<OrderEntity?>
-    fun findById(id:UUID):Optional<OrderEntity>
+
+    fun findById(id: UUID): Optional<OrderEntity>
+
     fun findByUnifiedId(unifiedId: String): List<OrderEntity?>
 
     fun findByIds(ids: List<UUID?>): List<OrderEntity>
@@ -20,6 +22,8 @@ interface OrderDao {
         email: String,
         phone: String,
     ): List<OrderEntity?>
+
+    fun save(order: OrderEntity): OrderEntity
 
     fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID>
 }

@@ -126,8 +126,8 @@ class SendMessageProducerImpl(
      * @param channel     RabbitMQ channel, используемый для publish и ACK
      * @param exchange    exchange, в который отправляется битое сообщение
      */
-    override fun <T : Any> processErrorMessages(
-        errorParsed: ParsedResult.Error<T>,
+    override fun processErrorMessages(
+        errorParsed: ParsedResult.Error,
         channel: Channel,
         exchange: String,
         statusPattern: String,
@@ -322,7 +322,7 @@ class SendMessageProducerImpl(
             val author = extractAuthorUnsafe(body)
             if (author != null) {
                 // Сообщение битое, передаём в handleBatch для обработки
-                ParsedResult.Error(tag, body, author, messageId)
+                ParsedResult.Error(tag, body, author, messageId, ex)
             } else {
                 // Ничего полезного не нашли → реджект
                 try {

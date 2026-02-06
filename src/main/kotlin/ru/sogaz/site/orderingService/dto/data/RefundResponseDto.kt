@@ -9,6 +9,6 @@ data class RefundResponseDto(
     val metaInfo: List<MetaInfoOrder>,
     val orderId: UUID,
     val status: String,
-    val premiumAmount: BigDecimal,
+    val premiumAmount: BigDecimal?,
     val errorText: String? = null,
 )

@@ -7,7 +7,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
-import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
@@ -28,10 +27,10 @@ class OrderBatchConsumerImpl(
         private const val ERROR_MESSAGE_IN_AUTHOR = "Битое сообщение от автора=%s : %s."
         private const val NOT_VALID_BATCH_MESSAGE_ORDER_CREATED =
             "Нет валидных сообщений для обработки" +
-                    " в батче по созданию заказа"
+                " в батче по созданию заказа"
         private const val NOT_VALID_BATCH_MESSAGE_REFUND_ORDER =
             "Нет валидных сообщений для обработки " +
-                    "в батче по возврату заказа "
+                "в батче по возврату заказа "
         val AUTHOR_REGEX =
             Regex(
                 """"author"\s*:\s*"([^"]+)"""",
@@ -96,7 +95,7 @@ class OrderBatchConsumerImpl(
                 sendMessageProducer.parseBatch(
                     msg,
                     channel,
-                    OrderPayloadDto::class.java
+                    OrderPayloadDto::class.java,
                 )
             }
         val successMessages =
@@ -175,6 +174,4 @@ class OrderBatchConsumerImpl(
             logger.info(BATCH_SUMMARY.format(totalMessages, tookMs))
         }
     }
-
-
 }

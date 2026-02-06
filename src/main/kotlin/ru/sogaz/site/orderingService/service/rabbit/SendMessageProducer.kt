@@ -17,8 +17,8 @@ interface SendMessageProducer {
         dtoClass: Class<T>,
     ): ParsedResult<T>?
 
-    fun <T : Any> processErrorMessages(
-        errorParsed: ParsedResult.Error<T>,
+    fun processErrorMessages(
+        errorParsed: ParsedResult.Error,
         channel: Channel,
         exchange: String,
         statusPattern: String,

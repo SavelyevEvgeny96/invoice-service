@@ -4,8 +4,8 @@ import org.mapstruct.Builder
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
-import ru.sogaz.site.orderingService.dto.data.RefundErrorDto
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
+import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
 import ru.sogaz.site.orderingService.enums.RefundErrorReason
 
 @Mapper(
@@ -36,5 +36,5 @@ interface RefundErrorMapper {
     fun toErrorDto(
         payload: RefundPayloadDto,
         reason: RefundErrorReason,
-    ): RefundErrorDto
+    ): RefundResponseDto
 }
