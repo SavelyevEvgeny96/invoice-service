@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.dto.request
 
 import ru.sogaz.site.orderingService.dto.data.MetaInfoOrder
 import java.math.BigDecimal
+import java.util.UUID
 
 data class SellRefundMessageDto(
     val metaInfo: List<MetaInfoOrder>,
@@ -18,7 +19,7 @@ data class SellRefundMessageDto(
     val depersonalization: Boolean,
     val channel: String,
     val product: String,
-    val orderId: Long,
+    val orderId: UUID,
 ) {
     data class Client(
         val email: String?,

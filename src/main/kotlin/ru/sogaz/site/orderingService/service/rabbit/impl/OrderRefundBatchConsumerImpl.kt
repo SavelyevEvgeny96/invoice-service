@@ -5,11 +5,13 @@ import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.mappers.ParsedResultToReceiptMessageDto
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_REFUND_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
@@ -23,6 +25,8 @@ class OrderRefundBatchConsumerImpl(
     private val sendMessageProducer: SendMessageProducer,
     private val props: RabbitProps,
     private val orderDao: OrderDao,
+    private val subOrderDao: SubOrderDao,
+    private val parsedResultToReceiptMessageDto: ParsedResultToReceiptMessageDto,
 ) : OrderRefundBatchConsumer {
     companion object {
         private const val BATCH_SUMMARY =
@@ -164,12 +168,31 @@ class OrderRefundBatchConsumerImpl(
 
                 orderDao
                     .findById(dto.orderId)
-                    .filter {
-                        dto.status == OrderStatusesEnum.SUCCESS.values.lowercase(Locale.getDefault())
-                    }.ifPresentOrElse(
-                        {
-                            it.status = OrderStatusesEnum.REFUND
-                            orderDao.save(it)
+                    .ifPresentOrElse(
+                        { order ->
+                            if (dto.status != OrderStatusesEnum.SUCCESS.values.lowercase(Locale.getDefault())) {
+                                channel.basicReject(parsedResult.tag, false)
+                                return@ifPresentOrElse
+                            }
+
+                            val subOrder =
+                                subOrderDao.findByOrderIdAndMainContractCheck(order.orderId)
+                                    ?: run {
+                                        channel.basicReject(parsedResult.tag, false)
+                                        return@ifPresentOrElse
+                                    }
+
+                            order.status = OrderStatusesEnum.REFUND
+                            orderDao.save(order)
+
+                            val message =
+                                parsedResultToReceiptMessageDto.toDto(order, subOrder)
+                            sendMessageProducer.sendMessage(
+                                props.routingKeyPaymentReceiptCreateCheck,
+                                message,
+                                props.receiptExchange,
+                                order.orderId,
+                            )
                         },
                         {
                             channel.basicReject(parsedResult.tag, false)
@@ -177,9 +200,8 @@ class OrderRefundBatchConsumerImpl(
                     )
             }
 
-            is ParsedResult.Error -> {
+            is ParsedResult.Error ->
                 channel.basicReject(parsedResult.tag, false)
-            }
         }
     }
 }

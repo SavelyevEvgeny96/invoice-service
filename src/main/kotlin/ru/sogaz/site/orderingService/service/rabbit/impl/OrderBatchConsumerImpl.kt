@@ -102,7 +102,7 @@ class OrderBatchConsumerImpl(
             parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
 
         val errorMessages =
-            parsedResults.filterIsInstance<ParsedResult.Error<OrderPayloadDto>>()
+            parsedResults.filterIsInstance<ParsedResult.Error>()
 
         // Если batch не содержит ни валидных, ни обработанных битых сообщений — выходим
         if (successMessages.isNotEmpty() && errorMessages.isNotEmpty()) {

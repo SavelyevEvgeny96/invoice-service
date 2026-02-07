@@ -51,6 +51,7 @@ app:
     java-version: ${JAVA_VERSION:21}
   rabbit:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
+    receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
     queue-order-refund: ${ORDER_CREATED_REFUND_QUEUE:order.refund.queue}
@@ -62,6 +63,7 @@ app:
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
     routing-key-payment-status-refund: ${ROUTING_KEY_PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.created}
+    routing-key-payment-receipt-create-check: ${ROUTING_KEY_PAYMENT_RECEIPT_CHECK_QUEUE:receipt.created}
     listener:
       batch-size: 50
       prefetch: 50

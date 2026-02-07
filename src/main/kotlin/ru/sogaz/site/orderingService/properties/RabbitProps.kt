@@ -8,6 +8,7 @@ import ru.sogaz.site.orderingService.loggerFor
 class RabbitProps {
     private val logger = loggerFor(javaClass)
     lateinit var ordersExchange: String
+    lateinit var receiptExchange: String
     lateinit var paymentsExchange: String
     lateinit var queueOrder: String
     lateinit var queueOrderRefund: String
@@ -18,6 +19,7 @@ class RabbitProps {
     lateinit var routingKeyPayment: String
     lateinit var routingKeyRefundPayment: String
     lateinit var routingKeyPaymentStatusRefund: String
+    lateinit var routingKeyPaymentReceiptCreateCheck: String
 
     @PostConstruct
     fun postConstruct() {
