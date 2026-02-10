@@ -1,4 +1,4 @@
-package service.receipt
+package ru.sogaz.site.orderingService.service.payment
 
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -15,43 +15,31 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.PaymentOperationDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptClientInfoMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptItemMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapper
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptPaymentMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptTotalAmountMapperImpl
-import ru.sogaz.site.orderingService.service.receipt.ReceiptClient
-import ru.sogaz.site.orderingService.service.receipt.ReceiptService
-import ru.sogaz.site.orderingService.service.receipt.impl.ReceiptServiceImpl
-import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest
-import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateResponse
-import ru.sogaz.site.payment.receipt.client.model.ResponsePaymentReceiptCreateResponse
+import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapper
+import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapperImpl
+import ru.sogaz.site.orderingService.service.payment.impl.PaymentOperationsServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(
-    value = [
-        ReceiptMapperImpl::class,
-        ReceiptTotalAmountMapperImpl::class,
-        ReceiptItemMapperImpl::class,
-        ReceiptPaymentMapperImpl::class,
-        ReceiptClientInfoMapperImpl::class,
-    ],
-)
-class ReceiptServiceTest {
+@Import(value = [PaymentOperationMapperImpl::class])
+class PaymentOperationsServiceTest {
     companion object {
         private const val SUCCESS_STATUS = "SUCCESS"
         private const val FAILED_STATUS = "FAILED"
         private const val TEST_CLIENT_EMAIL = "test@example.com"
         private const val TEST_CONTRACT_NUMBER = "CONT123"
+        private const val KEY_CARD = "KEY_CARD"
+        private const val PAYMENT_TYPE = "PAYMENT_TYPE"
+        private val BANK = BankEnum.GPB.name
 
         private val amount: BigDecimal = BigDecimal.TEN
     }
@@ -59,13 +47,13 @@ class ReceiptServiceTest {
     @MockK
     private lateinit var orderDao: OrderDao
 
-    @RelaxedMockK
-    private lateinit var receiptClient: ReceiptClient
-
     @Autowired
-    private lateinit var receiptMapper: ReceiptMapper
+    private lateinit var paymentOperationMapper: PaymentOperationMapper
 
-    private lateinit var receiptService: ReceiptService
+    @MockK
+    private lateinit var paymentOperationDao: PaymentOperationDao
+
+    private lateinit var paymentOperationsService: PaymentOperationsService
 
     private lateinit var validOrderId: UUID
 
@@ -78,41 +66,39 @@ class ReceiptServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        receiptService =
-            ReceiptServiceImpl(
+        paymentOperationsService =
+            PaymentOperationsServiceImpl(
                 orderDao = orderDao,
-                receiptMapper = receiptMapper,
-                receiptClient = receiptClient,
+                paymentOperationMapper = paymentOperationMapper,
+                paymentOperationDao = paymentOperationDao,
             )
 
         initOrdersTestData()
 
         every { orderDao.findById(any()) } returns validOrder
-        every { orderDao.save(any()) } returnsArgument 0
+        every { paymentOperationDao.save(any()) } returnsArgument 0
     }
 
     @Test
-    fun `sendReceipt should send valid request`() {
-        val requestSlot = slot<PaymentReceiptCreateRequest>()
+    fun `updatePaidOrder should correctly update order`() {
+        val paymentOperation = slot<PaymentOperationEntity>()
 
-        receiptService.sendReceipt(validCompletedPayment)
+        paymentOperationsService.saveOperation(validCompletedPayment)
 
-        verify(exactly = 1) { receiptClient.sendReceiptToQueue(capture(requestSlot)) }
+        verify { paymentOperationDao.save(capture(paymentOperation)) }
 
-        requestSlot.captured
-            .run(::assertThat)
-            .returns(TEST_CLIENT_EMAIL) { it.client.email }
+        assertThat(paymentOperation.captured)
+            .returns(validOrder) { it.orderEntity }
+            .returns(validCompletedPayment.paymentType) { it.type }
+            .returns(validCompletedPayment.bank) { it.bank.name }
             .returns(validCompletedPayment.depersonalization) { it.depersonalization }
-            .returns(amount) { it.total }
     }
 
     @Test
-    fun `sendReceipt should throw exception if order not found`() {
+    fun `updatePaidOrder should throw an error if order not found`() {
         every { orderDao.findById(any()) } returns null
 
-        assertThrows<OrderNotFoundException> {
-            receiptService.sendReceipt(validCompletedPayment)
-        }
+        assertThrows<OrderNotFoundException> { paymentOperationsService.saveOperation(validCompletedPayment) }
     }
 
     private fun initOrdersTestData() {
@@ -169,26 +155,12 @@ class ReceiptServiceTest {
                 orderId = validOrderId,
                 totalAmount = amount,
                 depersonalization = true,
-                status = "SUCCESS",
-                keyCard = "id",
-                bank = BankEnum.GPB.name,
-                paymentType = "CARD",
+                status = SUCCESS_STATUS,
+                keyCard = KEY_CARD,
+                bank = BANK,
+                paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
             )
     }
-
-    private fun buildSuccessReceiptServiceResponse() = buildReceiptServiceResponse(SUCCESS_STATUS, 200)
-
-    private fun buildFailedReceiptServiceResponse() = buildReceiptServiceResponse(FAILED_STATUS, 500)
-
-    private fun buildReceiptServiceResponse(
-        status: String,
-        code: Int,
-    ) = ResponsePaymentReceiptCreateResponse()
-        .status(status)
-        .responseUuid(UUID.randomUUID())
-        .code(code)
-        .traceId("222")
-        .data(PaymentReceiptCreateResponse().state("222").externalId("222"))
 }

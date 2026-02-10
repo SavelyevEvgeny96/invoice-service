@@ -45,6 +45,9 @@ abstract class OrderMapper {
         target = "recurrent",
         expression = "java(orderRequest.getOrderIdRecurrent() != null)",
     )
+    @Mapping(target = "status", constant = "NEW")
+    @Mapping(target = "receiptState", constant = "NONE")
+    @Mapping(target = "recipientPhone", defaultValue = "")
     abstract fun fromRequestDto(orderRequest: OrderRequest): OrderEntity
 
     abstract fun fromRequestDto(subOrderRequest: SubOrderRequest): SubOrderEntity

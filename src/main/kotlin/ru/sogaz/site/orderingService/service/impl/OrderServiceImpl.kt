@@ -24,6 +24,7 @@ import ru.sogaz.siter.models.resonses.getSuccessResponse
 import java.util.UUID
 
 @Service
+@Transactional(rollbackFor = [Exception::class])
 class OrderServiceImpl(
     private val orderDao: OrderDao,
     private val paymentService: PaymentService,
@@ -38,7 +39,6 @@ class OrderServiceImpl(
      * @throws Exception Если данные невалидны или произошла ошибка при сохранении
      * @return Объект DataOrder, содержащий информацию о платежном запросе
      */
-    @Transactional
     override fun createOrder(orderRequest: OrderRequest): Response<DataOrder> {
         val skipSendingErrorsQueue =
             clientSystemDao

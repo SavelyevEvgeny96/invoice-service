@@ -17,24 +17,22 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
-import ru.sogaz.site.orderingService.mappers.payment.ContractInfoMapperImpl
+import ru.sogaz.site.orderingService.mappers.payment.PaymentPurposeMapperImpl
 import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapperImpl
 import ru.sogaz.site.orderingService.service.payment.impl.PaymentServiceImpl
 import ru.sogaz.site.payment.client.api.PayV2Api
-import ru.sogaz.site.payment.client.model.DataPay
-import ru.sogaz.site.payment.client.model.PayRequest
+import ru.sogaz.site.payment.client.model.BankPaymentPageData
 import java.math.BigDecimal
-import java.net.URI
 import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(value = [PaymentServiceMapperImpl::class, ContractInfoMapperImpl::class])
+@Import(value = [PaymentServiceMapperImpl::class, PaymentPurposeMapperImpl::class])
 class PaymentServiceTest {
     companion object {
         private const val TEST_CONTRACT_NUMBER = "contract-number"
-        private val TEST_PAYMENT_PAGE_URL = URI.create("http://sogaz.ru")
+        private const val TEST_PAYMENT_PAGE_URL = "http://sogaz.ru"
     }
 
     @MockK
@@ -48,7 +46,7 @@ class PaymentServiceTest {
     @RelaxedMockK
     private lateinit var payQueryParams: PayQueryParams
 
-    private lateinit var dataPay: DataPay
+    private lateinit var dataPay: BankPaymentPageData
 
     private lateinit var order: OrderEntity
 
@@ -56,24 +54,27 @@ class PaymentServiceTest {
     fun beforeEach() {
         paymentService = PaymentServiceImpl(paymentServiceMapper, payV2Api)
         order = createOrder()
-        dataPay = DataPay().apply { paymentPageUrl = TEST_PAYMENT_PAGE_URL }
+        dataPay = BankPaymentPageData().apply { paymentPageUrl = TEST_PAYMENT_PAGE_URL }
     }
 
     @Test
     fun `should correctly map order to payRequest`() {
-        val payRequest = paymentServiceMapper.orderToPayRequest(order)
+        val payRequest = paymentServiceMapper.orderToCardPayRequest(order, payQueryParams)
 
         assertThat(payRequest)
-            .returns(order.premiumAmount, PayRequest::getAmount)
-            .returns(order.orderId, PayRequest::getOrderId)
+            .returns(order.premiumAmount) { it.amount }
+            .returns(order.orderId) { it.orderId }
 
-        assertThat(payRequest.contractsInfo.first())
-            .returns(TEST_CONTRACT_NUMBER) { it.contractNumber }
+        assertThat(payRequest.payItems.values.first())
+            .contains(TEST_CONTRACT_NUMBER)
+
+        assertThat(payRequest.description)
+            .contains(TEST_CONTRACT_NUMBER)
     }
 
     @Test
     fun `should correctly return dataPay`() {
-        every { payV2Api.pay(any(), any(), any(), any(), any()) } returns dataPay
+        every { payV2Api.pay(any()) } returns dataPay
 
         val paymentPage = paymentService.payCard(order, payQueryParams)
 

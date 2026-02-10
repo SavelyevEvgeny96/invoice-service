@@ -1,10 +1,8 @@
 package ru.sogaz.site.orderingService.dto.request
 
-import java.net.URI
-
 data class PayQueryParams(
-    val urlToReturn: URI? = null,
-    val urlToReturnS: URI? = null,
-    val urlToReturnF: URI? = null,
+    val urlToReturn: String? = null,
+    val urlToReturnS: String? = null,
+    val urlToReturnF: String? = null,
     val depersonalization: Boolean = false,
 )
