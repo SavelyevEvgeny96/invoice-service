@@ -25,7 +25,7 @@ data class SellRefundMessageDto(
         val email: String?,
         val phone: String?,
         val name: String?,
-        val userId: Long?,
+        val userId: String?,
         val unifiedId: String?,
     )
 

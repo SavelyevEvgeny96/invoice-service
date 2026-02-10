@@ -322,7 +322,7 @@ class SendMessageProducerImpl(
             val author = extractAuthorUnsafe(body)
             if (author != null) {
                 // Сообщение битое, передаём в handleBatch для обработки
-                ParsedResult.Error(tag, body, author, messageId, ex)
+                ParsedResult.Error(tag, body, author, messageId)
             } else {
                 // Ничего полезного не нашли → реджект
                 try {

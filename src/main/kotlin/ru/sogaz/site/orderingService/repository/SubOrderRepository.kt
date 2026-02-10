@@ -9,5 +9,5 @@ import java.util.UUID
 interface SubOrderRepository : JpaRepository<SubOrderEntity, UUID> {
     fun findAllByOrderEntityOrderId(orderId: UUID?): List<SubOrderEntity?>
 
-    fun findByOrderIdAndMainContractCheckTrue(orderId: UUID?): SubOrderEntity?
+    fun findByOrderEntityOrderIdAndMainContractCheckTrue(orderId: UUID?): SubOrderEntity?
 }

@@ -12,6 +12,5 @@ sealed class ParsedResult<out T> {
         val rawMessage: String,
         val author: String,
         val messageId: String?,
-        val cause: Throwable?,
     ) : ParsedResult<Nothing>()
 }
