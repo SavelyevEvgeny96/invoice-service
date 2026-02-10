@@ -1,11 +1,9 @@
-package service.receipt
+package ru.sogaz.site.orderingService.service.order
 
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.slot
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,38 +18,24 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptClientInfoMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptItemMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapper
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptPaymentMapperImpl
-import ru.sogaz.site.orderingService.mappers.receipt.ReceiptTotalAmountMapperImpl
-import ru.sogaz.site.orderingService.service.receipt.ReceiptClient
-import ru.sogaz.site.orderingService.service.receipt.ReceiptService
-import ru.sogaz.site.orderingService.service.receipt.impl.ReceiptServiceImpl
-import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest
-import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateResponse
-import ru.sogaz.site.payment.receipt.client.model.ResponsePaymentReceiptCreateResponse
+import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapper
+import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapperImpl
+import ru.sogaz.site.orderingService.service.order.impl.OrderStatusServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(
-    value = [
-        ReceiptMapperImpl::class,
-        ReceiptTotalAmountMapperImpl::class,
-        ReceiptItemMapperImpl::class,
-        ReceiptPaymentMapperImpl::class,
-        ReceiptClientInfoMapperImpl::class,
-    ],
-)
-class ReceiptServiceTest {
+@Import(value = [CompletedPaymentMapperImpl::class])
+class OrderStatusServiceTest {
     companion object {
         private const val SUCCESS_STATUS = "SUCCESS"
         private const val FAILED_STATUS = "FAILED"
         private const val TEST_CLIENT_EMAIL = "test@example.com"
         private const val TEST_CONTRACT_NUMBER = "CONT123"
+        private const val KEY_CARD = "KEY_CARD"
+        private const val PAYMENT_TYPE = "PAYMENT_TYPE"
+        private val BANK = BankEnum.GPB.name
 
         private val amount: BigDecimal = BigDecimal.TEN
     }
@@ -59,13 +43,10 @@ class ReceiptServiceTest {
     @MockK
     private lateinit var orderDao: OrderDao
 
-    @RelaxedMockK
-    private lateinit var receiptClient: ReceiptClient
-
     @Autowired
-    private lateinit var receiptMapper: ReceiptMapper
+    private lateinit var completedPaymentMapper: CompletedPaymentMapper
 
-    private lateinit var receiptService: ReceiptService
+    private lateinit var orderStatusService: OrderStatusService
 
     private lateinit var validOrderId: UUID
 
@@ -78,11 +59,10 @@ class ReceiptServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        receiptService =
-            ReceiptServiceImpl(
+        orderStatusService =
+            OrderStatusServiceImpl(
                 orderDao = orderDao,
-                receiptMapper = receiptMapper,
-                receiptClient = receiptClient,
+                completedPaymentMapper = completedPaymentMapper,
             )
 
         initOrdersTestData()
@@ -92,27 +72,20 @@ class ReceiptServiceTest {
     }
 
     @Test
-    fun `sendReceipt should send valid request`() {
-        val requestSlot = slot<PaymentReceiptCreateRequest>()
+    fun `updatePaidOrder should correctly update order`() {
+        val order = orderStatusService.updatePaidOrder(validCompletedPayment)
 
-        receiptService.sendReceipt(validCompletedPayment)
-
-        verify(exactly = 1) { receiptClient.sendReceiptToQueue(capture(requestSlot)) }
-
-        requestSlot.captured
-            .run(::assertThat)
-            .returns(TEST_CLIENT_EMAIL) { it.client.email }
-            .returns(validCompletedPayment.depersonalization) { it.depersonalization }
-            .returns(amount) { it.total }
+        assertThat(order)
+            .returns(PAYMENT_TYPE) { it.paymentType }
+            .returns(BANK) { it.bank?.name }
+            .returns(KEY_CARD) { it.keyCard }
     }
 
     @Test
-    fun `sendReceipt should throw exception if order not found`() {
+    fun `updatePaidOrder should throw an error if order not found`() {
         every { orderDao.findById(any()) } returns null
 
-        assertThrows<OrderNotFoundException> {
-            receiptService.sendReceipt(validCompletedPayment)
-        }
+        assertThrows<OrderNotFoundException> { orderStatusService.updatePaidOrder(validCompletedPayment) }
     }
 
     private fun initOrdersTestData() {
@@ -169,26 +142,12 @@ class ReceiptServiceTest {
                 orderId = validOrderId,
                 totalAmount = amount,
                 depersonalization = true,
-                status = "SUCCESS",
-                keyCard = "id",
-                bank = BankEnum.GPB.name,
-                paymentType = "CARD",
+                status = SUCCESS_STATUS,
+                keyCard = KEY_CARD,
+                bank = BANK,
+                paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
             )
     }
-
-    private fun buildSuccessReceiptServiceResponse() = buildReceiptServiceResponse(SUCCESS_STATUS, 200)
-
-    private fun buildFailedReceiptServiceResponse() = buildReceiptServiceResponse(FAILED_STATUS, 500)
-
-    private fun buildReceiptServiceResponse(
-        status: String,
-        code: Int,
-    ) = ResponsePaymentReceiptCreateResponse()
-        .status(status)
-        .responseUuid(UUID.randomUUID())
-        .code(code)
-        .traceId("222")
-        .data(PaymentReceiptCreateResponse().state("222").externalId("222"))
 }

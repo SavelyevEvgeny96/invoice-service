@@ -138,7 +138,7 @@ class OrdersUserServiceImpl(
                         it.orderId,
                         it.premiumAmount,
                         subOrdersList = subOrders,
-                        status = it.status?.values,
+                        status = it.status.desc,
                     )
                 }
             }

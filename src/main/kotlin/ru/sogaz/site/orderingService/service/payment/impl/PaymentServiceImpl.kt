@@ -17,15 +17,8 @@ class PaymentServiceImpl(
         order: OrderEntity,
         payQueryParams: PayQueryParams,
     ): PaymentPage {
-        val payRequest = paymentServiceMapper.orderToPayRequest(order)
-        val dataPay =
-            payClient.pay(
-                payRequest,
-                payQueryParams.urlToReturn.toString(),
-                payQueryParams.urlToReturnS.toString(),
-                payQueryParams.urlToReturnF.toString(),
-                payQueryParams.depersonalization,
-            )
+        val payRequest = paymentServiceMapper.orderToCardPayRequest(order, payQueryParams)
+        val dataPay = payClient.pay(payRequest)
         return paymentServiceMapper.dataPayToPaymentPage(dataPay)
     }
 
@@ -33,15 +26,8 @@ class PaymentServiceImpl(
         order: OrderEntity,
         payQueryParams: PayQueryParams,
     ): PaymentPage {
-        val payRequest = paymentServiceMapper.orderToPayRequest(order)
-        val dataPay =
-            payClient.paySbp(
-                payRequest,
-                payQueryParams.urlToReturn.toString(),
-                payQueryParams.urlToReturnS.toString(),
-                payQueryParams.urlToReturnF.toString(),
-                payQueryParams.depersonalization,
-            )
+        val payRequest = paymentServiceMapper.orderToSbpPayRequest(order, payQueryParams)
+        val dataPay = payClient.paySbp(payRequest)
         return paymentServiceMapper.dataPayToPaymentPage(dataPay)
     }
 }

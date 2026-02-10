@@ -149,7 +149,7 @@
         <dependency>
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-api-client</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
 		<dependency>
 			<groupId>ru.sogaz.site</groupId>
@@ -160,6 +160,11 @@
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-receipt-api-client</artifactId>
             <version>0.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.sogaz.site</groupId>
+            <artifactId>logging-starter</artifactId>
+            <version>1.0.11</version>
         </dependency>
 
 		<!-- swagger / openapi -->
@@ -283,6 +288,7 @@
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>
+                        <plugin>jpa</plugin>
                         <plugin>all-open</plugin>
                         <plugin>no-arg</plugin>
                     </compilerPlugins>

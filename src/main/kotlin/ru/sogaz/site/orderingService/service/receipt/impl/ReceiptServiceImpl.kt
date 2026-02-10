@@ -21,16 +21,9 @@ class ReceiptServiceImpl(
 ) : ReceiptService {
     override fun sendReceipt(completedPaymentData: CompletedPaymentData): OrderEntity {
         val order = findOrderByIdOrThrow(completedPaymentData.orderId)
-
         sendReceipt(order, completedPaymentData)
-
-        val requestedOrder =
-            order.apply {
-                receiptState = ReceiptState.REQUESTED
-                depersonalization = completedPaymentData.depersonalization
-            }
-
-        return orderDao.save(requestedOrder)
+        order.receiptState = ReceiptState.REQUESTED
+        return orderDao.save(order)
     }
 
     private fun findOrderByIdOrThrow(orderId: UUID): OrderEntity = orderDao.findById(orderId) ?: throw OrderNotFoundException(orderId)

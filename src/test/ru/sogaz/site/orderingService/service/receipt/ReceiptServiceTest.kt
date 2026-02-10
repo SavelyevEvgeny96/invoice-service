@@ -1,4 +1,4 @@
-package service.receipt
+package ru.sogaz.site.orderingService.service.receipt
 
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -6,7 +6,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,7 +18,6 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
-import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptClientInfoMapperImpl
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptItemMapperImpl
@@ -26,8 +25,6 @@ import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapper
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapperImpl
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptPaymentMapperImpl
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptTotalAmountMapperImpl
-import ru.sogaz.site.orderingService.service.receipt.ReceiptClient
-import ru.sogaz.site.orderingService.service.receipt.ReceiptService
 import ru.sogaz.site.orderingService.service.receipt.impl.ReceiptServiceImpl
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateResponse
@@ -100,7 +97,7 @@ class ReceiptServiceTest {
         verify(exactly = 1) { receiptClient.sendReceiptToQueue(capture(requestSlot)) }
 
         requestSlot.captured
-            .run(::assertThat)
+            .run(Assertions::assertThat)
             .returns(TEST_CLIENT_EMAIL) { it.client.email }
             .returns(validCompletedPayment.depersonalization) { it.depersonalization }
             .returns(amount) { it.total }
@@ -170,9 +167,9 @@ class ReceiptServiceTest {
                 totalAmount = amount,
                 depersonalization = true,
                 status = "SUCCESS",
-                keyCard = "id",
-                bank = BankEnum.GPB.name,
-                paymentType = "CARD",
+                keyCard = null,
+                bank = "gpb",
+                paymentType = "card",
                 payDate = Instant.now(),
                 errorText = null,
             )

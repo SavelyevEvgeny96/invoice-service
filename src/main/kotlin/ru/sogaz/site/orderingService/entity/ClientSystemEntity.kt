@@ -13,13 +13,13 @@ class ClientSystemEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    val id: UUID?,
+    var id: UUID?,
     @Column(name = "external_system_code", unique = true, length = 50)
-    val externalSystemCode: String,
+    var externalSystemCode: String,
     @Column(name = "external_system_name", nullable = false)
-    val externalSystemName: String,
+    var externalSystemName: String,
     @Column(name = "permission_return")
-    var permissionReturn: Boolean? = false,
+    var permissionReturn: Boolean = false,
     @Column(name = "skip_sending_errors_queue")
-    var skipSendingErrorsQueue: Boolean? = false,
+    var skipSendingErrorsQueue: Boolean = false,
 )

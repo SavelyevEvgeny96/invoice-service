@@ -53,12 +53,14 @@ app:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     payments-completed-exchange: ${PAYMENT_COMPLETED_EXCHANGE:payment.completed.exchange}
+    payments-success-exchange: ${PAYMENT_COMPLETED_EXCHANGE:payment.success.exchange}
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
     queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
     queue-send-receipt-order: ${ORDER_RECEIPT_SEND_QUEUE:order.receipt.send.queue}
+    queue-fill-history-payment-order: ${ORDER_PAYMENT_HISTORY_FILL_QUEUE:order.payment.history.fill.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
     routing-key-order-dlq: ${ROUTING_KEY_ORDER_CREATED_DLQ:order.created.dlq}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
@@ -119,7 +121,20 @@ management:
 #      sogaz:
 #        site:
 #          pattern: ${LOGGING_LEVEL_RU_SOGAZ_ESB:DEBUG}
+logging:
+  proxy:
+    frontend-enabled: ${LOGGING_PROXY_FRONTEND_ENABLED:true}
+    upstream-enabled: ${LOGGING_PROXY_UPSTREAM_ENABLED:true}
+    max-body-bytes: ${LOGGING_PROXY_MAX_BODY_BYTES:6000}
+    log-headers: ${LOGGING_PROXY_LOG_HEADERS:false}
+    stacktrace-enabled: ${LOGGING_PROXY_STACKTRACE_ENABLE:true}
+    sensitive-fields: ${LOGGING_SENSITIVE_FIELDS:paymentPageUrl, keyCard}
 
+  rabbit:
+    enabled: ${LOGGING_RABBIT_ENABLED:true}
+    log-body: ${LOGGING_RABBIT_LOG_BODY:true}
+    confirms-enabled: ${LOGGING_RABBIT_CONFIRMS_ENABLED:false}
+    returns-enabled: ${LOGGING_RABBIT_RETURNS_ENABLED:false}
 
 logstash:
   host: ${LOG_SERVER_HOST:localhost}
