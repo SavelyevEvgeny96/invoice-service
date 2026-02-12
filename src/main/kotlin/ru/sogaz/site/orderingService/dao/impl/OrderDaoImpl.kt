@@ -2,8 +2,6 @@ package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
-import ru.sogaz.site.filterStarter.services.RequestInfo
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -38,6 +36,8 @@ open class OrderDaoImpl(
         email: String,
         phone: String,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
+
+    override fun save(order: OrderEntity): OrderEntity = orderRepository.save(order)
 
     override fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID> {
         if (orders.isEmpty()) return emptyList()
@@ -97,14 +97,5 @@ open class OrderDaoImpl(
             }
 
         return jdbcTemplate.query(sql, mapper, *args.toTypedArray())
-    }
-
-    override fun save(order: OrderEntity): OrderEntity {
-        try {
-            return orderRepository.save(order)
-        } catch (e: Exception) {
-            logger.error(LOG_ERROR_ORDER_SAVE, e)
-            throw InnerException(RequestInfo.getTraceId(), LOG_ERROR_ORDER_SAVE + e.message)
-        }
     }
 }

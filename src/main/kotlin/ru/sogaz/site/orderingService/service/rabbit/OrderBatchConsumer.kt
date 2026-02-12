@@ -1,10 +1,10 @@
-package ru.sogaz.site.orderingService.service
+package ru.sogaz.site.orderingService.service.rabbit
 
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 
 interface OrderBatchConsumer {
-    fun handleBatch(
+    fun handleBatchOrderCreated(
         messages: List<Message>,
         channel: Channel,
     )

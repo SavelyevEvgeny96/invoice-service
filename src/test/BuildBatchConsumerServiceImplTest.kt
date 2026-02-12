@@ -12,6 +12,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
@@ -23,7 +24,7 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.mappers.PaymentEventMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
-import ru.sogaz.site.orderingService.service.impl.BuildBatchConsumerServiceImpl
+import ru.sogaz.site.orderingService.service.rabbit.impl.BuildBatchConsumerServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -44,6 +45,9 @@ class BuildBatchConsumerServiceImplTest {
 
     @Mock
     lateinit var orderMapper: OrderMapper
+
+    @Mock
+    lateinit var clientSystemDao: ClientSystemDao
 
     @Mock
     lateinit var paymentEventMapper: PaymentEventMapper
@@ -163,7 +167,7 @@ class BuildBatchConsumerServiceImplTest {
 
     @Test
     fun `должен успешно обработать пачку заказов`() {
-        val result = service.upsertBatch(listOf(dto))
+        val result = service.insertBatchOrderCreated(listOf(dto))
 
         verify(orderDao).upsertOrdersReturningIds(listOf(orderEntity))
         verify(subOrderDao).upsertSubOrders(listOf(subOrderEntity))
@@ -172,7 +176,7 @@ class BuildBatchConsumerServiceImplTest {
 
     @Test
     fun `должен вернуть пустой список, если входная пачка пуста`() {
-        val result = service.upsertBatch(emptyList())
+        val result = service.insertBatchOrderCreated(emptyList())
 
         verify(orderDao, never()).upsertOrdersReturningIds(any())
         verify(subOrderDao, never()).upsertSubOrders(any())
@@ -188,7 +192,7 @@ class BuildBatchConsumerServiceImplTest {
 
         val exception =
             assertThrows<RuntimeException> {
-                service.upsertBatch(listOf(dto))
+                service.insertBatchOrderCreated(listOf(dto))
             }
 
         assertEquals("DB error", exception.message)

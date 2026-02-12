@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-001-create-table
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-001-create-table
+  - include:
+      file: db.changelog\v1.0.2\2025-12-22\DATA\refactor_table_client_systems.sql
+

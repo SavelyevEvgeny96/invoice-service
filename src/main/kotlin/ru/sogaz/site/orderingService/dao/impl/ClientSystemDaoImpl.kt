@@ -11,6 +11,8 @@ import ru.sogaz.site.orderingService.repository.ClientSystemRepository
 class ClientSystemDaoImpl(
     private val clientSystemRepository: ClientSystemRepository,
 ) : ClientSystemDao {
+    override fun checkingRefundAccess(codes: Collection<String>): List<ClientSystemEntity> =
+        clientSystemRepository.findAllByExternalSystemCodeInAndPermissionReturnTrue(codes)
     companion object {
         private const val LOG_CLIENT_SYSTEM_NOT_FOUND =
             "Не удалось найти систему клиента для externalSystemCode: {} и TraceId: {}"

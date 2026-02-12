@@ -30,50 +30,6 @@ class RabbitConfig(
     private val props: RabbitProps,
     private val propsListener: RabbitListenerProps,
 ) {
-    companion object {
-        private const val CONFIRMED_LOG = " Сообщение подтверждено брокером: orderId=%s"
-        private const val N_ACK_LOG = " Сообщение отклонено брокером: orderId=%s, причина=%s"
-        private const val RETURNED_LOG = " Сообщение возвращено брокером: %s, reply=%s"
-    }
-
-    private val logger = loggerFor(RabbitConfig::class.java)
-    private val confirmed = ConcurrentHashMap<UUID, Boolean>()
-    private val errors = ConcurrentHashMap<UUID, String?>()
-
-    @Bean
-    fun rabbitTemplate(
-        connectionFactory: ConnectionFactory,
-        messageConverter: MessageConverter,
-    ): RabbitTemplate {
-        val template = RabbitTemplate(connectionFactory)
-        template.messageConverter = messageConverter
-
-        template.setConfirmCallback { correlation, ack, cause ->
-            val id = correlation?.id ?: return@setConfirmCallback
-            val orderId = UUID.fromString(id)
-
-            if (ack) {
-                confirmed[orderId] = true
-                logger.debug(CONFIRMED_LOG.format(orderId))
-            } else {
-                errors[orderId] = cause
-                logger.error(N_ACK_LOG.format(orderId, cause))
-            }
-        }
-
-        template.setReturnsCallback { returned ->
-            logger.error(RETURNED_LOG.format(returned.message, returned.replyText))
-        }
-
-        return template
-    }
-
-    @Bean
-    fun confirmedMap(): ConcurrentHashMap<UUID, Boolean> = confirmed
-
-    @Bean
-    fun errorsMap(): ConcurrentHashMap<UUID, String?> = errors
-
     @Bean(name = ["ordersExchange"])
     fun ordersExchange(): TopicExchange = TopicExchange(props.ordersExchange, true, false)
 
@@ -86,21 +42,48 @@ class RabbitConfig(
     @Bean
     fun receiptExchange(): TopicExchange = TopicExchange(props.receiptExchange)
 
-    // Основная очередь заказов с DLQ
+    // Основная очередь заказов с DLQ (classic)
     @Bean(name = ["ordersQueue"])
     fun ordersQueue(): Queue =
         QueueBuilder
             .durable(props.queueOrder)
-            .quorum()
-            .deadLetterExchange(props.ordersExchange)
-            .deadLetterRoutingKey(props.routingKeyOrderDlq)
+            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-routing-key", "${props.queueOrder}.dlq")
             .build()
 
     @Bean(name = ["ordersDlq"])
     fun ordersDlq(): Queue =
         QueueBuilder
-            .durable(props.queueOrderDlq)
-            .quorum()
+            .durable("${props.queueOrder}.dlq")
+            .build()
+
+    @Bean(name = ["paymentStatusRefundQueue"])
+    fun paymentStatusRefundQueue(): Queue =
+        QueueBuilder
+            .durable(props.queuePaymentStatusRefund)
+            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-routing-key", "${props.queuePaymentStatusRefund}.dlq")
+            .build()
+
+    @Bean(name = ["paymentStatusRefundQueueDlq"])
+    fun paymentStatusRefundQueueDlq(): Queue =
+        QueueBuilder
+            .durable("${props.queuePaymentStatusRefund}.dlq")
+            .build()
+
+    // Основная очередь возвратов с DLQ (classic)
+    @Bean(name = ["ordersRefundQueue"])
+    fun ordersRefundQueue(): Queue =
+        QueueBuilder
+            .durable(props.queueOrderRefund)
+            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-routing-key", "${props.queueOrderRefund}.dlq")
+            .build()
+
+    @Bean(name = ["ordersRefundDlq"])
+    fun ordersRefundDlq(): Queue =
+        QueueBuilder
+            .durable("${props.queueOrderRefund}.dlq")
             .build()
 
     @Bean(name = ["paymentsQueue"])
@@ -123,12 +106,22 @@ class RabbitConfig(
             .durable(props.queueSendReceiptOrder)
             .quorum()
             .build()
+    fun paymentsQueue(): Queue =
+        QueueBuilder
+            .durable(props.queuePayment)
+            .build()
+
+    @Bean
+    fun ordersRefundBinding(
+        @Qualifier("ordersQueue") queue: Queue,
+        @Qualifier("ordersExchange") exchange: TopicExchange,
+    ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrder)
 
     @Bean
     fun ordersBinding(
-        @Qualifier("ordersQueue") queue: Queue,
-        @Qualifier("ordersExchange")exchange: TopicExchange,
-    ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrder)
+        @Qualifier("ordersRefundQueue") queue: Queue,
+        @Qualifier("ordersExchange") exchange: TopicExchange,
+    ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyOrderRefund)
 
     @Bean
     fun ordersDlqBinding(
@@ -139,7 +132,7 @@ class RabbitConfig(
     @Bean
     fun paymentsBinding(
         @Qualifier("paymentsQueue") queue: Queue,
-        @Qualifier("paymentsExchange")exchange: TopicExchange,
+        @Qualifier("paymentsExchange") exchange: TopicExchange,
     ): Binding = BindingBuilder.bind(queue).to(exchange).with(props.routingKeyPayment)
 
     @Bean

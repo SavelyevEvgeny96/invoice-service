@@ -1,13 +1,16 @@
 package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.repository.SubOrderRepository
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.collections.ArrayList
 
+@Service
 open class SubOrderDaoImpl(
     private val jdbcTemplate: JdbcTemplate,
     private val subOrderRepository: SubOrderRepository,
@@ -17,6 +20,9 @@ open class SubOrderDaoImpl(
         private const val LOG_EXECUTE = "Выполняем batchUpdate() для %d записей"
         private const val LOG_DONE = "Завершён upsertSubOrders: size=%d"
         private const val GET_SUB_ORDER_LIST = "Получение списка sub_orders по orderId: %s"
+        private const val GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK =
+            "Получение sub_order с параметром " +
+                "main_contract_check = true по orderId: %s   для генерации description в возвратах "
     }
 
     private val logger = loggerFor(javaClass)
@@ -61,6 +67,9 @@ open class SubOrderDaoImpl(
         logger.info(LOG_EXECUTE.format(subs.size))
         logger.info(LOG_DONE.format(subs.size))
     }
+
+    override fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity? =
+        subOrderRepository.findByOrderEntityOrderIdAndMainContractCheckTrue(orderId)
 
     override fun findByOrderId(orderId: UUID?): List<SubOrderEntity?> {
         logger.info(GET_SUB_ORDER_LIST.format(orderId))
