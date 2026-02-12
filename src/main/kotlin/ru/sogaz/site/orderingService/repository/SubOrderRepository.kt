@@ -8,4 +8,6 @@ import java.util.UUID
 @Repository
 interface SubOrderRepository : JpaRepository<SubOrderEntity, UUID> {
     fun findAllByOrderEntityOrderId(orderId: UUID?): List<SubOrderEntity?>
+
+    fun findByOrderEntityOrderIdAndMainContractCheckTrue(orderId: UUID): SubOrderEntity?
 }

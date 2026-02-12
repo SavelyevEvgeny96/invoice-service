@@ -19,6 +19,9 @@ open class SubOrderDaoImpl(
         private const val LOG_EXECUTE = "Выполняем batchUpdate() для %d записей"
         private const val LOG_DONE = "Завершён upsertSubOrders: size=%d"
         private const val GET_SUB_ORDER_LIST = "Получение списка sub_orders по orderId: %s"
+        private const val GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK =
+            "Получение sub_order с параметром " +
+                "main_contract_check = true по orderId: %s   для генерации description в возвратах "
     }
 
     private val logger = loggerFor(javaClass)
@@ -62,6 +65,11 @@ open class SubOrderDaoImpl(
         jdbcTemplate.update(sql, *args.toTypedArray())
         logger.info(LOG_EXECUTE.format(subs.size))
         logger.info(LOG_DONE.format(subs.size))
+    }
+
+    override fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity? {
+        logger.info(GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK.format(orderId))
+        return orderId?.let { subOrderRepository.findByOrderEntityOrderIdAndMainContractCheckTrue(it) }
     }
 
     override fun findByOrderId(orderId: UUID?): List<SubOrderEntity?> {
