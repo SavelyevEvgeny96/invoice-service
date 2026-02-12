@@ -20,6 +20,9 @@ open class SubOrderDaoImpl(
         private const val LOG_EXECUTE = "Выполняем batchUpdate() для %d записей"
         private const val LOG_DONE = "Завершён upsertSubOrders: size=%d"
         private const val GET_SUB_ORDER_LIST = "Получение списка sub_orders по orderId: %s"
+        private const val GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK =
+            "Получение sub_order с параметром " +
+                "main_contract_check = true по orderId: %s   для генерации description в возвратах "
     }
 
     private val logger = loggerFor(javaClass)
