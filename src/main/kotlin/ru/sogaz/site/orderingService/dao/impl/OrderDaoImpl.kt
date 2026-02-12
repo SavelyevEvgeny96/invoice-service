@@ -8,7 +8,9 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.util.Optional
 import java.util.UUID
+import kotlin.collections.ArrayList
 
 @Service
 open class OrderDaoImpl(
@@ -16,6 +18,8 @@ open class OrderDaoImpl(
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
+
+    override fun findById(id: UUID): Optional<OrderEntity> = orderRepository.findById(id)
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
 
@@ -30,6 +34,8 @@ open class OrderDaoImpl(
         email: String,
         phone: String,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
+
+    override fun save(order: OrderEntity): OrderEntity = orderRepository.save(order)
 
     override fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID> {
         if (orders.isEmpty()) return emptyList()

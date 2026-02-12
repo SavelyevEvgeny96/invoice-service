@@ -12,13 +12,13 @@ interface SendMessageProducer {
     fun sendMessageRefund(resultOrder: RefundPreparationResult)
 
     fun <T : Any> parseBatch(
-        messages: List<Message>,
+        messages: Message,
         channel: Channel,
         dtoClass: Class<T>,
-    ): List<ParsedResult<T>>
+    ): ParsedResult<T>?
 
-    fun <T : Any> processErrorMessages(
-        errorParsed: ParsedResult.Error<T>,
+    fun processErrorMessages(
+        errorParsed: ParsedResult.Error,
         channel: Channel,
         exchange: String,
         statusPattern: String,

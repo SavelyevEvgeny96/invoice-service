@@ -8,6 +8,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.repository.SubOrderRepository
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.collections.ArrayList
 
 @Service
 open class SubOrderDaoImpl(
@@ -67,10 +68,8 @@ open class SubOrderDaoImpl(
         logger.info(LOG_DONE.format(subs.size))
     }
 
-    override fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity? {
-        logger.info(GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK.format(orderId))
-        return orderId?.let { subOrderRepository.findByOrderEntityOrderIdAndMainContractCheckTrue(it) }
-    }
+    override fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity? =
+        subOrderRepository.findByOrderEntityOrderIdAndMainContractCheckTrue(orderId)
 
     override fun findByOrderId(orderId: UUID?): List<SubOrderEntity?> {
         logger.info(GET_SUB_ORDER_LIST.format(orderId))

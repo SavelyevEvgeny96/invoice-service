@@ -14,6 +14,7 @@ enum class OrderStatusesEnum(
     MARKEDDEL("MARKEDDEL"),
     SUCCESS("SUCCESS"),
     CANCELED("CANCELED"),
+    REFUND("REFUND"),
     ;
 
     companion object {

@@ -145,7 +145,7 @@ class SendMessageProducerImplTest {
         val statusPattern = "status.%s.%s"
         val routingKey = "normalized.key"
         val errorParsed =
-            ParsedResult.Error<Any>(
+            ParsedResult.Error(
                 author = "ordering-client",
                 rawMessage = """{"bad":"json"}""",
                 tag = 42L,

@@ -129,8 +129,8 @@ class SendMessageProducerImpl(
      * @param channel     RabbitMQ channel, используемый для publish и ACK
      * @param exchange    exchange, в который отправляется битое сообщение
      */
-    override fun <T : Any> processErrorMessages(
-        errorParsed: ParsedResult.Error<T>,
+    override fun processErrorMessages(
+        errorParsed: ParsedResult.Error,
         channel: Channel,
         exchange: String,
         statusPattern: String,
@@ -311,36 +311,31 @@ class SendMessageProducerImpl(
     }
 
     override fun <T : Any> parseBatch(
-        messages: List<Message>,
+        messages: Message,
         channel: Channel,
         dtoClass: Class<T>,
-    ): List<ParsedResult<T>> {
-        val result = mutableListOf<ParsedResult<T>>()
-
-        messages.forEach { msg ->
-            val tag = msg.messageProperties.deliveryTag
-            val messageId = msg.messageProperties.messageId
-            val body = String(msg.body, Charsets.UTF_8)
-            try {
-                val dto = objectMapper.readValue(body, dtoClass)
-                result += ParsedResult.Success(tag, dto, messageId)
-            } catch (ex: Exception) {
-                val author = extractAuthorUnsafe(body)
-                if (author != null) {
-                    // Сообщение битое, передаём в handleBatch для обработки
-                    result += ParsedResult.Error(tag, body, author, messageId)
-                } else {
-                    // author не нашли → реджектим один раз
-                    try {
-                        channel.basicReject(tag, false)
-                    } catch (ackEx: Exception) {
-                        logger.error("Не удалось сделать basicReject для tag=$tag", ackEx)
-                    }
+    ): ParsedResult<T>? {
+        val tag = messages.messageProperties.deliveryTag
+        val messageId = messages.messageProperties.messageId
+        val body = String(messages.body, Charsets.UTF_8)
+        return try {
+            val dto = objectMapper.readValue(body, dtoClass)
+            ParsedResult.Success(tag, dto, messageId)
+        } catch (ex: Exception) {
+            val author = extractAuthorUnsafe(body)
+            if (author != null) {
+                // Сообщение битое, передаём в handleBatch для обработки
+                ParsedResult.Error(tag, body, author, messageId)
+            } else {
+                // Ничего полезного не нашли → реджект
+                try {
+                    channel.basicReject(tag, false)
+                } catch (ackEx: Exception) {
+                    logger.error("Не удалось сделать basicReject для tag=$tag", ackEx)
                 }
+                null
             }
         }
-
-        return result
     }
 
     override fun extractAuthorUnsafe(body: String): String? {

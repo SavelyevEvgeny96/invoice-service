@@ -90,15 +90,22 @@ class OrderBatchConsumerImpl(
         //  - Success -> валидные DTO + deliveryTag
         //  - Error   -> битые сообщения, где удалось извлечь author
         // Сообщения без author могут быть сразу rejected внутри parseBatch
-        val parsedResults = sendMessageProducer.parseBatch(messages, channel, OrderPayloadDto::class.java)
-
+        val parsedResults: List<ParsedResult<OrderPayloadDto>> =
+            messages.mapNotNull { msg ->
+                sendMessageProducer.parseBatch(
+                    msg,
+                    channel,
+                    OrderPayloadDto::class.java,
+                )
+            }
         val successMessages =
             parsedResults.filterIsInstance<ParsedResult.Success<OrderPayloadDto>>()
+
         val errorMessages =
-            parsedResults.filterIsInstance<ParsedResult.Error<OrderPayloadDto>>()
+            parsedResults.filterIsInstance<ParsedResult.Error>()
 
         // Если batch не содержит ни валидных, ни обработанных битых сообщений — выходим
-        if (successMessages.isEmpty() && errorMessages.isEmpty()) {
+        if (successMessages.isNotEmpty() && errorMessages.isNotEmpty()) {
             logger.warn(NOT_VALID_BATCH_MESSAGE_ORDER_CREATED)
             return
         }

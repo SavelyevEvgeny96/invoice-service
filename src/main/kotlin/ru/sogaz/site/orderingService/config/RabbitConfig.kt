@@ -46,6 +46,20 @@ class RabbitConfig(
             .durable("${props.queueOrder}.dlq")
             .build()
 
+    @Bean(name = ["paymentStatusRefundQueue"])
+    fun paymentStatusRefundQueue(): Queue =
+        QueueBuilder
+            .durable(props.queuePaymentStatusRefund)
+            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-routing-key", "${props.queuePaymentStatusRefund}.dlq")
+            .build()
+
+    @Bean(name = ["paymentStatusRefundQueueDlq"])
+    fun paymentStatusRefundQueueDlq(): Queue =
+        QueueBuilder
+            .durable("${props.queuePaymentStatusRefund}.dlq")
+            .build()
+
     // Основная очередь возвратов с DLQ (classic)
     @Bean(name = ["ordersRefundQueue"])
     fun ordersRefundQueue(): Queue =
