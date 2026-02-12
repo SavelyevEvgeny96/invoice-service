@@ -224,7 +224,7 @@ class OrderRefundBatchConsumerImpl(
 
                     // 1. Поиск заказа
                     val order =
-                        orderDao.findById(dto.orderId).orElse(null)
+                        orderDao.findById(dto.orderId)
                             ?: run {
                                 logger.warn(
                                     String.format(
@@ -238,7 +238,7 @@ class OrderRefundBatchConsumerImpl(
                             }
 
                     // 2. Проверка статуса сообщения
-                    if (dto.status != OrderStatusesEnum.SUCCESS.values) {
+                    if (dto.status != OrderStatusesEnum.SUCCESS.desc) {
                         logger.warn(
                             String.format(
                                 LOG_INVALID_REFUND_STATUS,

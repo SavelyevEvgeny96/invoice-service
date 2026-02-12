@@ -21,6 +21,8 @@ open class OrderDaoImpl(
         private const val LOG_ERROR_ORDER_SAVE = "Не удалось сохранить данные по заказу"
     }
 
+    override fun findByIds(ids: List<UUID?>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
+
     override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()
 
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)

@@ -4,8 +4,6 @@ import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
-import ru.sogaz.site.orderingService.dto.request.SubOrderDto
-import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
 import ru.sogaz.site.orderingService.dto.request.HasMainContractCheck
 import kotlin.reflect.KClass
 

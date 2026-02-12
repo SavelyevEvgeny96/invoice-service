@@ -9,5 +9,6 @@ interface ClientSystemDao {
     ): ClientSystemEntity
 
     fun findBySystemCode(externalSystemCode: String?): ClientSystemEntity?
+
     fun checkingRefundAccess(codes: Collection<String>): List<ClientSystemEntity>
 }
