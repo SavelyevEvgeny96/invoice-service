@@ -32,6 +32,7 @@ class OrderEntity(
     var unifiedId: String?,
     @Column(name = "client_id")
     var clientId: String? = null,
+    @Enumerated(EnumType.STRING)
     @Column(name = "bank")
     var bank: BankEnum?,
     @Column(name = "policyholder")
