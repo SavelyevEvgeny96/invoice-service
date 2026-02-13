@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    username: ${RABBIT_USERNAME:}
-    password: ${RABBIT_PASSWORD:}
+    username: ${RABBIT_USERNAME:dev}
+    password: ${RABBIT_PASSWORD:dev}
     virtual-host: /
     listener:
       simple:
@@ -30,7 +30,7 @@ spring:
     time-zone: UTC
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8081}
   use-forward-headers: true
   forward-headers-strategy: framework
   main.allow-bean-definition-overriding: true
@@ -78,11 +78,11 @@ app:
       max-concurrency: 1
   payment:
     client:
-      basePath: https://test-gateway-site-dmz.sogaz.ru
+      basePath: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/payment-service/}
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL:STUB}
+    paymentUrl: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/payment-service/}
 
 resilience4j:
   retry:
@@ -111,7 +111,7 @@ management:
       probes:
         enabled: true
   server:
-    port: ${MANAGEMENT_SERVICE_PORT:8091}
+    port: ${MANAGEMENT_SERVICE_PORT:8092}
   health:
     livenessState:
       enable: true
