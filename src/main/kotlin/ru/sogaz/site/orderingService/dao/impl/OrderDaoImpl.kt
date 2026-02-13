@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.stereotype.Repository
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -11,6 +12,7 @@ import java.sql.Timestamp
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
+@Repository
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
