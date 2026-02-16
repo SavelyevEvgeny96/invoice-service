@@ -78,7 +78,7 @@ app:
       max-concurrency: 1
   payment:
     client:
-      basePath: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/payment-service/}
+      basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/stage/payment-service/}
 
 api:
   payment:
