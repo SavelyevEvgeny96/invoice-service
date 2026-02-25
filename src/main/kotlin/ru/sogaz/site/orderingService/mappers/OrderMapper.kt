@@ -24,6 +24,7 @@ abstract class OrderMapper {
     @Mapping(target = "recipientEmail", source = "recipientEmail", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
+    @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "createDate", expression = "java(Instant.now())")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])

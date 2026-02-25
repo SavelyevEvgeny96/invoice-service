@@ -34,7 +34,7 @@ class BuildBatchConsumerServiceImpl(
     private val logger = loggerFor(javaClass)
 
     @Transactional(rollbackFor = [Exception::class])
-    override fun insertBatchOrderCreated(batch: List<OrderPayloadDto>): List<OrderPayloadDto> {
+    override fun insertBatchOrderCreated(batch: List<OrderPayloadDto>): List<OrderEntity> {
         if (batch.isEmpty()) return emptyList()
 
         val (orders, subs) = prepareEntities(batch)
@@ -51,8 +51,7 @@ class BuildBatchConsumerServiceImpl(
             subOrderDao.upsertSubOrders(subs)
         }
 
-        // Возвращаем те же DTO, но с заполненным orderIdRecurrent
-        return enrichDtosWithOrderIds(batch, orders)
+        return orders
     }
 
     override fun searchAndPreparationOrder(parsed: List<RefundPayloadDto>): RefundPreparationResult {

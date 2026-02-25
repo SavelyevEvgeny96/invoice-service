@@ -30,7 +30,7 @@ spring:
     time-zone: UTC
 
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:8080}
   use-forward-headers: true
   forward-headers-strategy: framework
   main.allow-bean-definition-overriding: true
@@ -111,7 +111,7 @@ management:
       probes:
         enabled: true
   server:
-    port: ${MANAGEMENT_SERVICE_PORT:8092}
+    port: ${MANAGEMENT_SERVICE_PORT:8091}
   health:
     livenessState:
       enable: true

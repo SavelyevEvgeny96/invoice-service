@@ -23,6 +23,7 @@ import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapperImpl
 import ru.sogaz.site.orderingService.service.payment.impl.PaymentServiceImpl
 import ru.sogaz.site.payment.client.api.PayV2Api
 import ru.sogaz.site.payment.client.model.BankPaymentPageData
+import ru.sogaz.site.payment.client.model.ResponseBankPaymentPageData
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -46,7 +47,7 @@ class PaymentServiceTest {
     @RelaxedMockK
     private lateinit var payQueryParams: PayQueryParams
 
-    private lateinit var dataPay: BankPaymentPageData
+    private lateinit var dataPay: ResponseBankPaymentPageData
 
     private lateinit var order: OrderEntity
 
@@ -54,7 +55,7 @@ class PaymentServiceTest {
     fun beforeEach() {
         paymentService = PaymentServiceImpl(paymentServiceMapper, payV2Api)
         order = createOrder()
-        dataPay = BankPaymentPageData().apply { paymentPageUrl = TEST_PAYMENT_PAGE_URL }
+        dataPay = ResponseBankPaymentPageData().apply { data = BankPaymentPageData().apply { paymentPageUrl = TEST_PAYMENT_PAGE_URL } }
     }
 
     @Test
@@ -87,7 +88,7 @@ class PaymentServiceTest {
             orderId = UUID.randomUUID(),
             unifiedId = "",
             clientId = "",
-            bank = BankEnum.GPB,
+            bank = BankEnum.GPB.name,
             policyholder = "",
             paymentType = "",
             subscriptionId = "",

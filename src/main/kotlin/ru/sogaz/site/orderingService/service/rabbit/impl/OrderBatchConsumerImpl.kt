@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
@@ -19,6 +20,7 @@ class OrderBatchConsumerImpl(
     private val buildBatchConsumerService: BuildBatchConsumerService,
     private val objectMapper: ObjectMapper,
     private val sendMessageProducer: SendMessageProducer,
+    private val paymentServiceMapper: PaymentServiceMapper,
     private val props: RabbitProps,
 ) : OrderBatchConsumer {
     companion object {
@@ -116,17 +118,18 @@ class OrderBatchConsumerImpl(
                 val successDtos = successMessages.map { it.dto }
 
                 // Сохраняем данные и получаем события для отправки
-                val events =
+                val orders =
                     buildBatchConsumerService.insertBatchOrderCreated(successDtos)
 
-                if (events.isNotEmpty()) {
+                val recurrentPayRequests = paymentServiceMapper.ordersToCardRecurrentPayRequests(orders)
+                if (recurrentPayRequests.isNotEmpty()) {
                     // Отправка всех событий в payments exchange
-                    events.forEach { event ->
+                    recurrentPayRequests.forEach { request ->
                         sendMessageProducer.sendMessage(
                             props.routingKeyPayment,
-                            event,
+                            request,
                             props.paymentsExchange,
-                            event.orderIdRecurrent,
+                            request.orderId,
                         )
                     }
                     // ACK выполняется по deliveryTag последнего успешного сообщения

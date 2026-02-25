@@ -322,6 +322,7 @@ class SendMessageProducerImpl(
             val dto = objectMapper.readValue(body, dtoClass)
             ParsedResult.Success(tag, dto, messageId)
         } catch (ex: Exception) {
+            logger.error(ex.message, ex)
             val author = extractAuthorUnsafe(body)
             if (author != null) {
                 // Сообщение битое, передаём в handleBatch для обработки

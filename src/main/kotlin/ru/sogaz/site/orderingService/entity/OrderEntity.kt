@@ -13,7 +13,6 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
@@ -32,9 +31,8 @@ class OrderEntity(
     var unifiedId: String?,
     @Column(name = "client_id")
     var clientId: String? = null,
-    @Enumerated(EnumType.STRING)
     @Column(name = "bank")
-    var bank: BankEnum?,
+    var bank: String?,
     @Column(name = "policyholder")
     var policyholder: String?,
     @Column(name = "payment_type")

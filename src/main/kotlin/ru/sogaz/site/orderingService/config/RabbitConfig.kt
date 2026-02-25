@@ -35,7 +35,7 @@ class RabbitConfig(
             setConcurrentConsumers(propsListener.concurrency)
             setMaxConcurrentConsumers(propsListener.maxConcurrency)
             setAcknowledgeMode(AcknowledgeMode.MANUAL)
-            setChannelTransacted(true)
+            setChannelTransacted(false)
             setDefaultRequeueRejected(false)
 
             setMessageConverter(noOpMessageConverter)
