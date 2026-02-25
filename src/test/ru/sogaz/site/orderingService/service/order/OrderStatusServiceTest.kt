@@ -77,7 +77,7 @@ class OrderStatusServiceTest {
 
         assertThat(order)
             .returns(PAYMENT_TYPE) { it.paymentType }
-            .returns(BANK) { it.bank?.name }
+            .returns(BANK) { it.bank }
             .returns(KEY_CARD) { it.keyCard }
     }
 
