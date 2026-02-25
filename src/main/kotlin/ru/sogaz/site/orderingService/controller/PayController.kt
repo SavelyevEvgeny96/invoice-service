@@ -20,5 +20,14 @@ class PayController(
             .payCard(orderId, payQueryParams)
             .wrapToRedirectView()
 
+
+    override fun paySbp(
+        orderId: UUID,
+        payQueryParams: PayQueryParams
+    ): RedirectView =
+        orderService
+            .paySbp(orderId, payQueryParams)
+            .wrapToRedirectView()
+
     private fun PaymentPage.wrapToRedirectView() = uri.toString().run(::RedirectView)
 }
