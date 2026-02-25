@@ -82,7 +82,7 @@ app:
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/ordering-service/orders/payCard/}
+    paymentUrl: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/ordering-service/orders/paycard/}
 
 resilience4j:
   retry:

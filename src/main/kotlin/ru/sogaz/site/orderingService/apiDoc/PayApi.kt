@@ -33,14 +33,14 @@ interface PayApi {
             schema = Schema(type = "boolean"),
         ),
     )
-
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
     @GetMapping("orders/paycard/{orderId}")
-    fun paySbp(
+    fun payCard(
         @PathVariable orderId: UUID,
         @Parameter(hidden = true)
         payQueryParams: PayQueryParams,
     ): RedirectView
+
     @Operation(
         summary = "Редирект на страницу оплаты заказа по карте",
         description = "Регистрирует платеж в банке указанном для заказа и перенаправляет на платежную страницу банка",
@@ -62,9 +62,10 @@ interface PayApi {
             schema = Schema(type = "boolean"),
         ),
     )
+
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
     @GetMapping("orders/paysbp/{orderId}")
-    fun payCard(
+    fun paySbp(
         @PathVariable orderId: UUID,
         @Parameter(hidden = true)
         payQueryParams: PayQueryParams,
