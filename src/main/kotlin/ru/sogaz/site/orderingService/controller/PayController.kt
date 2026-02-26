@@ -20,10 +20,9 @@ class PayController(
             .payCard(orderId, payQueryParams)
             .wrapToRedirectView()
 
-
     override fun paySbp(
         orderId: UUID,
-        payQueryParams: PayQueryParams
+        payQueryParams: PayQueryParams,
     ): RedirectView =
         orderService
             .paySbp(orderId, payQueryParams)

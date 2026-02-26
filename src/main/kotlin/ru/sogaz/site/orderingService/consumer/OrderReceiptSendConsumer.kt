@@ -2,7 +2,6 @@ package ru.sogaz.site.orderingService.consumer
 
 import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
-import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
@@ -15,10 +14,10 @@ class OrderReceiptSendConsumer(
 ) {
     private val logger = loggerFor(javaClass)
 
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-send-receipt-order}"],
-        containerFactory = "concurrentContainerFactory",
-    )
+//    @RabbitListener(
+//        queues = ["\${app.rabbit.queue-send-receipt-order}"],
+//        containerFactory = "concurrentContainerFactory",
+//    )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     fun sendReceipt(completedPaymentData: CompletedPaymentData) {
         try {
