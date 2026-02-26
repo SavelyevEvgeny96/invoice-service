@@ -27,6 +27,9 @@ class CompletedPaymentsHistoryConsumer(
     fun sendReceipt(completedPaymentData: CompletedPaymentData) {
         try {
             val order = paymentOperationsService.saveOperation(completedPaymentData)
+            if (order.queueStatusResultName == null) {
+                return
+            }
             orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData.errorText)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)

@@ -40,6 +40,6 @@ class OrderManualMapper(
     private fun buildQueueStatusResultName(clientId: String?): String? =
         clientId
             ?.takeIf { it.isNotBlank() }
-            ?.replace(NON_ALPHANUMERIC_REGEX, "")
+            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
             ?.let { "payment.status.$it.created" }
 }

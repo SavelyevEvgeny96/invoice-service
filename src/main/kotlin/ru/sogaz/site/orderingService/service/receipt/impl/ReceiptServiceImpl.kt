@@ -21,6 +21,9 @@ class ReceiptServiceImpl(
 ) : ReceiptService {
     override fun sendReceipt(completedPaymentData: CompletedPaymentData): OrderEntity {
         val order = findOrderByIdOrThrow(completedPaymentData.orderId)
+        if (order.skipSendingReceipt == true) {
+            return order
+        }
         sendReceipt(order, completedPaymentData)
         order.receiptState = ReceiptState.REQUESTED
         return orderDao.save(order)
