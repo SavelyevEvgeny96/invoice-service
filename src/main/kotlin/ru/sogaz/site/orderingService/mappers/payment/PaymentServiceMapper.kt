@@ -8,28 +8,32 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.payment.client.model.BankPaymentPageData
 import ru.sogaz.site.payment.client.model.CardPayOperationRequest
 import ru.sogaz.site.payment.client.model.CardRecurrentOperationRequest
+import ru.sogaz.site.payment.client.model.RedirectParams
 import ru.sogaz.site.payment.client.model.SbpPayOperationRequest
 
 @Mapper(uses = [PaymentPurposeMapper::class])
 interface PaymentServiceMapper {
     @Mapping(target = "amount", source = "order.premiumAmount")
-    @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapRequestContractDescription"])
+    @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapCardRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
+    @Mapping(target = "depersonalization", source = "params.depersonalization")
+    @Mapping(target = "params", source = "params")
     fun orderToCardPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
     ): CardPayOperationRequest
 
     @Mapping(target = "amount", source = "premiumAmount")
-    @Mapping(target = "description", source = "subOrders", qualifiedByName = ["mapRequestContractDescription"])
+    @Mapping(target = "description", source = "subOrders", qualifiedByName = ["mapCardRequestContractDescription"])
     @Mapping(target = "payItems", source = "subOrders", qualifiedByName = ["mapRequestParams"])
     fun orderToCardRecurrentPayRequest(order: OrderEntity): CardRecurrentOperationRequest
 
     fun ordersToCardRecurrentPayRequests(orders: List<OrderEntity>): List<CardRecurrentOperationRequest>
 
     @Mapping(target = "amount", source = "order.premiumAmount")
-    @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapRequestContractDescription"])
+    @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
+    @Mapping(target = "returnUrl", source = "params.urlToReturn")
     fun orderToSbpPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
@@ -37,4 +41,6 @@ interface PaymentServiceMapper {
 
     @Mapping(target = "uri", source = "paymentPageUrl")
     fun dataPayToPaymentPage(bankPaymentPageData: BankPaymentPageData): PaymentPage
+
+    fun mapRedirectParams(params: PayQueryParams): RedirectParams
 }

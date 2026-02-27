@@ -27,7 +27,8 @@ class PaymentServiceImpl(
         payQueryParams: PayQueryParams,
     ): PaymentPage {
         val payRequest = paymentServiceMapper.orderToCardPayRequest(order, payQueryParams)
-        val dataPay = payClient.pay(payRequest).data ?: throw InnerException(getTraceId(), ERROR_WHILE_GET_PAYMENT_PAGE)
+        val dataPay =
+            runCatching { payClient.pay(payRequest) }.getOrNull()?.data ?: throw InnerException(getTraceId(), ERROR_WHILE_GET_PAYMENT_PAGE)
         return paymentServiceMapper.dataPayToPaymentPage(dataPay)
     }
 
@@ -36,7 +37,9 @@ class PaymentServiceImpl(
         payQueryParams: PayQueryParams,
     ): PaymentPage {
         val payRequest = paymentServiceMapper.orderToSbpPayRequest(order, payQueryParams)
-        val dataPay = payClient.paySbp(payRequest).data ?: throw InnerException(getTraceId(), ERROR_WHILE_GET_PAYMENT_PAGE)
+        val dataPay =
+            runCatching { payClient.paySbp(payRequest) }.getOrNull()?.data
+                ?: throw InnerException(getTraceId(), ERROR_WHILE_GET_PAYMENT_PAGE)
         return paymentServiceMapper.dataPayToPaymentPage(dataPay)
     }
 }

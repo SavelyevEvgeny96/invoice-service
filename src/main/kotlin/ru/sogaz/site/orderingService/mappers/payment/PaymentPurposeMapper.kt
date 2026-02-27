@@ -13,7 +13,10 @@ import java.time.format.DateTimeFormatter
 @Mapper
 abstract class PaymentPurposeMapper {
     companion object {
-        private const val PAY_ONE_CONTRACT_INFO = "Оплата по договору %s от %s. Платежный сервис, дата операции %s"
+        private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s от %s. Платежный сервис, дата операции %s"
+        private const val PAY_SBP_ONE_CONTRACT_INFO =
+            "Зачисление по операции СБП договора СБП-001-8/21 от 19.09.2022." +
+                " Оплата по договору страхования %s, дата операции %s"
         private const val CONTRACT_INFO = "%s от %s"
         private const val PARAM = "param"
         private const val EMPTY_PAY_INFO = "Платежный сервис, дата операции %s"
@@ -23,32 +26,52 @@ abstract class PaymentPurposeMapper {
         private val DDMMYYYY: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
 
-    @Named("mapRequestContractDescription")
-    protected fun mapRequestContractDescription(subOrders: List<SubOrderEntity>): String {
+    @Named("mapCardRequestContractDescription")
+    protected fun mapCardRequestContractDescription(subOrders: List<SubOrderEntity>): String {
         val operationDate = LocalDate.now(DEFAULT_ZONE).toContractDateFormat()
-        return runCatching { mapRequestContractDescription(operationDate, subOrders) }
+        return runCatching { mapCardRequestContractDescription(operationDate, subOrders) }
             .getOrElse { EMPTY_PAY_INFO.format(operationDate) }
     }
 
-    private fun mapRequestContractDescription(
+    private fun mapCardRequestContractDescription(
         operationDate: String,
         subOrders: List<SubOrderEntity>,
     ) = subOrders
         .findMainContract()
-        .makeDescriptionForOneContract(operationDate)
+        .makeCardPayDescriptionForOneContract(operationDate)
+
+    private fun SubOrderEntity.makeCardPayDescriptionForOneContract(opDate: String): String =
+        PAY_CARD_ONE_CONTRACT_INFO.format(
+            contractNumber,
+            contractDate?.toContractDateFormat(),
+            opDate,
+        )
+
+    @Named("mapSbpRequestContractDescription")
+    protected fun mapSbpRequestContractDescription(subOrders: List<SubOrderEntity>): String {
+        val operationDate = LocalDate.now(DEFAULT_ZONE).toContractDateFormat()
+        return runCatching { mapSbpRequestContractDescription(operationDate, subOrders) }
+            .getOrElse { EMPTY_PAY_INFO.format(operationDate) }
+    }
+
+    private fun mapSbpRequestContractDescription(
+        operationDate: String,
+        subOrders: List<SubOrderEntity>,
+    ) = subOrders
+        .findMainContract()
+        .makeSbpPayDescriptionForOneContract(operationDate)
+
+    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(opDate: String): String =
+        PAY_SBP_ONE_CONTRACT_INFO.format(
+            contractNumber,
+            opDate,
+        )
 
     private fun List<SubOrderEntity>.findMainContract(): SubOrderEntity =
         when (size) {
             0 -> throw InnerException(getTraceId(), EMPTY_SUB_ORDERS)
             else -> findLast(SubOrderEntity::mainContractCheck) ?: first()
         }
-
-    private fun SubOrderEntity.makeDescriptionForOneContract(opDate: String): String =
-        PAY_ONE_CONTRACT_INFO.format(
-            contractNumber,
-            contractDate?.toContractDateFormat(),
-            opDate,
-        )
 
     private fun Instant.toContractDateFormat(): String =
         atZone(DEFAULT_ZONE)

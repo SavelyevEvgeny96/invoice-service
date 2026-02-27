@@ -62,7 +62,6 @@ interface PayApi {
             schema = Schema(type = "boolean"),
         ),
     )
-
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
     @GetMapping("orders/paysbp/{orderId}")
     fun paySbp(
