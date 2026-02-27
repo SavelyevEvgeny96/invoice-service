@@ -17,8 +17,10 @@ data class SubOrderRequest(
     val premiumAmount: BigDecimal = BigDecimal.ZERO,
     val policyId: String = "",
     val policyNumber: String = "",
+    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     val typeInsurance: String? = null,
     val insuranceProgram: String? = null,
+    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     override val mainContractCheck: Boolean = false,
     val sendStatusProduct: Boolean? = false,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
