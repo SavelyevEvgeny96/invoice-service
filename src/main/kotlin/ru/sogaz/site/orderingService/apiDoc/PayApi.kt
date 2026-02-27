@@ -34,7 +34,7 @@ interface PayApi {
         ),
     )
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
-    @GetMapping("orders/paycard/{orderId}")
+    @GetMapping("order/paycard/{orderId}")
     fun payCard(
         @PathVariable orderId: UUID,
         @Parameter(hidden = true)
@@ -63,7 +63,7 @@ interface PayApi {
         ),
     )
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
-    @GetMapping("orders/paysbp/{orderId}")
+    @GetMapping("order/paysbp/{orderId}")
     fun paySbp(
         @PathVariable orderId: UUID,
         @Parameter(hidden = true)
