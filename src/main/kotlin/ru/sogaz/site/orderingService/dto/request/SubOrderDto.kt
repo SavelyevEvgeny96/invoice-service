@@ -22,7 +22,7 @@ data class SubOrderDto(
     val contractId: String?, // номер договора
     val typeInsurance: String?, // вид страхования (ОСАГО, КАСКО и т.д.)
     val insuranceProgram: String?, // программа страхования
-    val mainContractCheck: Boolean = false,
+    override val mainContractCheck: Boolean = false,
     val policyDate: Instant? = null,
     @field:NotNull
     @field:FutureOrPresent
@@ -32,4 +32,4 @@ data class SubOrderDto(
     @field:NotBlank
     val channel: String = "",
     val docType: String? = null,
-)
+) : HasMainContractCheck

@@ -2,24 +2,32 @@ package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
-import java.util.Optional
 import java.util.UUID
-import kotlin.collections.ArrayList
+import kotlin.jvm.optionals.getOrNull
 
-@Service
+@Repository
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
-    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
+    private val logger = loggerFor(javaClass)
 
-    override fun findById(id: UUID): Optional<OrderEntity> = orderRepository.findById(id)
+    companion object {
+        private const val LOG_ERROR_ORDER_SAVE = "Не удалось сохранить данные по заказу"
+    }
+
+    override fun findByIds(ids: List<UUID?>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
+
+    override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()
+
+    override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
 
@@ -27,8 +35,6 @@ open class OrderDaoImpl(
         email: String?,
         phone: String?,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
-
-    override fun findByIds(ids: List<UUID?>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
 
     override fun findByEmailAndPhone(
         email: String,

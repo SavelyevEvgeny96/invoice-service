@@ -38,6 +38,8 @@ class SubOrderEntity(
     var channel: String?,
     @Column(name = "main_contract_check")
     var mainContractCheck: Boolean,
+    @Column(name = "send_status_product")
+    var sendStatusProduct: Boolean? = false,
     @Column(name = "insurance_program")
     var insuranceProgram: String?,
     @Column(name = "type_insurance")

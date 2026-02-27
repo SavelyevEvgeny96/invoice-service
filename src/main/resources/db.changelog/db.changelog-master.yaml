@@ -3,6 +3,8 @@ databaseChangeLog:
   - include:
       file: db.changelog/v1.0.0/release-changelog.yml
   - include:
+      file: db.changelog/v1.0.1/release-changelog.yml
+  - include:
       file: db.changelog/v1.0.2/release-changelog.yml
   - include:
       file: db.changelog/v1.0.3/release-changelog.yml

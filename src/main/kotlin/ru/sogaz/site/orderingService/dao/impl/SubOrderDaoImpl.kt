@@ -1,7 +1,7 @@
 package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -10,7 +10,7 @@ import java.sql.Timestamp
 import java.util.UUID
 import kotlin.collections.ArrayList
 
-@Service
+@Repository
 open class SubOrderDaoImpl(
     private val jdbcTemplate: JdbcTemplate,
     private val subOrderRepository: SubOrderRepository,

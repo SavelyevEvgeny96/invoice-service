@@ -6,7 +6,7 @@ import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 
 enum class OrderStatusesEnum(
-    @JsonValue val values: String,
+    @JsonValue val desc: String,
 ) {
     NEW("NEW"),
     UPDATE("UPDATE"),
@@ -22,9 +22,8 @@ enum class OrderStatusesEnum(
         @JsonCreator
         fun from(value: String?): OrderStatusesEnum? {
             if (value.isNullOrBlank()) return null
-            val traceId = getTraceId()
-            return entries.find { it.values.equals(value, ignoreCase = true) }
-                ?: throw InnerException(traceId, "Invalid OrderStatus: '$value'")
+            return entries.find { it.desc.equals(value, ignoreCase = true) }
+                ?: throw InnerException(getTraceId(), "Invalid OrderStatus: '$value'")
         }
     }
 

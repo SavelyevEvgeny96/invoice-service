@@ -101,13 +101,18 @@ class BuildBatchConsumerServiceImplTest {
                 keyCard = dto.keyCard,
                 recipientUserId = dto.recipientUserId,
                 unifiedId = dto.unifiedId,
-                bank = dto.bank,
+                bank = null,
                 policyholder = dto.policyholder,
                 paymentType = "",
                 recurrent = false,
                 saveCard = true,
                 subscriptionId = "",
                 createDate = Instant.now(),
+                urlToDecline = "",
+                urlToReturn = "",
+                refundDate = Instant.now(),
+                queueStatusResultName = "",
+                depersonalization = false,
             )
 
         subOrderEntity =
@@ -144,7 +149,7 @@ class BuildBatchConsumerServiceImplTest {
                         recipientPhone = orderEntity.recipientPhone,
                         dateCreate = orderEntity.updateDate?.toString(),
                         dateEnd = orderEntity.paymentEndDate?.toString(),
-                        bank = orderEntity.bank,
+                        bank = orderEntity.bank.toString(),
                         paymentType = orderEntity.paymentType,
                     ),
             )

@@ -1,13 +1,12 @@
 package ru.sogaz.site.orderingService.dao
 
 import ru.sogaz.site.orderingService.entity.OrderEntity
-import java.util.Optional
 import java.util.UUID
 
 interface OrderDao {
-    fun findByRecipientUserId(userId: String): List<OrderEntity?>
+    fun findById(orderId: UUID): OrderEntity?
 
-    fun findById(id: UUID): Optional<OrderEntity>
+    fun findByRecipientUserId(userId: String): List<OrderEntity?>
 
     fun findByUnifiedId(unifiedId: String): List<OrderEntity?>
 
@@ -23,7 +22,7 @@ interface OrderDao {
         phone: String,
     ): List<OrderEntity?>
 
-    fun save(order: OrderEntity): OrderEntity
-
     fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID>
+
+    fun save(order: OrderEntity): OrderEntity
 }

@@ -7,7 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy
 import org.mapstruct.ReportingPolicy
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.MetaInfoOrder
+import ru.sogaz.site.orderingService.dto.request.OrderRequest
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto
+import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.math.BigDecimal
@@ -22,6 +24,7 @@ abstract class OrderMapper {
     @Mapping(target = "recipientEmail", source = "recipientEmail", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
+    @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "createDate", expression = "java(Instant.now())")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
@@ -34,6 +37,21 @@ abstract class OrderMapper {
         dto: SubOrderDto,
         order: OrderEntity,
     ): SubOrderEntity
+
+    @Mapping(
+        target = "paymentEndDate",
+        source = "orderEndDate",
+    )
+    @Mapping(
+        target = "recurrent",
+        expression = "java(orderRequest.getOrderIdRecurrent() != null)",
+    )
+    @Mapping(target = "status", constant = "NEW")
+    @Mapping(target = "receiptState", constant = "NONE")
+    @Mapping(target = "recipientPhone", defaultValue = "")
+    abstract fun fromRequestDto(orderRequest: OrderRequest): OrderEntity
+
+    abstract fun fromRequestDto(subOrderRequest: SubOrderRequest): SubOrderEntity
 
     // ---------- Helpers ----------
     @Named("nullToEmpty")
