@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.validation.constraint.Phone
+import ru.sogaz.site.orderingService.validation.constraint.RussianNameValid
 import ru.sogaz.site.orderingService.validation.constraint.SameChannelInOrders
 import ru.sogaz.site.orderingService.validation.constraint.UniqueMainContract
 import java.time.Instant
@@ -33,12 +35,15 @@ data class OrderRequest(
     var recipientEmail: String = "",
     var recipientUserId: String? = null,
     var unifiedId: String? = null,
+    @field:Phone(message = "{validation.ordersUserRequest.phone.invalid}")
     var recipientPhone: String? = null,
     var urlToReturn: String? = null,
     var urlToDecline: String? = null,
+    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     var saveCard: Boolean = false,
     var subscriptionId: String = "",
     var clientId: String? = null,
+    @field:RussianNameValid
     var policyholder: String? = null,
     var orderIdRecurrent: UUID? = null,
     var bank: BankEnum? = null,
