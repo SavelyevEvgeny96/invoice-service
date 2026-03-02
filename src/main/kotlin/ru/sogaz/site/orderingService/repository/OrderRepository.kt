@@ -3,9 +3,13 @@ package ru.sogaz.site.orderingService.repository
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import java.time.Instant
 import java.util.Optional
 import java.util.UUID
 
@@ -34,4 +38,21 @@ interface OrderRepository : JpaRepository<OrderEntity, UUID> {
         email: String,
         phone: String,
     ): List<OrderEntity?>
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        """
+    update OrderEntity o
+       set o.status = :newState,
+           o.updateDate = :now
+     where o.status in :states
+       and o.paymentEndDate is not null
+       and o.paymentEndDate < :now
+    """,
+    )
+    fun markOverdue(
+        @Param("states") states: Collection<OrderStatusesEnum>,
+        @Param("newState") newState: OrderStatusesEnum,
+        @Param("now") now: Instant,
+    ): Int
 }

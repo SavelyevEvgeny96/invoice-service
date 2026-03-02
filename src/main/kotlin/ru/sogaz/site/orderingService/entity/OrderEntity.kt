@@ -12,7 +12,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.type.SqlTypes
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
@@ -50,7 +52,8 @@ class OrderEntity(
     @Column(name = "reg_card")
     var regCard: Boolean = false,
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", columnDefinition = "order_statuses_enum")
     var status: OrderStatusesEnum = OrderStatusesEnum.NEW,
     @Column(name = "recurrent")
     var recurrent: Boolean?,

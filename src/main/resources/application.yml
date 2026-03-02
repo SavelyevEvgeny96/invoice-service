@@ -130,6 +130,9 @@ logging:
     log-body: ${LOGGING_RABBIT_LOG_BODY:true}
     confirms-enabled: ${LOGGING_RABBIT_CONFIRMS_ENABLED:false}
     returns-enabled: ${LOGGING_RABBIT_RETURNS_ENABLED:false}
+crons:
+  overdue:
+    cron: ${CRON_JOB_STATUS_ORDERS:"0 0 * * * *"} // каждый час
 
 logstash:
   host: ${LOG_SERVER_HOST:localhost}
