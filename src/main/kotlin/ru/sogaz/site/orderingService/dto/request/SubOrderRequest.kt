@@ -30,7 +30,6 @@ data class SubOrderRequest(
     val docType: String? = null,
     val policyDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    @field:FutureOrPresent(message = "{validation.orderRequest.date.future}")
     val contractDate: Instant? = null,
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
