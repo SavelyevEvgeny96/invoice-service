@@ -3,6 +3,7 @@ package ru.sogaz.site.orderingService.service
 import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.OrderRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.siter.models.resonses.Response
 import java.util.UUID
@@ -15,6 +16,13 @@ interface OrderService {
      * @return Объект Response с информацией о платеже
      */
     fun createOrder(orderRequest: OrderRequest): Response<DataOrder>
+
+    /**
+     * Метод для получения статуса заказа.
+     * @param DataGetOrderStatus Данные о заказе
+     * @return Объект DataGetOrderStatus со статусом заказа
+     */
+    fun getOrderStatus(orderId: UUID): DataGetOrderStatus
 
     /**
      * Метод регистрации платежной ссылки для оплаты заказа картой
