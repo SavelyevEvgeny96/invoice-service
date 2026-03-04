@@ -27,6 +27,7 @@ class PaymentOperationEntity(
     var type: String,
     var depersonalization: Boolean = false,
     var payDate: Instant,
+    var errorText: String?,
     @UpdateTimestamp
     var updateDate: Instant?,
     @ManyToOne(fetch = FetchType.LAZY)

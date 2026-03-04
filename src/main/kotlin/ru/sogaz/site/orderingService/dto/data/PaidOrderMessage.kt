@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.dto.data
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.io.Serializable
+import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class PaidOrderMessage(
@@ -31,6 +32,6 @@ data class SubOrderPayload(
     val typeInsurance: String?,
     val premiumAmount: String?,
     val channel: String?,
-    val policyDate: String?,
-    val contractDate: String?,
+    val policyDate: Instant?,
+    val contractDate: Instant?,
 ) : Serializable
