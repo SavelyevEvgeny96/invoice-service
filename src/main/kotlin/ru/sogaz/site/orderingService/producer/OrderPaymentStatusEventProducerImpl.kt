@@ -26,7 +26,8 @@ class OrderPaymentStatusEventProducerImpl(
         rabbitProps.ordersExchange,
         requireNotNull(order.queueStatusResultName) { EMPTY_ROUTING_KEY_ERROR_MESSAGE },
         paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData),
-        { it.apply {
+        {
+            it.apply {
                 messageProperties.headers[RabbitLogConst.HDR_X_EXCHANGE] = rabbitProps.ordersExchange
                 messageProperties.headers[RabbitLogConst.HDR_X_ROUTINGKEY] = order.queueStatusResultName
             }

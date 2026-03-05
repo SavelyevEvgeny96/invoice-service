@@ -35,7 +35,7 @@ interface PaidOrderMessagesMapper {
         target = "paySuccess",
         source = "completedPaymentData.payDate",
         qualifiedByName = ["instantToFormattedString"],
-        conditionExpression = "java( completedPaymentData.getStatus() == \"SUCCESS\" )",
+        conditionExpression = "java( completedPaymentData.getStatus().equals(\"SUCCESS\") )",
     )
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "externalSystemCode", source = "order.clientId")
@@ -51,7 +51,7 @@ interface PaidOrderMessagesMapper {
         completedPaymentData: CompletedPaymentData,
     ): PaidOrderMessage
 
-    @Mapping(target = "contractDate", expression = "java( subOrderEntity.getContractDate().toEpochMilli() )")
-    @Mapping(target = "policyDate", expression = "java( subOrderEntity.getPolicyDate().toEpochMilli() )")
+    @Mapping(target = "contractDate", qualifiedByName = ["instantToEpochMilli"])
+    @Mapping(target = "policyDate", qualifiedByName = ["instantToEpochMilli"])
     fun toSubOrderPayload(subOrderEntity: SubOrderEntity): SubOrderPayload
 }

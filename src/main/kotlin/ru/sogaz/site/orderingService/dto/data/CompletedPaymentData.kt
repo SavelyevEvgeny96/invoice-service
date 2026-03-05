@@ -27,5 +27,5 @@ data class ClientCardDetails(
     val cardId: String?,
     val title: String?,
 ) {
-    constructor(keyCard: String): this(null, null, null, null, keyCard, null)
+    constructor(keyCard: String) : this(null, null, null, null, keyCard, null)
 }
