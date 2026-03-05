@@ -91,7 +91,7 @@ resilience4j:
         maxAttempts: ${RABBIT_CONSUMER_RETRY_MAX_ATTEMPTS:4}
         waitDuration: ${RABBIT_CONSUMER_RETRY_INITIAL_WAIT_DURATIONS:10s}
         enableExponentialBackoff: ${RABBIT_CONSUMER_RETRY_EXPONENTIAL:true}
-        exponentialBackoffMultiplier: ${RABBIT_CONSUMER_RETRY_WAIT_MULTIPLAYER:10}
+        exponentialBackoffMultiplier: ${RABBIT_CONSUMER_RETRY_WAIT_MULTIPLAYER:5}
 
 management:
   endpoints:
