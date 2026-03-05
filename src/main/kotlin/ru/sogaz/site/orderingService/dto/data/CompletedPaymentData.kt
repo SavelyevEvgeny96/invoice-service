@@ -12,9 +12,18 @@ data class CompletedPaymentData(
     val totalAmount: BigDecimal,
     val depersonalization: Boolean = false,
     val status: String,
-    val keyCard: String? = null,
+    val card: ClientCardDetails? = null,
     val bank: String,
     val paymentType: String,
     val payDate: Instant,
     val errorText: String?,
+)
+
+data class ClientCardDetails(
+    val maskedPan: String?, // Маскированный номер карты
+    val paymentSystem: String?, // Наименование платёжной системы
+    val issuerName: String?, // Кем выдана карта (банк-эмитент)
+    val paymentType: String?, // Источник совершения операции (из portalType)
+    val cardId: String?,
+    val title: String?,
 )

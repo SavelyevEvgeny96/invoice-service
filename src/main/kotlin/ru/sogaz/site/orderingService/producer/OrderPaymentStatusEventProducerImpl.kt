@@ -3,6 +3,7 @@ package ru.sogaz.site.orderingService.producer
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Component
+import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -19,11 +20,11 @@ class OrderPaymentStatusEventProducerImpl(
 
     override fun sendPaymentOrderEvent(
         order: OrderEntity,
-        errorText: String?,
+        completedPaymentData: CompletedPaymentData,
     ) = rabbitTemplate.convertAndSend(
         rabbitProps.ordersExchange,
         requireNotNull(order.queueStatusResultName) { EMPTY_ROUTING_KEY_ERROR_MESSAGE },
-        paidOrderMessagesMapper.toPaidOrderMessage(order, errorText),
+        paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData).also(::println),
         CorrelationData(order.orderId.toString()),
     )
 }

@@ -10,6 +10,7 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 interface CompletedPaymentMapper {
     @Mapping(target = "orderId", ignore = true)
     @Mapping(target = "status", constant = "SUCCESS")
+    @Mapping(target = "keyCard", source = "card.cardId")
     fun fillPaidOrder(
         @MappingTarget order: OrderEntity,
         completedPaymentData: CompletedPaymentData,

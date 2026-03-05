@@ -30,7 +30,7 @@ class CompletedPaymentsHistoryConsumer(
             if (order.queueStatusResultName == null) {
                 return
             }
-            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData.errorText)
+            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         }

@@ -3,6 +3,7 @@ package ru.sogaz.site.orderingService.mappers.order
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Named
+import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import java.time.Instant
@@ -24,15 +25,23 @@ interface PaidOrderMessagesMapper {
         fun statusIfRecurrent(order: OrderEntity): String? = if (order.recurrent == true) order.status.desc else null
     }
 
-    @Mapping(target = "externalSystemCode", source = "order.clientId")
     @Mapping(
         target = "paySuccess",
-        source = "order.updateDate",
+        source = "completedPaymentData.payDate",
         qualifiedByName = ["instantToFormattedString"],
+        conditionExpression = "java( completedPaymentData.getStatus() == \"SUCCESS\" )",
     )
-    @Mapping(target = "status", source = "order", qualifiedByName = ["statusIfRecurrent"])
+    @Mapping(target = "orderId", source = "order.orderId")
+    @Mapping(target = "externalSystemCode", source = "order.clientId")
+    @Mapping(target = "status", source = "completedPaymentData.status")
+    @Mapping(target = "bank", source = "completedPaymentData.bank")
+    @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
+    @Mapping(target = "keyCard", source = "completedPaymentData.card.cardId")
+    @Mapping(target = "issuerName", source = "completedPaymentData.card.issuerName")
+    @Mapping(target = "maskedPan", source = "completedPaymentData.card.maskedPan")
+    @Mapping(target = "paymentSystem", source = "completedPaymentData.card.paymentSystem")
     fun toPaidOrderMessage(
         order: OrderEntity,
-        errorText: String? = null,
+        completedPaymentData: CompletedPaymentData,
     ): PaidOrderMessage
 }

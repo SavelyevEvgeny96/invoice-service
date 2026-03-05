@@ -32,6 +32,7 @@ abstract class OrderMapper {
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "createDate", expression = "java( Instant.now() )")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
+    @Mapping(target = "queueStatusResultName", source = "metaInfo", qualifiedByName = ["mapQueueResultName"])
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
     @Mapping(target = "orderEntity", source = "order")
@@ -71,6 +72,7 @@ abstract class OrderMapper {
             ?.fold(BigDecimal.ZERO, BigDecimal::add)
             ?.takeIf { it > BigDecimal.ZERO }
 
+    @Named("mapQueueResultName")
     protected fun buildQueueStatusResultName(metaInfo: List<MetaInfoOrder>): String? =
         metaInfo
             .firstOrNull()
