@@ -26,7 +26,6 @@ class OrderStatusSendConsumer(
     @Transactional(rollbackFor = [Exception::class])
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
-            logger.info("Получен завершенный платеж для отправки статуса: {}", completedPaymentData)
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
             if (completedPaymentData.status == "FAIL" && order.clientId == "ordering-client") {
                 return
