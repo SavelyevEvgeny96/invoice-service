@@ -8,13 +8,11 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
-import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
 import ru.sogaz.site.orderingService.service.payment.PaymentOperationsService
 
 @Component
 class CompletedPaymentsHistoryConsumer(
     private val paymentOperationsService: PaymentOperationsService,
-    private val orderPaymentStatusEventProducer: OrderPaymentStatusEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 
@@ -24,13 +22,9 @@ class CompletedPaymentsHistoryConsumer(
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     @Transactional(rollbackFor = [Exception::class])
-    fun sendReceipt(completedPaymentData: CompletedPaymentData) {
+    fun addHistoryRecord(completedPaymentData: CompletedPaymentData) {
         try {
-            val order = paymentOperationsService.saveOperation(completedPaymentData)
-            if (order.queueStatusResultName == null) {
-                return
-            }
-            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+            paymentOperationsService.saveOperation(completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         }

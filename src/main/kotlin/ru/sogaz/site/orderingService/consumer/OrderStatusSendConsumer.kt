@@ -4,25 +4,30 @@ import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
-import ru.sogaz.site.orderingService.service.order.OrderStatusService
+import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
 
 @Component
-class PaidOrderStatusChangeConsumer(
-    private val orderStatusService: OrderStatusService,
+class OrderStatusSendConsumer(
+    private val orderDao: OrderDao,
+    private val orderPaymentStatusEventProducer: OrderPaymentStatusEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 
     @RabbitListener(
-        queues = ["\${app.rabbit.queue-change-status-order}"],
+        queues = ["\${app.rabbit.queue-send-status-order}"],
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    fun updateOrderStatus(completedPaymentData: CompletedPaymentData) {
+    @Transactional(rollbackFor = [Exception::class])
+    fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
-            orderStatusService.updatePaidOrder(completedPaymentData)
+            val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
+            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         }
