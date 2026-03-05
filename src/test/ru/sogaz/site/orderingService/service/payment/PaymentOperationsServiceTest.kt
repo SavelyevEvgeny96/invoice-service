@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.PaymentOperationDao
+import ru.sogaz.site.orderingService.dto.data.ClientCardDetails
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
@@ -156,7 +157,7 @@ class PaymentOperationsServiceTest {
                 totalAmount = amount,
                 depersonalization = true,
                 status = SUCCESS_STATUS,
-                keyCard = KEY_CARD,
+                card = ClientCardDetails(KEY_CARD),
                 bank = BANK,
                 paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),

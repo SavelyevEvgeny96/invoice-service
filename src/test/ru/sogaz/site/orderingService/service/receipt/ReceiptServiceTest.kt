@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dto.data.ClientCardDetails
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
@@ -167,7 +168,7 @@ class ReceiptServiceTest {
                 totalAmount = amount,
                 depersonalization = true,
                 status = "SUCCESS",
-                keyCard = null,
+                card = null,
                 bank = "gpb",
                 paymentType = "card",
                 payDate = Instant.now(),

@@ -24,7 +24,7 @@ class OrderPaymentStatusEventProducerImpl(
     ) = rabbitTemplate.convertAndSend(
         rabbitProps.ordersExchange,
         requireNotNull(order.queueStatusResultName) { EMPTY_ROUTING_KEY_ERROR_MESSAGE },
-        paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData).also(::println),
+        paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData),
         CorrelationData(order.orderId.toString()),
     )
 }

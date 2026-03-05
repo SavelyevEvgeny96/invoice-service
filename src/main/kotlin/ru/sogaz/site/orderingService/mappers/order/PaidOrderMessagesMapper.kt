@@ -5,7 +5,9 @@ import org.mapstruct.Mapping
 import org.mapstruct.Named
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
+import ru.sogaz.site.orderingService.dto.data.SubOrderPayload
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -19,6 +21,10 @@ interface PaidOrderMessagesMapper {
             dateTime
                 .atZone(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        @JvmStatic
+        @Named("instantToEpochMilli")
+        fun instantToEpochMilli(dateTime: Instant): Long = dateTime.toEpochMilli()
 
         @JvmStatic
         @Named("statusIfRecurrent")
@@ -44,4 +50,8 @@ interface PaidOrderMessagesMapper {
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): PaidOrderMessage
+
+    @Mapping(target = "contractDate", expression = "java( subOrderEntity.getContractDate().toEpochMilli() )")
+    @Mapping(target = "policyDate", expression = "java( subOrderEntity.getPolicyDate().toEpochMilli() )")
+    fun toSubOrderPayload(subOrderEntity: SubOrderEntity): SubOrderPayload
 }
