@@ -24,7 +24,7 @@ interface PaidOrderMessagesMapper {
 
         @JvmStatic
         @Named("instantToEpochMilli")
-        fun instantToEpochMilli(dateTime: Instant): Long = dateTime.toEpochMilli()
+        fun instantToEpochMilli(dateTime: Instant?): Long? = dateTime?.toEpochMilli()
 
         @JvmStatic
         @Named("statusIfRecurrent")
