@@ -33,6 +33,8 @@ class OrderStatusSendConsumer(
             orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
+        } catch (ex: IllegalArgumentException) {
+            logger.error(ex.message)
         } catch (ex: Exception) {
             logger.error(ex.message, ex)
             throw ex
