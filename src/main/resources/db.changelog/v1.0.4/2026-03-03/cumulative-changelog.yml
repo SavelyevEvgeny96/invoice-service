@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-add-dms-client
+      author: Sokolov Danila
+      changes:
+        - tagDatabase:
+            tag: backend-add-dms-client
+  - include:
+      file: db.changelog\v1.0.4\2026-03-03\DATA\add_dms_client.sql
+  - include:
+      file: db.changelog\v1.0.4\2026-03-03\DATA\add_error_text_to_payment_history.sql
+  - include:
+      file: db.changelog\v1.0.4\2026-03-03\DATA\alter_order_skip_columns_default.sql

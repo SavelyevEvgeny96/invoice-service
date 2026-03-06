@@ -1,0 +1,3 @@
+ALTER TABLE client_systems
+    ADD COLUMN IF NOT EXISTS permission_return BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS skip_sending_errors_queue BOOLEAN DEFAULT FALSE;

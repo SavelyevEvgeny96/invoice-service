@@ -16,9 +16,9 @@ class ClientSystemEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    val id: UUID? = null,
+    var id: UUID? = null,
     @Column(name = "external_system_code", unique = true, length = 50, nullable = false)
-    val externalSystemCode: String,
+    var externalSystemCode: String,
     @Column(name = "external_system_name", nullable = false)
     val externalSystemName: String,
     @Column(name = "permission_return", nullable = false)

@@ -56,13 +56,18 @@ class OrdersUserServiceImplTest {
                 keyCard = "",
                 recipientUserId = "",
                 unifiedId = "",
-                bank = "",
+                bank = null,
                 policyholder = "dto.policyholder",
                 paymentType = "",
                 recurrent = false,
                 saveCard = true,
                 subscriptionId = "",
                 createDate = Instant.now(),
+                urlToDecline = "",
+                urlToReturn = "",
+                refundDate = Instant.now(),
+                queueStatusResultName = "",
+                depersonalization = false,
             )
 
         subOrderEntity =

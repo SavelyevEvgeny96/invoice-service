@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-add-shedlock
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-add-shedlock
+  - include:
+      file: db.changelog\v1.0.4\2026-02-26\DATA\create_table_shedlock.sql

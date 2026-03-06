@@ -2,19 +2,31 @@ package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.repository.OrderRepository
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
-@Service
+@Repository
 open class OrderDaoImpl(
     private val orderRepository: OrderRepository,
     private val jdbcTemplate: JdbcTemplate,
 ) : OrderDao {
+    private val logger = loggerFor(javaClass)
+
+    companion object {
+        private const val LOG_ERROR_ORDER_SAVE = "Не удалось сохранить данные по заказу"
+    }
+
+    override fun findByIds(ids: List<UUID?>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
+
+    override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()
+
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)
@@ -24,19 +36,19 @@ open class OrderDaoImpl(
         phone: String?,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailOrRecipientPhone(email, phone)
 
-    override fun findByIds(ids: Collection<UUID>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
-
     override fun findByEmailAndPhone(
         email: String,
         phone: String,
     ): List<OrderEntity?> = orderRepository.findAllByRecipientEmailAndRecipientPhone(email, phone)
+
+    override fun save(order: OrderEntity): OrderEntity = orderRepository.save(order)
 
     override fun upsertOrdersReturningIds(orders: List<OrderEntity>): List<UUID> {
         if (orders.isEmpty()) return emptyList()
 
         // 14 параметров: до bank включительно
         // потом хардкодим save_card = TRUE, recurrent = TRUE, status = 'NEW', update_date = NOW()
-        val tuple = "(" + List(13) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
+        val tuple = "(" + List(14) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
         val sql =
@@ -55,6 +67,7 @@ open class OrderDaoImpl(
                 payment_type,
                 subscription_id,
                 bank,
+                queue_status_result_name,
                 save_card,
                 recurrent,
                 status,
@@ -80,6 +93,7 @@ open class OrderDaoImpl(
             args += o.paymentType // payment_type
             args += o.subscriptionId // subscription_id
             args += o.bank // bank
+            args += o.queueStatusResultName
             // save_card, recurrent, status, update_date — хардкодом в SQL
         }
 

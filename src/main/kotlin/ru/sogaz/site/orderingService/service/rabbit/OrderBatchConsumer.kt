@@ -8,9 +8,4 @@ interface OrderBatchConsumer {
         messages: List<Message>,
         channel: Channel,
     )
-
-    fun handleBatchRefundCreated(
-        messages: List<Message>,
-        channel: Channel,
-    )
 }
