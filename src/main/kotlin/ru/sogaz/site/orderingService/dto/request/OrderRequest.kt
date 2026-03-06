@@ -43,6 +43,7 @@ data class OrderRequest(
     var saveCard: Boolean = false,
     var subscriptionId: String = "",
     var clientId: String? = null,
+    var channelSale: String? = null,
     @field:RussianNameValid
     var policyholder: String? = null,
     var orderIdRecurrent: UUID? = null,

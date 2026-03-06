@@ -20,14 +20,19 @@ import java.math.BigDecimal
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
 )
 abstract class OrderMapper {
+    private companion object {
+        val NON_ALPHANUMERIC_REGEX = Regex("[^A-Za-zА-Яа-яЁё0-9]")
+    }
+
     @Mapping(target = "paymentEndDate", source = "orderEndDate")
     @Mapping(target = "recipientEmail", source = "recipientEmail", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
     @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "status", constant = "NEW")
-    @Mapping(target = "createDate", expression = "java(Instant.now())")
+    @Mapping(target = "createDate", expression = "java( Instant.now() )")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
+    @Mapping(target = "queueStatusResultName", source = "metaInfo", qualifiedByName = ["mapQueueResultName"])
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
     @Mapping(target = "orderEntity", source = "order")
@@ -66,4 +71,13 @@ abstract class OrderMapper {
             ?.map { it.premiumAmountDto }
             ?.fold(BigDecimal.ZERO, BigDecimal::add)
             ?.takeIf { it > BigDecimal.ZERO }
+
+    @Named("mapQueueResultName")
+    protected fun buildQueueStatusResultName(metaInfo: List<MetaInfoOrder>): String? =
+        metaInfo
+            .firstOrNull()
+            ?.author
+            ?.takeIf { it.isNotBlank() }
+            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
+            ?.let { "payment.status.$it.created" }
 }

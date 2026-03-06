@@ -31,6 +31,6 @@ data class SubOrderPayload(
     val typeInsurance: String?,
     val premiumAmount: String?,
     val channel: String?,
-    val policyDate: String?,
-    val contractDate: String?,
+    val policyDate: Long?,
+    val contractDate: Long?,
 ) : Serializable

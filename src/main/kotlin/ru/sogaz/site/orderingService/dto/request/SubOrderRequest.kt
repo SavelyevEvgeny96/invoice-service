@@ -1,7 +1,6 @@
 package ru.sogaz.site.orderingService.dto.request
 
 import jakarta.validation.constraints.Email
-import jakarta.validation.constraints.FutureOrPresent
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
@@ -30,7 +29,6 @@ data class SubOrderRequest(
     val docType: String? = null,
     val policyDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    @field:FutureOrPresent(message = "{validation.orderRequest.date.future}")
     val contractDate: Instant? = null,
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",

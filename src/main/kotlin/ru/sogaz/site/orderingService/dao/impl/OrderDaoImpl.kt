@@ -48,7 +48,7 @@ open class OrderDaoImpl(
 
         // 14 параметров: до bank включительно
         // потом хардкодим save_card = TRUE, recurrent = TRUE, status = 'NEW', update_date = NOW()
-        val tuple = "(" + List(13) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
+        val tuple = "(" + List(14) { "?" }.joinToString(", ") + ", TRUE, TRUE, 'NEW', NOW())"
         val valuesSql = orders.joinToString(",") { tuple }
 
         val sql =
@@ -67,6 +67,7 @@ open class OrderDaoImpl(
                 payment_type,
                 subscription_id,
                 bank,
+                queue_status_result_name,
                 save_card,
                 recurrent,
                 status,
@@ -92,6 +93,7 @@ open class OrderDaoImpl(
             args += o.paymentType // payment_type
             args += o.subscriptionId // subscription_id
             args += o.bank // bank
+            args += o.queueStatusResultName
             // save_card, recurrent, status, update_date — хардкодом в SQL
         }
 

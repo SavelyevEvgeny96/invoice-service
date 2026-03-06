@@ -20,7 +20,7 @@ class PaidOrderStatusChangeConsumer(
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    fun sendReceipt(completedPaymentData: CompletedPaymentData) {
+    fun updateOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             orderStatusService.updatePaidOrder(completedPaymentData)
         } catch (ex: OrderNotFoundException) {

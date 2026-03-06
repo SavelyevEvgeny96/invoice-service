@@ -170,7 +170,7 @@ class ReceiptServiceTest {
                 totalAmount = amount,
                 depersonalization = true,
                 status = "SUCCESS",
-                keyCard = "id",
+                card = null,
                 bank = BankEnum.GPB.name,
                 paymentType = "CARD",
                 payDate = Instant.now(),

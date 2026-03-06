@@ -33,7 +33,7 @@ interface PaymentServiceMapper {
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
-    @Mapping(target = "returnUrl", source = "params.urlToReturn")
+    @Mapping(target = "params", source = "params")
     fun orderToSbpPayRequest(
         order: OrderEntity,
         params: PayQueryParams,

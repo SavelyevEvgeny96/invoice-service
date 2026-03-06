@@ -13,6 +13,7 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.OrderRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
@@ -54,6 +55,11 @@ class OrderServiceImpl(
             ServiceStatuses.STATUS_CODE_SUCCESS,
             savedOrder.toDataOrder(payBasePath),
         )
+    }
+
+    override fun getOrderStatus(orderId: UUID): DataGetOrderStatus {
+        val order = findOrderByIdOrThrow(orderId)
+        return DataGetOrderStatus(order.status.desc)
     }
 
     private fun OrderEntity.toDataOrder(basePath: String): DataOrder {

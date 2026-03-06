@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -17,7 +19,9 @@ import ru.sogaz.site.orderingService.apiDoc.response.UnauthorizedApiResponse
 import ru.sogaz.site.orderingService.apiDoc.response.ValidationErrorApiResponse
 import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.OrderRequest
+import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.siter.models.resonses.Response
+import java.util.UUID
 
 interface OrderV1Api {
     @Operation(
@@ -112,4 +116,10 @@ interface OrderV1Api {
         @Parameter(hidden = true)
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
     ): Response<DataOrder>
+
+    @GetMapping("order/status/{orderId}")
+    @ApiResponse(responseCode = "200", description = "Успешное получение статуса")
+    fun getOrderStatus(
+        @PathVariable orderId: UUID,
+    ): Response<DataGetOrderStatus>
 }
