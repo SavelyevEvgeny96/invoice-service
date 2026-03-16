@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -41,5 +42,14 @@ class PaymentServiceImpl(
             runCatching { payClient.paySbp(payRequest) }.getOrNull()?.data
                 ?: throw InnerException(getTraceId(), ERROR_WHILE_GET_PAYMENT_PAGE)
         return paymentServiceMapper.dataPayToPaymentPage(dataPay)
+    }
+
+    override fun payQrSbp(
+        order: OrderEntity,
+        payQueryParams: PayQueryParams,
+    ): PaySbp? {
+        val payRequest = paymentServiceMapper.orderToSbpPayRequest(order, payQueryParams)
+        val dataPay = runCatching { payClient.payQrImageSbp(payRequest) }.getOrNull()?.data
+        return paymentServiceMapper.dataQrPayToPaySbp(dataPay)
     }
 }

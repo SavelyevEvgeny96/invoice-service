@@ -6,7 +6,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import java.util.UUID
 
-abstract class RabbitProducer<T>(
+abstract class RabbitProducer<T : Any>(
     private val rabbitTemplate: RabbitTemplate,
 ) {
     protected fun convertAndSend(
@@ -18,9 +18,9 @@ abstract class RabbitProducer<T>(
         convertAndSend(
             exchange,
             routingKey,
-            message!!,
+            message,
             correlationId,
-            null
+            null,
         )
 
     protected fun convertAndSend(
@@ -32,7 +32,7 @@ abstract class RabbitProducer<T>(
         convertAndSend(
             exchange,
             routingKey,
-            message!!,
+            message,
             null,
             messagePostProcessor,
         )
@@ -47,7 +47,7 @@ abstract class RabbitProducer<T>(
         rabbitTemplate.convertAndSend(
             exchange,
             routingKey,
-            message!!,
+            message,
             {
                 it?.apply {
                     messageProperties.headers[RabbitLogConst.HDR_X_EXCHANGE] = exchange

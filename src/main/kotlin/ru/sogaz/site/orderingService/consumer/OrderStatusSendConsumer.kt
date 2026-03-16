@@ -27,9 +27,6 @@ class OrderStatusSendConsumer(
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
-            if (completedPaymentData.status == "FAIL" && order.clientId == "ordering-client") {
-                return
-            }
             orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)

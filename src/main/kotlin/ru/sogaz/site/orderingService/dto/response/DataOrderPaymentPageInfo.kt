@@ -1,6 +1,5 @@
 package ru.sogaz.site.orderingService.dto.response
 
-import ru.sogaz.site.orderingService.enums.MediaTypeValue
 import java.net.URI
 import java.util.UUID
 
@@ -20,15 +19,11 @@ data class SubOrderInfo(
 )
 
 data class PaySbp(
-    val urlPay: URI,
+    val urlPay: String,
     val fileQR: FileQR,
-) {
-    constructor(stringUrl: String, fileQR: FileQR) : this(URI.create(stringUrl), fileQR)
-}
+)
 
 data class FileQR(
     val content: String,
     val mediaType: String,
-) {
-    constructor(content: String, mediaType: MediaTypeValue) : this(content, mediaType.value)
-}
+)
