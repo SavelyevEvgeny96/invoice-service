@@ -16,9 +16,12 @@ interface PaymentPageInfoApi {
         description = "Возвращает ссылку для оплаты картой и, если возможно оплатить по СБП, QR-code для оплаты по СБП",
     )
     @Parameter(name = "orderId", description = "UUID заказа для оплаты", required = true, schema = Schema(type = "string", format = "uuid"))
+    @Parameter(name = "saveCard", schema = Schema(type = "boolean", defaultValue = "false"))
     @GetMapping("v1/order/pagepayinfo/{orderId}")
     fun getInfoPage(
         @PathVariable orderId: UUID,
         payQueryParams: PayQueryParams,
+        saveCard: Boolean = false,
+        unifiedId: String?,
     ): Response<DataOrderPaymentPageInfo>
 }

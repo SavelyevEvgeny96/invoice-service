@@ -2,6 +2,9 @@ package ru.sogaz.site.orderingService.service.order.impl
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
+import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomPaymentErrors.Companion.CODE_ERROR_ORDER_CANNOT_BE_PAID_INFO
+import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomPaymentErrors.Companion.CODE_ERROR_ORDER_NOT_FOUND_INFO
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
@@ -19,7 +22,10 @@ class OrderPaymentPageServiceImpl(
         orderId: UUID,
         payQueryParams: PayQueryParams,
     ): DataOrderPaymentPageInfo {
-        val order = orderDao.findById(orderId) ?: throw Exception()
+        val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
+        if (order.status.isAvailable().not()) {
+            throw BusinessException(CODE_ERROR_ORDER_CANNOT_BE_PAID_INFO)
+        }
         return paymentPageInfoService.getInfo(order, payQueryParams)
     }
 }

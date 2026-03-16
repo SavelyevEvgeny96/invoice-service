@@ -29,5 +29,5 @@ enum class OrderStatusesEnum(
 
     fun isPaidFor() = this == SUCCESS
 
-    fun isNotAvailable() = this in listOf(OVERDUE, MARKEDDEL)
+    fun isAvailable() = this in listOf(NEW, UPDATE)
 }

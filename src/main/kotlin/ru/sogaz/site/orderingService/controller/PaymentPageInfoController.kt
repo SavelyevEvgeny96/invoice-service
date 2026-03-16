@@ -21,6 +21,8 @@ class PaymentPageInfoController(
     override fun getInfoPage(
         orderId: UUID,
         payQueryParams: PayQueryParams,
+        saveCard: Boolean,
+        unifiedId: String?,
     ): Response<DataOrderPaymentPageInfo> =
         orderPaymentPageService
             .getInfo(orderId, payQueryParams)
