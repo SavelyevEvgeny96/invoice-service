@@ -28,5 +28,5 @@ class PayController(
             .paySbp(orderId, payQueryParams)
             .wrapToRedirectView()
 
-    private fun PaymentPage.wrapToRedirectView() = uri.toString().run(::RedirectView)
+    private fun PaymentPage.wrapToRedirectView() = uri.run(::RedirectView)
 }
