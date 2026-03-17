@@ -20,7 +20,7 @@ interface ReceiptMapper {
     @Mapping(target = "total", source = "order.premiumAmount", qualifiedByName = ["mapToBigDecimalAmount"])
     @Mapping(target = "payments", source = "completedPaymentData")
     @Mapping(target = "depersonalization", source = "completedPaymentData.depersonalization")
-    @Mapping(target = "receiptType", constant = "SELL")
+    @Mapping(target = "receiptType", source = "completedPaymentData.operationType")
     @Mapping(target = "system", constant = "ATOL")
     @Mapping(target = "version", constant = "V4")
     fun mapFromPaymentToReceiptCreateRequest(

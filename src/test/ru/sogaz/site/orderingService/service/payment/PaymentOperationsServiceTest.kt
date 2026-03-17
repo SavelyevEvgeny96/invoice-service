@@ -22,6 +22,8 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapperImpl
@@ -34,8 +36,6 @@ import java.util.UUID
 @Import(value = [PaymentOperationMapperImpl::class])
 class PaymentOperationsServiceTest {
     companion object {
-        private const val SUCCESS_STATUS = "SUCCESS"
-        private const val FAILED_STATUS = "FAILED"
         private const val TEST_CLIENT_EMAIL = "test@example.com"
         private const val TEST_CONTRACT_NUMBER = "CONT123"
         private const val KEY_CARD = "KEY_CARD"
@@ -156,7 +156,8 @@ class PaymentOperationsServiceTest {
                 orderId = validOrderId,
                 totalAmount = amount,
                 depersonalization = true,
-                status = SUCCESS_STATUS,
+                status = PaymentOperationStateEnum.SUCCESS,
+                operationType = OperationTypeEnum.PAY,
                 card = ClientCardDetails(KEY_CARD),
                 bank = BANK,
                 paymentType = PAYMENT_TYPE,
