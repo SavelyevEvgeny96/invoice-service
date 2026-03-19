@@ -4,6 +4,7 @@ import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
+import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
@@ -24,6 +25,8 @@ class PaidOrderStatusChangeConsumer(
         try {
             orderStatusService.updatePaidOrder(completedPaymentData)
         } catch (ex: OrderNotFoundException) {
+            logger.warn(ex.message)
+        } catch (ex: InnerException) {
             logger.warn(ex.message)
         }
     }
