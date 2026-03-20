@@ -149,7 +149,12 @@
         <dependency>
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-api-client</artifactId>
-            <version>0.0.5</version>
+            <version>0.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.sogaz.site</groupId>
+            <artifactId>qr-generator-api-client</artifactId>
+            <version>0.0.1</version>
         </dependency>
 		<dependency>
 			<groupId>ru.sogaz.site</groupId>

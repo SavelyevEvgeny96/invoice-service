@@ -9,17 +9,17 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
-import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
+import ru.sogaz.site.orderingService.producer.OrderRefundStatusEventProducer
 
 @Component
-class OrderStatusSendConsumer(
+class OrderRefundStatusSendConsumer(
     private val orderDao: OrderDao,
-    private val orderPaymentStatusEventProducer: OrderPaymentStatusEventProducer,
+    private val orderRefundStatusEventProducer: OrderRefundStatusEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 
     @RabbitListener(
-        queues = ["\${app.rabbit.queue-send-status-order}"],
+        queues = ["\${app.rabbit.queue-send-status-refund-order}"],
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
@@ -27,7 +27,7 @@ class OrderStatusSendConsumer(
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
-            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+            orderRefundStatusEventProducer.sendRefundStatus(order, completedPaymentData)
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         } catch (ex: IllegalArgumentException) {

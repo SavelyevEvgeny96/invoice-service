@@ -16,6 +16,8 @@ import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.mappers.PaymentEventMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.BuildBatchConsumerService
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Service
 class BuildBatchConsumerServiceImpl(
@@ -92,14 +94,17 @@ class BuildBatchConsumerServiceImpl(
         val (foundWithAccess, noAccess) =
             existsInDb.partition { p ->
                 val author = p.metaInfo.firstOrNull()?.author
-                author != null && author in allowedAuthors
+                author != null &&
+                    author in allowedAuthors
             }
 
         // 5) notForPaid (НЕ оплаченные) / found (оплаченные)
         val (foundRaw, notForPaid) =
             foundWithAccess.partition { p ->
                 val order = ordersById[p.orderId]
-                order != null && order.status?.isPaidFor() == true
+                order != null &&
+                    order.status.isPaidFor() &&
+                    LocalDate.now().isEqual(extractPayDate(order))
             }
 
         val found =
@@ -111,7 +116,7 @@ class BuildBatchConsumerServiceImpl(
                 p.copy(
                     orderId = order.orderId,
                     description = description,
-                    premiumAmount = order.premiumAmount,
+                    amount = order.premiumAmount,
                 )
             }
 
@@ -125,6 +130,11 @@ class BuildBatchConsumerServiceImpl(
 
     private fun buildRefundDescription(subOrder: SubOrderEntity): String =
         "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
+
+    private fun extractPayDate(order: OrderEntity): LocalDate? =
+        order.createDate
+            ?.atZone(ZoneId.systemDefault())
+            ?.toLocalDate()
 
     private fun buildRoutingKeyByCustomerId(
         clientId: String?,

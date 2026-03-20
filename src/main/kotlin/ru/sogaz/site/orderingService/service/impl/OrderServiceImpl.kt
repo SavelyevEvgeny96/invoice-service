@@ -91,7 +91,7 @@ class OrderServiceImpl(
     private fun checkOrderStatus(order: OrderEntity): Unit =
         when {
             order.status.isPaidFor() -> throw BusinessException(ERROR_CODE_ORDER_ALREADY_PAID)
-            order.status.isNotAvailable() -> throw BusinessException(ERROR_CODE_ORDER_CLOSED)
+            order.status.isAvailable().not() -> throw BusinessException(ERROR_CODE_ORDER_CLOSED)
             else -> {}
         }
 }

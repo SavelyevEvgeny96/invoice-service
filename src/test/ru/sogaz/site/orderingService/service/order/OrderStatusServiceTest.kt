@@ -18,20 +18,22 @@ import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
+import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapper
 import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapperImpl
+import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationStatusConverterImpl
 import ru.sogaz.site.orderingService.service.order.impl.OrderStatusServiceImpl
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(value = [CompletedPaymentMapperImpl::class])
+@Import(value = [CompletedPaymentMapperImpl::class, PaymentOperationStatusConverterImpl::class])
 class OrderStatusServiceTest {
     companion object {
-        private const val SUCCESS_STATUS = "SUCCESS"
-        private const val FAILED_STATUS = "FAILED"
         private const val TEST_CLIENT_EMAIL = "test@example.com"
         private const val TEST_CONTRACT_NUMBER = "CONT123"
         private const val KEY_CARD = "KEY_CARD"
@@ -143,7 +145,8 @@ class OrderStatusServiceTest {
                 orderId = validOrderId,
                 totalAmount = amount,
                 depersonalization = true,
-                status = SUCCESS_STATUS,
+                status = PaymentOperationStateEnum.SUCCESS,
+                operationType = OperationTypeEnum.PAY,
                 card = ClientCardDetails(KEY_CARD),
                 bank = BANK,
                 paymentType = PAYMENT_TYPE,

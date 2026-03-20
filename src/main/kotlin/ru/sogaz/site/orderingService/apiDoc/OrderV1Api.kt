@@ -101,7 +101,7 @@ interface OrderV1Api {
                                     "    \"recipientEmail\": \"sokolov@sogaz.ru\",\n" +
                                     "    \"saveCard\": true,\n" +
                                     "    \"unifiedId\": \"294c86cb-faf1-16ed-8e88-0894ef6d43f1\",\n" +
-                                    "    \"orderEndDate\": \"2026-02-15T07:59:01+03:00\", \n" +
+                                    "    \"orderEndDate\": \"2028-02-15T07:59:01+03:00\", \n" +
                                     "    \"urlToReturn\": \"www.sogaz.ru\",\n" +
                                     "    \"urlToDecline\": \"www.sogaz.ru\",\n" +
                                     "    \"bank\": \"gpb\"\n" +

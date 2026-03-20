@@ -103,7 +103,10 @@ class OrderPayServiceTest {
 
     @Test
     fun `should correctly return paymentPage`() {
+        every { testOrder.status } returns OrderStatusesEnum.NEW
+
         val paymentPage = orderService.payCard(validUUID, payQueryParams)
+
         Assertions
             .assertThat(paymentPage)
             .isEqualTo(this.paymentPage)

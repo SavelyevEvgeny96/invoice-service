@@ -1,6 +1,8 @@
 package ru.sogaz.site.orderingService.dto.data
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -11,10 +13,11 @@ data class CompletedPaymentData(
     val orderId: UUID,
     val totalAmount: BigDecimal,
     val depersonalization: Boolean = false,
-    val status: String,
+    val status: PaymentOperationStateEnum,
     val card: ClientCardDetails? = null,
     val bank: String,
     val paymentType: String,
+    val operationType: OperationTypeEnum,
     val payDate: Instant,
     val errorText: String?,
 )

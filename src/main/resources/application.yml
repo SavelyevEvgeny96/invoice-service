@@ -62,6 +62,7 @@ app:
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
     queue-send-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.send.queue}
+    queue-send-status-refund-order: ${ORDER_REFUND_STATUS_QUEUE:order.refund.status.send.queue}
     queue-send-receipt-order: ${ORDER_RECEIPT_SEND_QUEUE:order.receipt.send.queue}
     queue-fill-history-payment-order: ${ORDER_PAYMENT_HISTORY_FILL_QUEUE:order.payment.history.fill.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
@@ -77,13 +78,19 @@ app:
       prefetch: 50
       concurrency: 1
       max-concurrency: 1
-  payment:
-    client:
-      basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/stage/payment-service/}
+  client:
+    payment:
+      basePath: ${PAYMENT_SERVICE_BASE_PATH}
+    qr:
+      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH}
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL:https://s00-0000-k835.sogaz.ru/stage/ordering-service/orders/paycard/}
+    paymentUrl: ${PAYMENT_URL}
+    paymentSbpUrl: ${PAYMENT_SBP_URL}
+    isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
+    isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
+    qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
 
 resilience4j:
   retry:

@@ -1,6 +1,9 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
@@ -45,11 +48,14 @@ import java.util.UUID
 class SendMessageProducerImpl(
     private val rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
-    private val objectMapper: ObjectMapper,
     private val refundErrorMapper: RefundErrorMapper,
     private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) : SendMessageProducer {
     private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
+    private val objectMapper =
+        jacksonObjectMapper()
+            .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP))
+            .registerModule(JavaTimeModule())
 
     /**
      * Отправляет сообщения по результатам подготовки refund-заказов.
@@ -91,7 +97,7 @@ class SendMessageProducerImpl(
                     item.metaInfo,
                     item.orderId,
                     null,
-                    item.premiumAmount,
+                    item.amount,
                     item.description,
                 )
             sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
