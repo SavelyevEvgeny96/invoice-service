@@ -53,15 +53,13 @@ app:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
-    payments-completed-exchange: ${PAYMENT_COMPLETED_EXCHANGE:payment.completed.exchange}
-    payments-success-exchange: ${PAYMENT_COMPLETED_EXCHANGE:payment.success.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
     queue-order-refund: ${ORDER_CREATED_REFUND_QUEUE:order.refund.queue}
     queue-payment-status-refund: ${PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.queue}
     queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
-    queue-send-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.send.queue}
+    queue-send-status-order: ${ORDER_STATUS_SEND_QUEUE:order.status.send.queue}
     queue-send-status-refund-order: ${ORDER_REFUND_STATUS_QUEUE:order.refund.status.send.queue}
     queue-send-receipt-order: ${ORDER_RECEIPT_SEND_QUEUE:order.receipt.send.queue}
     queue-fill-history-payment-order: ${ORDER_PAYMENT_HISTORY_FILL_QUEUE:order.payment.history.fill.queue}

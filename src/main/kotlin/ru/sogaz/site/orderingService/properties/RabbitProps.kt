@@ -10,13 +10,10 @@ class RabbitProps {
     lateinit var ordersExchange: String
     lateinit var receiptExchange: String
     lateinit var paymentsExchange: String
-    lateinit var paymentsCompletedExchange: String
     lateinit var queueOrder: String
     lateinit var queueOrderDlq: String
     lateinit var queueOrderRefund: String
     lateinit var queuePayment: String
-    lateinit var queueChangeStatusOrder: String
-    lateinit var queueSendReceiptOrder: String
     lateinit var queuePaymentStatusRefund: String
     lateinit var routingKeyOrder: String
     lateinit var routingKeyOrderDlq: String
