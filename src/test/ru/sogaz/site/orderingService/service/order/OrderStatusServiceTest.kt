@@ -19,7 +19,6 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OperationTypeEnum
-import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapper

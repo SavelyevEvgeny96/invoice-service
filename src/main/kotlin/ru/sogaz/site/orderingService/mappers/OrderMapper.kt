@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy
 import org.mapstruct.ReportingPolicy
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.MetaInfoOrder
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
+import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto
-import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.math.BigDecimal
@@ -49,14 +49,14 @@ abstract class OrderMapper {
     )
     @Mapping(
         target = "recurrent",
-        expression = "java(orderRequest.getOrderIdRecurrent() != null)",
+        expression = "java(command.getOrderIdRecurrent() != null)",
     )
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "recipientPhone", defaultValue = "")
-    abstract fun fromRequestDto(orderRequest: OrderRequest): OrderEntity
+    abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
 
-    abstract fun fromRequestDto(subOrderRequest: SubOrderRequest): SubOrderEntity
+    abstract fun fromCommand(command: CreateSubOrderCommand): SubOrderEntity
 
     // ---------- Helpers ----------
     @Named("nullToEmpty")

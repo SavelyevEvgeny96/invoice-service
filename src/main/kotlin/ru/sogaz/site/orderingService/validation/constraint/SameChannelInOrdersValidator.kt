@@ -4,7 +4,7 @@ import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
-import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
+import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV1
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FIELD)
@@ -16,9 +16,9 @@ annotation class SameChannelInOrders(
     val payload: Array<KClass<out Payload>> = [],
 )
 
-class SameChannelInOrdersValidator : ConstraintValidator<SameChannelInOrders, List<SubOrderRequest>> {
+class SameChannelInOrdersValidator : ConstraintValidator<SameChannelInOrders, List<SubOrderRequestV1>> {
     override fun isValid(
-        orders: List<SubOrderRequest>?,
+        orders: List<SubOrderRequestV1>?,
         context: ConstraintValidatorContext?,
     ): Boolean {
         if (orders.isNullOrEmpty()) return true
