@@ -15,11 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.ReceiptDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.OperationTypeEnum
-import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptClientInfoMapperImpl
@@ -58,6 +58,8 @@ class ReceiptServiceTest {
 
     @MockK
     private lateinit var orderDao: OrderDao
+    @MockK
+    private lateinit var receiptDao: ReceiptDao
 
     @RelaxedMockK
     private lateinit var receiptClient: ReceiptClient
@@ -83,6 +85,7 @@ class ReceiptServiceTest {
                 orderDao = orderDao,
                 receiptMapper = receiptMapper,
                 receiptClient = receiptClient,
+                receiptDao = receiptDao,
             )
 
         initOrdersTestData()
