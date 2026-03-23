@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.verify
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
-import ru.sogaz.site.orderingService.dto.request.OrderRequestV1
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
@@ -50,7 +50,7 @@ class OrderServiceImplTest {
 
     @Test
     fun `createOrder returns success response`() {
-        val request = OrderRequestV1()
+        val request = CreateOrderCommand()
 
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
@@ -70,7 +70,7 @@ class OrderServiceImplTest {
     @Test
     fun `createOrder calls mapper and dao`() {
         // given
-        val request = OrderRequestV1()
+        val request = CreateOrderCommand()
 
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)

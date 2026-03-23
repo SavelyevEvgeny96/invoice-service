@@ -5,9 +5,9 @@ import java.time.Instant
 import java.util.UUID
 
 data class CreateOrderCommand(
-    val orders: List<CreateSubOrderCommand>,
-    val orderEndDate: Instant?,
-    val recipientEmail: String,
+    val orders: MutableList<CreateSubOrderCommand> = mutableListOf(),
+    val orderEndDate: Instant? = null,
+    val recipientEmail: String = "",
     val recipientUserId: String? = null,
     val unifiedId: String? = null,
     val recipientPhone: String? = null,
@@ -19,5 +19,5 @@ data class CreateOrderCommand(
     val policyholder: String? = null,
     val bank: BankEnum? = null,
     var orderIdRecurrent: UUID? = null,
-    val typePaymentOperation: String? = null,
+    val typePaymentOperation: String? = "",
 )
