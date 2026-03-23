@@ -18,6 +18,9 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
+import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptClientInfoMapperImpl
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptItemMapperImpl
@@ -166,7 +169,8 @@ class ReceiptServiceTest {
                 orderId = validOrderId,
                 totalAmount = amount,
                 depersonalization = true,
-                status = "SUCCESS",
+                status = PaymentOperationStateEnum.SUCCESS,
+                operationType = OperationTypeEnum.PAY,
                 card = null,
                 bank = "gpb",
                 paymentType = "card",

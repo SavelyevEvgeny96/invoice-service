@@ -3,9 +3,11 @@ package ru.sogaz.site.orderingService.mappers.payment
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.payment.client.model.BankPaymentPageData
+import ru.sogaz.site.payment.client.model.BankPaymentQrContent
 import ru.sogaz.site.payment.client.model.CardPayOperationRequest
 import ru.sogaz.site.payment.client.model.CardRecurrentOperationRequest
 import ru.sogaz.site.payment.client.model.RedirectParams
@@ -41,6 +43,10 @@ interface PaymentServiceMapper {
 
     @Mapping(target = "uri", source = "paymentPageUrl")
     fun dataPayToPaymentPage(bankPaymentPageData: BankPaymentPageData): PaymentPage
+
+    @Mapping(target = "urlPay", source = "paymentPageUrl")
+    @Mapping(target = "fileQR", source = "qrImageData")
+    fun dataQrPayToPaySbp(bankPaymentQrContent: BankPaymentQrContent?): PaySbp?
 
     fun mapRedirectParams(params: PayQueryParams): RedirectParams
 }

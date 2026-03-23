@@ -1,5 +1,7 @@
 package ru.sogaz.site.orderingService.dto.request
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.FutureOrPresent
@@ -9,6 +11,8 @@ import ru.sogaz.site.orderingService.validation.constraint.EmailValid
 import java.math.BigDecimal
 import java.time.Instant
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class SubOrderDto(
     @field:JsonProperty("premiumAmount")
     @field:NotNull

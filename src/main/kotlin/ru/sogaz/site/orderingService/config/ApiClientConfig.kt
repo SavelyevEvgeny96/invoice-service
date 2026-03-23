@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
 import ru.sogaz.site.payment.client.api.PayV2Api
-import ru.sogaz.site.payment.client.invoker.ApiClient
+import ru.sogaz.site.qr.generator.client.api.QrCodeControllerApi
 
 @Configuration
 class ApiClientConfig {
@@ -14,11 +14,22 @@ class ApiClientConfig {
 
     @Bean
     fun paymentApiClient(
-        @Value("\${app.payment.client.basePath}") paymentBasePath: String,
-    ) = ApiClient().apply {
+        @Value("\${app.client.payment.basePath}") paymentBasePath: String,
+    ) = ru.sogaz.site.payment.client.invoker.ApiClient().apply {
         basePath = paymentBasePath
     }
 
     @Bean
-    fun payClient(paymentApiClient: ApiClient): PayV2Api = PayV2Api(paymentApiClient)
+    fun payClient(paymentApiClient: ru.sogaz.site.payment.client.invoker.ApiClient): PayV2Api = PayV2Api(paymentApiClient)
+
+    @Bean
+    fun qrApiClient(
+        @Value("\${app.client.qr.basePath}") qrGeneratorBasePath: String,
+    ) = ru.sogaz.site.qr.generator.client.invoker.ApiClient().apply {
+        basePath = qrGeneratorBasePath
+    }
+
+    @Bean
+    fun qrCodeControllerApi(qrApiClient: ru.sogaz.site.qr.generator.client.invoker.ApiClient): QrCodeControllerApi =
+        QrCodeControllerApi(qrApiClient)
 }
