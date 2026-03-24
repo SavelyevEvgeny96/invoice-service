@@ -11,7 +11,7 @@ import ru.sogaz.site.filterStarter.services.RequestInfo
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.DataOrder
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
@@ -24,6 +24,12 @@ import ru.sogaz.siter.models.resonses.Response
 import ru.sogaz.siter.models.resonses.getSuccessResponse
 import java.util.UUID
 
+/**
+ * Метод для создания заказа.
+ * @param CreateOrderCommand Данные о заказе(содержит внутри лист CreateSubOrderCommand)
+ * @throws Exception Если данные невалидны или произошла ошибка при сохранении
+ * @return Объект DataOrder, содержащий информацию о платежном запросе
+ */
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class OrderServiceImpl(
@@ -34,20 +40,14 @@ class OrderServiceImpl(
     @Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {
-    /**
-     * Метод для создания заказа.
-     * @param orderRequest Данные о заказе(содержит внутри лист subOrderRequest)
-     * @throws Exception Если данные невалидны или произошла ошибка при сохранении
-     * @return Объект DataOrder, содержащий информацию о платежном запросе
-     */
-    override fun createOrder(orderRequest: OrderRequest): Response<DataOrder> {
+    override fun createOrder(command: CreateOrderCommand): Response<DataOrder> {
         val skipSendingErrorsQueue =
             clientSystemDao
-                .findBySystemCode(orderRequest.clientId)
+                .findBySystemCode(command.clientId)
                 ?.skipSendingErrorsQueue
                 ?: false
 
-        val order = orderManualMapper.toOrderEntity(orderRequest, skipSendingErrorsQueue)
+        val order = orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue)
         val savedOrder = orderDao.save(order)
 
         return getSuccessResponse(

@@ -395,6 +395,13 @@
 					<analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation>
 					<failOnViolation>true</failOnViolation>
 					<printFailingErrors>true</printFailingErrors>
+                    <excludes>
+                        <exclude>**/*MapperImpl.java</exclude>
+                        <exclude>**/ParsedResultToReceiptMessageDtoImpl.java</exclude>
+                        <exclude>**/generated-sources/**</exclude>
+                        <exclude>**/kapt/**</exclude>
+                        <exclude>**/kaptStubs/**</exclude>
+                    </excludes>
 				</configuration>
 				<executions>
 					<execution>

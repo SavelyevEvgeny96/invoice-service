@@ -1,8 +1,8 @@
 package ru.sogaz.site.orderingService.mappers
 
 import org.springframework.stereotype.Component
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
-import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
+import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 
@@ -15,11 +15,11 @@ class OrderManualMapper(
     }
 
     fun toOrderEntity(
-        orderRequest: OrderRequest,
+        command: CreateOrderCommand,
         skipSendingErrors: Boolean,
     ): OrderEntity =
-        orderMapper.fromRequestDto(orderRequest).apply {
-            val subOrders = attachSubOrders(this, orderRequest.orders)
+        orderMapper.fromCommand(command).apply {
+            val subOrders = attachSubOrders(this, command.orders)
             this.subOrders.addAll(subOrders)
 
             skipSendingErrorsQueue = skipSendingErrors
@@ -29,10 +29,10 @@ class OrderManualMapper(
 
     private fun attachSubOrders(
         order: OrderEntity,
-        requests: List<SubOrderRequest>,
+        requests: List<CreateSubOrderCommand>,
     ): List<SubOrderEntity> =
         requests.map { request ->
-            orderMapper.fromRequestDto(request).apply {
+            orderMapper.fromCommand(request).apply {
                 orderEntity = order
             }
         }
