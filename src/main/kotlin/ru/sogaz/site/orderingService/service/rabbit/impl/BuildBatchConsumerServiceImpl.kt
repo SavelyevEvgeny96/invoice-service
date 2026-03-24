@@ -110,9 +110,8 @@ class BuildBatchConsumerServiceImpl(
         val found =
             foundRaw.map { p ->
                 val order = ordersById[p.orderId]!!
-                val subOrder =
-                    subOrderDao.findByOrderIdAndMainContractCheck(order.orderId)
-                val description = subOrder?.let { buildRefundDescription(it) }
+                val subOrder = subOrderDao.findFirstByOrderEntityOrderId(order.orderId)
+                val description = buildRefundDescription(subOrder)
                 p.copy(
                     orderId = order.orderId,
                     description = description,
@@ -128,8 +127,11 @@ class BuildBatchConsumerServiceImpl(
         )
     }
 
-    private fun buildRefundDescription(subOrder: SubOrderEntity): String =
-        "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
+    private fun buildRefundDescription(subOrder: SubOrderEntity?): String =
+        when {
+            subOrder != null -> "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
+            else -> "Отмена транзакции по договору"
+        }
 
     private fun extractPayDate(order: OrderEntity): LocalDate? =
         order.createDate
