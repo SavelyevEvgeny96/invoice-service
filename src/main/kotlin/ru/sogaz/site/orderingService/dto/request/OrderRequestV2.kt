@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.RussianNameValid
-import ru.sogaz.site.orderingService.validation.constraint.SameChannelInOrders
 import java.time.Instant
 
 /**
@@ -16,7 +15,6 @@ import java.time.Instant
  */
 data class OrderRequestV2(
     @get:Valid
-    @field:SameChannelInOrders(message = "{validation.orderRequest.sameChannelInOrders}")
     var orders: MutableList<SubOrderRequestV2> = mutableListOf(),
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")

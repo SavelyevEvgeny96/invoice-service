@@ -30,6 +30,4 @@ data class SubOrderRequestV2(
     val sendStatusProduct: Boolean? = false,
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
-    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val channel: String = "",
 )

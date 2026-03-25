@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    username: ${RABBIT_USERNAME:dev}
-    password: ${RABBIT_PASSWORD:dev}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
     virtual-host: /
     listener:
       simple:
@@ -80,14 +80,14 @@ app:
       max-concurrency: 1
   client:
     payment:
-      basePath: ${PAYMENT_SERVICE_BASE_PATH}
+      basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
     qr:
-      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH}
+      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL}
-    paymentSbpUrl: ${PAYMENT_SBP_URL}
+    paymentUrl: ${PAYMENT_URL:https://test-gateway-site-kis.sogaz.ru/payment/pay/}
+    paymentSbpUrl: ${PAYMENT_SBP_URL:https://test-gateway-site-kis.sogaz.ru/payment/paySbp/}
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}

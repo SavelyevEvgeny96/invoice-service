@@ -17,15 +17,18 @@ class OrderManualMapper(
     fun toOrderEntity(
         command: CreateOrderCommand,
         skipSendingErrors: Boolean,
-    ): OrderEntity =
-        orderMapper.fromCommand(command).apply {
-            val subOrders = attachSubOrders(this, command.orders)
-            this.subOrders.addAll(subOrders)
+    ): OrderEntity {
+        val order =
+            orderMapper.fromCommand(command).apply {
+                val subOrders = attachSubOrders(this, command.subOrders)
+                this.subOrders.addAll(subOrders)
 
-            skipSendingErrorsQueue = skipSendingErrors
-            queueStatusResultName = buildQueueStatusResultName(clientId)
-            premiumAmount = calculatePremiumAmount()
-        }
+                skipSendingErrorsQueue = skipSendingErrors
+                queueStatusResultName = buildQueueStatusResultName(clientId)
+                premiumAmount = calculatePremiumAmount()
+            }
+        return order
+    }
 
     private fun attachSubOrders(
         order: OrderEntity,
