@@ -2,7 +2,6 @@ package ru.sogaz.site.orderingService.consumer
 
 import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
-import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
@@ -18,10 +17,10 @@ class OrderRefundStatusSendConsumer(
 ) {
     private val logger = loggerFor(javaClass)
 
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-send-status-refund-order}"],
-        containerFactory = "concurrentContainerFactory",
-    )
+//    @RabbitListener(
+//        queues = ["\${app.rabbit.queue-send-status-refund-order}"],
+//        containerFactory = "concurrentContainerFactory",
+//    )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     @Transactional(rollbackFor = [Exception::class])
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {

@@ -13,11 +13,13 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.math.BigDecimal
+import java.time.Instant
 
 @Mapper(
     componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.IGNORE,
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    imports = [Instant::class],
 )
 abstract class OrderMapper {
     private companion object {
