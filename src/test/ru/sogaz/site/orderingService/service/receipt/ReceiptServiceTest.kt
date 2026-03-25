@@ -58,6 +58,7 @@ class ReceiptServiceTest {
 
     @MockK
     private lateinit var orderDao: OrderDao
+
     @MockK
     private lateinit var receiptDao: ReceiptDao
 
