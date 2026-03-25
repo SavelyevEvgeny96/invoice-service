@@ -3,7 +3,9 @@ package ru.sogaz.site.orderingService.mappers.receipt
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
+import ru.sogaz.site.orderingService.dto.data.SentReceiptData
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.entity.ReceiptEntity
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest.ReceiptTypeEnum
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest.SystemEnum
@@ -27,4 +29,7 @@ interface ReceiptMapper {
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): PaymentReceiptCreateRequest
+
+    @Mapping(target = "id", source = "receiptId")
+    fun mapFromSentReceiptDataToReceiptEntity(sentReceiptData: SentReceiptData): ReceiptEntity
 }

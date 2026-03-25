@@ -3,8 +3,11 @@ package ru.sogaz.site.orderingService.service.receipt.impl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.ReceiptDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
+import ru.sogaz.site.orderingService.dto.data.SentReceiptData
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.entity.ReceiptEntity
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.receipt.ReceiptMapper
@@ -18,6 +21,7 @@ class ReceiptServiceImpl(
     private val orderDao: OrderDao,
     private val receiptMapper: ReceiptMapper,
     private val receiptClient: ReceiptClient,
+    private val receiptDao: ReceiptDao,
 ) : ReceiptService {
     override fun sendReceipt(completedPaymentData: CompletedPaymentData): OrderEntity {
         val order = findOrderByIdOrThrow(completedPaymentData.orderId)
@@ -38,4 +42,9 @@ class ReceiptServiceImpl(
         val receiptCreateRequest = receiptMapper.mapFromPaymentToReceiptCreateRequest(order, completedPaymentData)
         receiptClient.sendReceiptToQueue(receiptCreateRequest)
     }
+
+    override fun saveSentReceiptRecord(sentReceiptData: SentReceiptData): ReceiptEntity =
+        sentReceiptData
+            .run(receiptMapper::mapFromSentReceiptDataToReceiptEntity)
+            .run(receiptDao::save)
 }

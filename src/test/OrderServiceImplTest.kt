@@ -1,3 +1,5 @@
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -33,11 +35,16 @@ class OrderServiceImplTest {
 
     private lateinit var service: OrderServiceImpl
 
+    private lateinit var request: CreateOrderCommand
+
     private val payBasePath = "https://pay.test/"
     private val skipSendingErrors = false
 
     @BeforeEach
     fun setUp() {
+        request = mockk()
+        every { request.clientId } returns ""
+        every { request.clientId } returns ""
         service =
             OrderServiceImpl(
                 orderDao = orderDao,
@@ -50,8 +57,6 @@ class OrderServiceImplTest {
 
     @Test
     fun `createOrder returns success response`() {
-        val request = CreateOrderCommand()
-
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
         val orderId = UUID.randomUUID()
@@ -69,9 +74,6 @@ class OrderServiceImplTest {
 
     @Test
     fun `createOrder calls mapper and dao`() {
-        // given
-        val request = CreateOrderCommand()
-
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
 
