@@ -17,7 +17,7 @@ abstract class PaymentPurposeMapper {
         private const val PAY_SBP_ONE_CONTRACT_INFO =
             "Зачисление по операции СБП договора СБП-001-8/21 от 19.09.2022." +
                 " Оплата по договору страхования %s, дата операции %s"
-        private const val CONTRACT_INFO = "%s от %s"
+        private const val CONTRACT_INFO = "%s %s"
         private const val PARAM = "param"
         private const val EMPTY_PAY_INFO = "Платежный сервис, дата операции %s"
         private const val EMPTY_SUB_ORDERS = "В заказе отсутствуют контракты"
@@ -70,10 +70,11 @@ abstract class PaymentPurposeMapper {
     private fun List<SubOrderEntity>.findMainContract(): SubOrderEntity =
         when (size) {
             0 -> throw InnerException(getTraceId(), EMPTY_SUB_ORDERS)
-            else -> findLast(SubOrderEntity::mainContractCheck) ?: first()
+            else -> first()
         }
 
     private fun Instant.toContractDateFormat(): String =
+        "от " +
         atZone(DEFAULT_ZONE)
             .toLocalDate()
             .toContractDateFormat()
