@@ -20,4 +20,6 @@ data class CreateOrderCommand(
     var bank: BankEnum? = null,
     var orderIdRecurrent: UUID? = null,
     var typePaymentOperation: String? = "",
+    var externalId: String? = null,
+    var accountCrossId: String = "",
 )

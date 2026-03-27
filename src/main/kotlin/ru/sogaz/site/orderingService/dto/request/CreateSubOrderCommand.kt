@@ -18,4 +18,5 @@ data class CreateSubOrderCommand(
     var managerEmail: String = "",
     var channel: String = "",
     var mainContractCheck: Boolean = false,
+    val typeOperation: String? = null,
 )

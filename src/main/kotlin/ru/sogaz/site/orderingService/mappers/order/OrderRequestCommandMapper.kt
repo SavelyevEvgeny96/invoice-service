@@ -13,11 +13,20 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
 interface OrderRequestCommandMapper {
     fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
-    @Mapping(target = "mainContractCheck", source = "mainContractCheck")
     fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
 
+    @Mapping(source = "invoices", target = "subOrders")
+    @Mapping(source = "email", target = "recipientEmail")
+    @Mapping(source = "phoneNumber", target = "recipientPhone")
+    @Mapping(source = "invoiceEndDate", target = "orderEndDate")
     fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
-    @Mapping(target = "mainContractCheck", constant = "false")
+    @Mapping(constant = "false", target = "mainContractCheck")
+    @Mapping(source = "premium", target = "premiumAmount")
+    @Mapping(source = "agreementNumber", target = "contractNumber")
+    @Mapping(source = "agreementId", target = "contractId")
+    @Mapping(source = "agreementDate", target = "contractDate")
+    @Mapping(source = "insuranceKind", target = "typeInsurance")
+    @Mapping(source = "program", target = "insuranceProgram")
     fun toCommand(request: SubOrderRequestV2): CreateSubOrderCommand
 }
