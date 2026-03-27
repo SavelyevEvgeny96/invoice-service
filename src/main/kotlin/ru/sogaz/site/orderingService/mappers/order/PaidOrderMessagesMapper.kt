@@ -17,10 +17,10 @@ interface PaidOrderMessagesMapper {
     companion object {
         @JvmStatic
         @Named("instantToFormattedString")
-        fun instantToFormattedString(dateTime: Instant): String =
+        fun instantToFormattedString(dateTime: Instant?): String? =
             dateTime
-                .atZone(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                ?.atZone(ZoneOffset.UTC)
+                ?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         @JvmStatic
         @Named("instantToEpochMilli")
@@ -35,7 +35,6 @@ interface PaidOrderMessagesMapper {
         target = "paySuccess",
         source = "completedPaymentData.payDate",
         qualifiedByName = ["instantToFormattedString"],
-        conditionExpression = "java( completedPaymentData.getStatus().equals(\"SUCCESS\") )",
     )
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "externalSystemCode", source = "order.clientId")
