@@ -20,6 +20,7 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import java.util.UUID
@@ -41,7 +42,7 @@ class OrderPayServiceTest {
     private lateinit var clientSystemDao: ClientSystemDao
 
     @RelaxedMockK
-    private lateinit var orderManualMapper: OrderManualMapper
+    private lateinit var orderMapper: OrderMapper
 
     private lateinit var orderService: OrderServiceImpl
 
@@ -60,7 +61,7 @@ class OrderPayServiceTest {
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
-                orderManualMapper = orderManualMapper,
+                orderMapper = orderMapper,
                 clientSystemDao = clientSystemDao,
                 payBasePath = "",
             )

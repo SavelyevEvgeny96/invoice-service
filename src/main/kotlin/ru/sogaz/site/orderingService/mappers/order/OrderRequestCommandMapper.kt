@@ -11,11 +11,13 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
 
 @Mapper(componentModel = "spring")
 interface OrderRequestCommandMapper {
+    @Mapping(target = "subOrders", source = "orders")
     fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
     @Mapping(target = "mainContractCheck", source = "mainContractCheck")
     fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
 
+    @Mapping(target = "subOrders", source = "orders")
     fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
     @Mapping(target = "mainContractCheck", constant = "false")

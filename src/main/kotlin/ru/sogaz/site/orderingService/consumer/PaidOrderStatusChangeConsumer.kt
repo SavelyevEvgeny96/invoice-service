@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.consumer
 
 import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
@@ -15,10 +16,10 @@ class PaidOrderStatusChangeConsumer(
 ) {
     private val logger = loggerFor(javaClass)
 
-//    @RabbitListener(
-//        queues = ["\${app.rabbit.queue-change-status-order}"],
-//        containerFactory = "concurrentContainerFactory",
-//    )
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-change-status-order}"],
+        containerFactory = "concurrentContainerFactory",
+    )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     fun updateOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {

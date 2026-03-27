@@ -3,6 +3,7 @@ package ru.sogaz.site.orderingService.service.rabbit.impl
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
@@ -73,7 +74,10 @@ class OrderBatchConsumerImpl(
      * @param messages Список сообщений RabbitMQ для обработки.
      * @param channel Канал RabbitMQ, используемый для ACK/Reject сообщений.
      */
-
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-order}"],
+        containerFactory = "batchContainerFactory",
+    )
     override fun handleBatchOrderCreated(
         messages: List<Message>,
         channel: Channel,
