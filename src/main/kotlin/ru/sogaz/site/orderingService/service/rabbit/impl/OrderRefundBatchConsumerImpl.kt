@@ -247,7 +247,7 @@ class OrderRefundBatchConsumerImpl(
 
                     // 3. Поиск subOrder
                     val subOrder =
-                        subOrderDao.findByOrderIdAndMainContractCheck(order.orderId)
+                        subOrderDao.findFirstByOrderEntityOrderId(order.orderId)
                             ?: run {
                                 logger.warn(
                                     String.format(
