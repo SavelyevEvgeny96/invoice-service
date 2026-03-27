@@ -75,9 +75,9 @@ abstract class PaymentPurposeMapper {
 
     private fun Instant.toContractDateFormat(): String =
         "от " +
-        atZone(DEFAULT_ZONE)
-            .toLocalDate()
-            .toContractDateFormat()
+            atZone(DEFAULT_ZONE)
+                .toLocalDate()
+                .toContractDateFormat()
 
     private fun LocalDate.toContractDateFormat(): String = format(DDMMYYYY)
 

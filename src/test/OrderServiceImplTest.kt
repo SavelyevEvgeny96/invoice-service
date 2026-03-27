@@ -13,6 +13,7 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -31,7 +32,7 @@ class OrderServiceImplTest {
     lateinit var clientSystemDao: ClientSystemDao
 
     @Mock
-    lateinit var orderManualMapper: OrderManualMapper
+    lateinit var orderMapper: OrderMapper
 
     private lateinit var service: OrderServiceImpl
 
@@ -49,7 +50,7 @@ class OrderServiceImplTest {
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
-                orderManualMapper = orderManualMapper,
+                orderMapper = orderMapper,
                 clientSystemDao = clientSystemDao,
                 payBasePath = payBasePath,
             )
@@ -61,7 +62,7 @@ class OrderServiceImplTest {
         val savedOrder = mock(OrderEntity::class.java)
         val orderId = UUID.randomUUID()
 
-        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
+        `when`(orderMapper.fromCommand(request)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(orderId)
 
@@ -77,7 +78,7 @@ class OrderServiceImplTest {
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
 
-        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
+        `when`(orderMapper.fromCommand(request)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(UUID.randomUUID())
 
@@ -85,7 +86,7 @@ class OrderServiceImplTest {
         service.createOrder(request)
 
         // then
-        verify(orderManualMapper).toOrderEntity(request, skipSendingErrors)
+        verify(orderMapper).fromCommand(request)
         verify(orderDao).save(orderEntity)
     }
 }
