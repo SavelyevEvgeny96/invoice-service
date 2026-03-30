@@ -18,7 +18,6 @@ import org.hibernate.type.SqlTypes
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import java.util.UUID
 
@@ -89,11 +88,11 @@ class OrderEntity(
     @UpdateTimestamp
     var updateDate: Instant?,
 ) {
-    @OneToMany(cascade = [(CascadeType.PERSIST)], fetch = FetchType.LAZY, mappedBy = "orderEntity")
-    val subOrders: MutableList<SubOrderEntity> = mutableListOf()
+    fun addSubOrder(subOrder: SubOrderEntity) {
+        subOrders.add(subOrder)
+        subOrder.orderEntity = this
+    }
 
-    fun calculatePremiumAmount(): BigDecimal =
-        subOrders
-            .sumOf { it.premiumAmount ?: BigDecimal.ZERO }
-            .setScale(2, RoundingMode.HALF_UP)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderEntity")
+    val subOrders: MutableList<SubOrderEntity> = mutableListOf()
 }

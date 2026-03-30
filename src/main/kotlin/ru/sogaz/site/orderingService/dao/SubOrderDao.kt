@@ -8,5 +8,7 @@ interface SubOrderDao {
 
     fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity?
 
+    fun saveAll(subs: List<SubOrderEntity>): List<SubOrderEntity>
+
     fun findByOrderId(orderId: UUID?): List<SubOrderEntity?>
 }

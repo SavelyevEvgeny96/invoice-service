@@ -5,6 +5,8 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Component
 class OrderManualMapper(
@@ -17,28 +19,27 @@ class OrderManualMapper(
     fun toOrderEntity(
         command: CreateOrderCommand,
         skipSendingErrors: Boolean,
-    ): OrderEntity {
-        val order =
-            orderMapper.fromCommand(command).apply {
-                val subOrders = attachSubOrders(this, command.subOrders)
-                this.subOrders.addAll(subOrders)
+    ): OrderEntity =
+        orderMapper.fromCommand(command).apply {
+            skipSendingErrorsQueue = skipSendingErrors
+            queueStatusResultName = buildQueueStatusResultName(clientId)
+            premiumAmount = calculatePremiumAmount(command.subOrders)
+        }
 
-                skipSendingErrorsQueue = skipSendingErrors
-                queueStatusResultName = buildQueueStatusResultName(clientId)
-                premiumAmount = calculatePremiumAmount()
-            }
-        return order
-    }
-
-    private fun attachSubOrders(
+    fun toSubOrderEntities(
         order: OrderEntity,
-        requests: List<CreateSubOrderCommand>,
+        subOrders: List<CreateSubOrderCommand>,
     ): List<SubOrderEntity> =
-        requests.map { request ->
-            orderMapper.fromCommand(request).apply {
+        subOrders.map { subOrderCommand ->
+            orderMapper.fromCommand(subOrderCommand).apply {
                 orderEntity = order
             }
         }
+
+    private fun calculatePremiumAmount(subOrders: List<CreateSubOrderCommand>): BigDecimal =
+        subOrders
+            .sumOf { it.premiumAmount }
+            .setScale(2, RoundingMode.HALF_UP)
 
     private fun buildQueueStatusResultName(clientId: String?): String? =
         clientId

@@ -11,6 +11,7 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
 
 @Mapper(componentModel = "spring")
 interface OrderRequestCommandMapper {
+    @Mapping(source = "orders", target = "subOrders")
     fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
     fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand

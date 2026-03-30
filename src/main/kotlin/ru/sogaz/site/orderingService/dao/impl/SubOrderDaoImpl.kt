@@ -71,6 +71,8 @@ open class SubOrderDaoImpl(
     override fun findByOrderIdAndMainContractCheck(orderId: UUID?): SubOrderEntity? =
         subOrderRepository.findByOrderEntityOrderIdAndMainContractCheckTrue(orderId)
 
+    override fun saveAll(subs: List<SubOrderEntity>): List<SubOrderEntity> = subOrderRepository.saveAll(subs)
+
     override fun findByOrderId(orderId: UUID?): List<SubOrderEntity?> {
         logger.info(GET_SUB_ORDER_LIST.format(orderId))
         return subOrderRepository.findAllByOrderEntityOrderId(orderId)
