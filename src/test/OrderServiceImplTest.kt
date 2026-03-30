@@ -52,7 +52,7 @@ class OrderServiceImplTest {
         request = mockk()
 
         every { request.clientId } returns ""
-        every { request.subOrders } returns mutableListOf() // 🔥 ВОТ ЭТО НУЖНО
+        every { request.subOrders } returns mutableListOf()
 
         service =
             OrderServiceImpl(

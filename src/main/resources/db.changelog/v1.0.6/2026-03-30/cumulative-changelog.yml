@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-106-add-column-orders
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-106
+  - include:
+      file: db.changelog\v1.0.6\2026-03-30\DATA\add_column_orders.sql
