@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-105-refactor-alter-payment-operation-table
+      author: Sokolov Danila
+      changes:
+        - tagDatabase:
+            tag: backend-105-refactor
+  - include:
+      file: db.changelog\v1.0.5\2026-03-25\DATA\alter_payment_operation_table.sql
