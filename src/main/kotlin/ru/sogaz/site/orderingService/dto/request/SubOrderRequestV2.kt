@@ -13,21 +13,21 @@ import java.time.Instant
 data class SubOrderRequestV2(
     @field:NotNull(message = "{validation.orderRequest.premiumAmount.notNull}")
     @field:Positive(message = "{validation.orderRequest.premiumAmount.positive}")
-    val premiumAmount: BigDecimal = BigDecimal.ZERO,
+    val premium: BigDecimal = BigDecimal.ZERO,
     val policyId: String = "",
     val policyNumber: String = "",
     val policyDate: Instant? = null,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val contractNumber: String? = null,
+    val agreementNumber: String? = null,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val contractId: String? = null,
+    val agreementId: String? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    val contractDate: Instant? = null,
+    val agreementDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    val typeInsurance: String? = null,
-    val insuranceProgram: String? = null,
-    val docType: String? = null,
-    val sendStatusProduct: Boolean? = false,
+    val insuranceKind: String? = null,
+    val program: String? = null,
+    val channel: String? = null,
+    val typeOperation: String? = null,
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
 )

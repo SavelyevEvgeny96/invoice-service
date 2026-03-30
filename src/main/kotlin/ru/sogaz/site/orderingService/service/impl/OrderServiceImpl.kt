@@ -10,6 +10,7 @@ import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingService
 import ru.sogaz.site.filterStarter.services.RequestInfo
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
@@ -35,6 +36,8 @@ import java.util.UUID
 @Transactional(rollbackFor = [Exception::class])
 class OrderServiceImpl(
     private val orderDao: OrderDao,
+    private val orderManualMapper: OrderManualMapper,
+    private val subOrderDao: SubOrderDao,
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
     private val orderMapper: OrderMapper,
@@ -48,10 +51,13 @@ class OrderServiceImpl(
                 ?.skipSendingErrorsQueue
                 ?: false
 
-        val order = orderMapper.fromCommand(command).apply {
-            this.skipSendingErrorsQueue = skipSendingErrorsQueue
-        }
+        val order = orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue)
         val savedOrder = orderDao.save(order)
+
+        val subOrders = orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)
+
+        subOrders.forEach(savedOrder::addSubOrder)
+        subOrderDao.saveAll(subOrders)
 
         return getSuccessResponse(
             RequestInfo.getTraceId(),
