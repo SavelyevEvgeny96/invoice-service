@@ -19,6 +19,7 @@ interface PaymentServiceMapper {
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapCardRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
     @Mapping(target = "depersonalization", source = "params.depersonalization")
+    @Mapping(target = "payerIp", source = "params.payerIP")
     @Mapping(target = "params", source = "params")
     fun orderToCardPayRequest(
         order: OrderEntity,
@@ -34,7 +35,7 @@ interface PaymentServiceMapper {
 
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
-    @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
+    @Mapping(target = "payerIp", source = "params.payerIP")
     @Mapping(target = "params", source = "params")
     fun orderToSbpPayRequest(
         order: OrderEntity,
