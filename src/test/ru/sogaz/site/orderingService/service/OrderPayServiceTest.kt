@@ -15,11 +15,13 @@ import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingService
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_NOT_FOUND
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import java.util.UUID
@@ -35,10 +37,16 @@ class OrderPayServiceTest {
     private lateinit var orderDao: OrderDao
 
     @MockK
+    private lateinit var subOrderDao: SubOrderDao
+
+    @MockK
     private lateinit var paymentService: PaymentService
 
     @MockK
     private lateinit var clientSystemDao: ClientSystemDao
+
+    @RelaxedMockK
+    private lateinit var orderMapper: OrderMapper
 
     @RelaxedMockK
     private lateinit var orderManualMapper: OrderManualMapper
@@ -60,9 +68,11 @@ class OrderPayServiceTest {
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
-                orderManualMapper = orderManualMapper,
+                orderMapper = orderMapper,
                 clientSystemDao = clientSystemDao,
                 payBasePath = "",
+                subOrderDao = subOrderDao,
+                orderManualMapper = orderManualMapper,
             )
         every { orderDao.findById(validUUID) } returns testOrder
         every { paymentService.payCard(testOrder, payQueryParams) } returns paymentPage

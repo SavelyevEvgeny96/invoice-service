@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.service.rabbit.impl
 
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
@@ -104,7 +105,10 @@ class OrderRefundBatchConsumerImpl(
      * @param messages Список сообщений RabbitMQ для обработки.
      * @param channel Канал RabbitMQ, используемый для ACK/Reject сообщений.
      */
-
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-order-refund}"],
+        containerFactory = "batchContainerFactory",
+    )
     override fun handleBatchRefundCreated(
         messages: List<Message>,
         channel: Channel,
@@ -188,7 +192,6 @@ class OrderRefundBatchConsumerImpl(
      * 4. Публикация сообщения на создание чека.
      * 5. ACK при успехе, REJECT для фатальных ошибок, NACK с requeue=true для временных.
      */
-
     override fun handleMessageToOrderRefundStatus(
         messages: Message,
         channel: Channel,
@@ -247,7 +250,7 @@ class OrderRefundBatchConsumerImpl(
 
                     // 3. Поиск subOrder
                     val subOrder =
-                        subOrderDao.findByOrderIdAndMainContractCheck(order.orderId)
+                        subOrderDao.findFirstByOrderEntityOrderId(order.orderId)
                             ?: run {
                                 logger.warn(
                                     String.format(

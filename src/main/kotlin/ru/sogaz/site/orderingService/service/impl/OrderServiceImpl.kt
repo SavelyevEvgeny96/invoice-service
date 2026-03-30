@@ -18,6 +18,7 @@ import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -35,10 +36,11 @@ import java.util.UUID
 @Transactional(rollbackFor = [Exception::class])
 class OrderServiceImpl(
     private val orderDao: OrderDao,
+    private val orderManualMapper: OrderManualMapper,
     private val subOrderDao: SubOrderDao,
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
-    private val orderManualMapper: OrderManualMapper,
+    private val orderMapper: OrderMapper,
     @Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {

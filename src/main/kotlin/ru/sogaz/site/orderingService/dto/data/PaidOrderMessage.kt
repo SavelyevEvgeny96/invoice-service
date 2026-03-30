@@ -10,7 +10,7 @@ data class PaidOrderMessage(
     val externalSystemCode: String? = null,
     val subscriptionId: String?,
     val paySuccess: String?,
-    val subOrders: List<SubOrderPayload>?,
+    val subOrders: List<SubOrderPayload>,
     val issuerName: String?,
     val paymentType: String?,
     val maskedPan: String?,

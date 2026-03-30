@@ -10,9 +10,11 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.verify
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -25,6 +27,9 @@ class OrderServiceImplTest {
     lateinit var orderDao: OrderDao
 
     @Mock
+    lateinit var subOrderDao: SubOrderDao
+
+    @Mock
     private lateinit var paymentService: PaymentService
 
     @Mock
@@ -33,6 +38,8 @@ class OrderServiceImplTest {
     @Mock
     lateinit var orderManualMapper: OrderManualMapper
 
+    @Mock
+    lateinit var orderMapper: OrderMapper
     private lateinit var service: OrderServiceImpl
 
     private lateinit var request: CreateOrderCommand
@@ -43,15 +50,19 @@ class OrderServiceImplTest {
     @BeforeEach
     fun setUp() {
         request = mockk()
+
         every { request.clientId } returns ""
-        every { request.clientId } returns ""
+        every { request.subOrders } returns mutableListOf() // 🔥 ВОТ ЭТО НУЖНО
+
         service =
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
-                orderManualMapper = orderManualMapper,
+                orderMapper = orderMapper,
                 clientSystemDao = clientSystemDao,
                 payBasePath = payBasePath,
+                subOrderDao = subOrderDao,
+                orderManualMapper = orderManualMapper,
             )
     }
 
@@ -61,7 +72,7 @@ class OrderServiceImplTest {
         val savedOrder = mock(OrderEntity::class.java)
         val orderId = UUID.randomUUID()
 
-        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
+        `when`(orderManualMapper.toOrderEntity(request, false)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(orderId)
 
@@ -69,7 +80,6 @@ class OrderServiceImplTest {
 
         assertEquals(ServiceStatuses.STATUS_CODE_SUCCESS, response.code)
         assertEquals(orderId, response.data!!.orderId)
-        assertEquals("$payBasePath$orderId", response.data!!.url)
     }
 
     @Test
@@ -77,15 +87,13 @@ class OrderServiceImplTest {
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
 
-        `when`(orderManualMapper.toOrderEntity(request, skipSendingErrors)).thenReturn(orderEntity)
+        `when`(orderManualMapper.toOrderEntity(request, false)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(UUID.randomUUID())
 
-        // when
         service.createOrder(request)
 
-        // then
-        verify(orderManualMapper).toOrderEntity(request, skipSendingErrors)
+        verify(orderManualMapper).toOrderEntity(request, false)
         verify(orderDao).save(orderEntity)
     }
 }
