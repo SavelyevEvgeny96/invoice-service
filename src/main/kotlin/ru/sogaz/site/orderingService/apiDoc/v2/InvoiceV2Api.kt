@@ -105,7 +105,7 @@ interface InvoiceV2Api {
                                     "  \"urlToReturn\": \"https://www.sogaz.ru/success\",\n" +
                                     "  \"urlToDecline\": \"https://www.sogaz.ru/decline\",\n" +
                                     "  \"externalId\": \"ext-123456\",\n" +
-                                    "  \"bank\": \"GPB\",\n" +
+                                    "  \"bank\": \"gpb\",\n" +
                                     "  \"typePaymentOperation\": \"PAYMENT_CONTRACT\",\n" +
                                     "  \"accountCrossId\": \"account-cross-123\"\n" +
                                     "}",
