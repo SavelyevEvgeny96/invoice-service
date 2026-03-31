@@ -16,6 +16,8 @@ data class CompletedPaymentData(
     val status: PaymentOperationStateEnum,
     val card: ClientCardDetails? = null,
     val bank: String,
+    val paymentBankId: String?,
+    val payerIp: String?,
     val paymentType: String,
     val operationType: OperationTypeEnum,
     val payDate: Instant,

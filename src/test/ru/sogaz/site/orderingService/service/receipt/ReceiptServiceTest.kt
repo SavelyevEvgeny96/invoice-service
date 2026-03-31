@@ -52,6 +52,8 @@ class ReceiptServiceTest {
         private const val FAILED_STATUS = "FAILED"
         private const val TEST_CLIENT_EMAIL = "test@example.com"
         private const val TEST_CONTRACT_NUMBER = "CONT123"
+        private const val PAYER_IP = "PAYER_IP"
+        private const val PAYMENT_BANK_ID = "PAYMENT_BANK_ID"
 
         private val amount: BigDecimal = BigDecimal.TEN
     }
@@ -164,6 +166,7 @@ class ReceiptServiceTest {
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,
+                urlPayPageShort = null
             ).apply {
                 subOrders.add(validSubOrder)
             }
@@ -180,6 +183,8 @@ class ReceiptServiceTest {
                 paymentType = "card",
                 payDate = Instant.now(),
                 errorText = null,
+                paymentBankId = PAYMENT_BANK_ID,
+                payerIp = PAYER_IP,
             )
     }
 

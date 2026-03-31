@@ -40,6 +40,8 @@ class PaymentOperationsServiceTest {
         private const val TEST_CONTRACT_NUMBER = "CONT123"
         private const val KEY_CARD = "KEY_CARD"
         private const val PAYMENT_TYPE = "PAYMENT_TYPE"
+        private const val PAYER_IP = "PAYER_IP"
+        private const val PAYMENT_BANK_ID = "PAYMENT_BANK_ID"
         private val BANK = BankEnum.GPB.name
 
         private val amount: BigDecimal = BigDecimal.TEN
@@ -147,6 +149,7 @@ class PaymentOperationsServiceTest {
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,
+                urlPayPageShort = null
             ).apply {
                 subOrders.add(validSubOrder)
             }
@@ -163,6 +166,8 @@ class PaymentOperationsServiceTest {
                 paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
+                paymentBankId = PAYMENT_BANK_ID,
+                payerIp = PAYER_IP,
             )
     }
 }
