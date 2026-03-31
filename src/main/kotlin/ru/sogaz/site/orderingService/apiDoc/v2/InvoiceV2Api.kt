@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import ru.sogaz.site.orderingService.apiDoc.response.ForbiddenApiResponse
 import ru.sogaz.site.orderingService.apiDoc.response.UnauthorizedApiResponse
 import ru.sogaz.site.orderingService.apiDoc.response.ValidationErrorApiResponse
-import ru.sogaz.site.orderingService.dto.data.DataOrder
+import ru.sogaz.site.orderingService.dto.data.CreateOrderDataV2
 import ru.sogaz.site.orderingService.dto.request.OrderRequestV2
 import ru.sogaz.siter.models.resonses.Response
 
@@ -118,5 +118,5 @@ interface InvoiceV2Api {
         @RequestBody request: OrderRequestV2,
         @Parameter(hidden = true)
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
-    ): Response<DataOrder>
+    ): Response<CreateOrderDataV2>
 }

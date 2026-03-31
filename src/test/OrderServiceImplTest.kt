@@ -1,5 +1,3 @@
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -15,7 +13,6 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.mappers.OrderMapper
-import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import java.util.UUID
@@ -30,7 +27,7 @@ class OrderServiceImplTest {
     lateinit var subOrderDao: SubOrderDao
 
     @Mock
-    private lateinit var paymentService: PaymentService
+    lateinit var paymentService: PaymentService
 
     @Mock
     lateinit var clientSystemDao: ClientSystemDao
@@ -40,19 +37,17 @@ class OrderServiceImplTest {
 
     @Mock
     lateinit var orderMapper: OrderMapper
-    private lateinit var service: OrderServiceImpl
 
+    private lateinit var service: OrderServiceImpl
     private lateinit var request: CreateOrderCommand
 
     private val payBasePath = "https://pay.test/"
-    private val skipSendingErrors = false
 
     @BeforeEach
     fun setUp() {
-        request = mockk()
-
-        every { request.clientId } returns ""
-        every { request.subOrders } returns mutableListOf()
+        request = mock(CreateOrderCommand::class.java)
+        `when`(request.clientId).thenReturn("")
+        `when`(request.subOrders).thenReturn(mutableListOf())
 
         service =
             OrderServiceImpl(
@@ -67,7 +62,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    fun `createOrder returns success response`() {
+    fun `createOrderInternal returns created order result`() {
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
         val orderId = UUID.randomUUID()
@@ -75,25 +70,30 @@ class OrderServiceImplTest {
         `when`(orderManualMapper.toOrderEntity(request, false)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
         `when`(savedOrder.orderId).thenReturn(orderId)
+        `when`(orderManualMapper.toSubOrderEntities(savedOrder, request.subOrders)).thenReturn(emptyList())
 
-        val response = service.createOrder(request)
+        val result = service.createOrderInternal(request)
 
-        assertEquals(ServiceStatuses.STATUS_CODE_SUCCESS, response.code)
-        assertEquals(orderId, response.data!!.orderId)
+        assertEquals(orderId, result.orderId)
+        assertEquals("$payBasePath$orderId", result.paymentUrl)
     }
 
     @Test
-    fun `createOrder calls mapper and dao`() {
+    fun `createOrderInternal calls mapper and dao`() {
         val orderEntity = mock(OrderEntity::class.java)
         val savedOrder = mock(OrderEntity::class.java)
+        val orderId = UUID.randomUUID()
 
         `when`(orderManualMapper.toOrderEntity(request, false)).thenReturn(orderEntity)
         `when`(orderDao.save(orderEntity)).thenReturn(savedOrder)
-        `when`(savedOrder.orderId).thenReturn(UUID.randomUUID())
+        `when`(savedOrder.orderId).thenReturn(orderId)
+        `when`(orderManualMapper.toSubOrderEntities(savedOrder, request.subOrders)).thenReturn(emptyList())
 
-        service.createOrder(request)
+        service.createOrderInternal(request)
 
         verify(orderManualMapper).toOrderEntity(request, false)
         verify(orderDao).save(orderEntity)
+        verify(orderManualMapper).toSubOrderEntities(savedOrder, request.subOrders)
+        verify(subOrderDao).saveAll(emptyList())
     }
 }

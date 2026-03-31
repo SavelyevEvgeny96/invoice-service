@@ -7,23 +7,19 @@ import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_NOT_FOUND
-import ru.sogaz.site.filterStarter.services.RequestInfo
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
-import ru.sogaz.site.orderingService.dto.data.DataOrder
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.CreateOrderResult
 import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.mappers.OrderMapper
-import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
-import ru.sogaz.siter.models.resonses.Response
-import ru.sogaz.siter.models.resonses.getSuccessResponse
 import java.util.UUID
 
 /**
@@ -44,7 +40,7 @@ class OrderServiceImpl(
     @Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {
-    override fun createOrder(command: CreateOrderCommand): Response<DataOrder> {
+    override fun createOrderInternal(command: CreateOrderCommand): CreateOrderResult {
         val skipSendingErrorsQueue =
             clientSystemDao
                 .findBySystemCode(command.clientId)
@@ -59,11 +55,7 @@ class OrderServiceImpl(
         subOrders.forEach(savedOrder::addSubOrder)
         subOrderDao.saveAll(subOrders)
 
-        return getSuccessResponse(
-            RequestInfo.getTraceId(),
-            ServiceStatuses.STATUS_CODE_SUCCESS,
-            savedOrder.toDataOrder(payBasePath),
-        )
+        return savedOrder.toCreateOrderResult(payBasePath)
     }
 
     override fun getOrderStatus(orderId: UUID): DataGetOrderStatus {
@@ -71,9 +63,13 @@ class OrderServiceImpl(
         return DataGetOrderStatus(order.status.desc)
     }
 
-    private fun OrderEntity.toDataOrder(basePath: String): DataOrder {
+    private fun OrderEntity.toCreateOrderResult(basePath: String): CreateOrderResult {
         val id = requireNotNull(orderId)
-        return DataOrder(id, "$basePath$id")
+        return CreateOrderResult(
+            orderId = id,
+            paymentUrl = "$basePath$id",
+            shortPaymentUrl = urlPayPageShort,
+        )
     }
 
     override fun payCard(

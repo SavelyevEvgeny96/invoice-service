@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.consumer
 
 import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dto.data.SentReceiptData
@@ -17,10 +18,10 @@ class OrderReceiptHistoryConsumer(
 ) {
     private val logger = loggerFor(javaClass)
 
-//    @RabbitListener(
-//        queues = ["\${app.rabbit.queue-fill-history-receipts}"],
-//        containerFactory = "concurrentContainerFactory",
-//    )
+    @RabbitListener(
+        queues = ["\${app.rabbit.queue-fill-history-receipts}"],
+        containerFactory = "concurrentContainerFactory",
+    )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     @Transactional(rollbackFor = [Exception::class])
     fun addHistoryRecord(sentReceiptData: SentReceiptData) {

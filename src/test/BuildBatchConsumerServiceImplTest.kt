@@ -113,6 +113,7 @@ class BuildBatchConsumerServiceImplTest {
                 refundDate = Instant.now(),
                 queueStatusResultName = "",
                 depersonalization = false,
+                urlPayPageShort = null,
             )
 
         subOrderEntity =

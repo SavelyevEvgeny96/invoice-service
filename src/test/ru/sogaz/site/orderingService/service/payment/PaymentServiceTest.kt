@@ -111,6 +111,7 @@ class PaymentServiceTest {
             skipSendingQueue = false,
             skipSendingReceipt = false,
             depersonalization = false,
+            urlPayPageShort = null,
         ).apply {
             subOrders.add(createSubOrder())
         }
