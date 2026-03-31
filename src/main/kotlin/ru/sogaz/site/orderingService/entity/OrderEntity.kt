@@ -47,6 +47,8 @@ class OrderEntity(
     var urlToDecline: String?,
     @Column(name = "save_card")
     var saveCard: Boolean?,
+    @Column(name = "url_pay_page_short")
+    var urlPayPageShort: String?,
     @Column(name = "reg_card")
     var regCard: Boolean = false,
     @Enumerated(EnumType.STRING)

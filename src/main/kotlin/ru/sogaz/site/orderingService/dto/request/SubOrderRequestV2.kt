@@ -21,7 +21,6 @@ data class SubOrderRequestV2(
     val agreementNumber: String? = null,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     val agreementId: String? = null,
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     val agreementDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     val insuranceKind: String? = null,

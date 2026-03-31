@@ -24,7 +24,7 @@ data class OrderRequestV2(
     var unifiedId: String? = null,
     var externalId: String? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    var saveCard: Boolean = false,
+    var saveCard: Boolean? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     @field:Future(message = "{validation.orderRequest.date.future}")
     var invoiceEndDate: Instant? = null,
