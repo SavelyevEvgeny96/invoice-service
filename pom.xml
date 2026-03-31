@@ -139,7 +139,7 @@
 		<dependency>
 			<groupId>ru.sogaz.site</groupId>
 			<artifactId>exception-starter</artifactId>
-			<version>1.0.114</version>
+			<version>1.0.119</version>
 		</dependency>
 		<dependency>
 			<groupId>ru.sogaz.site</groupId>
