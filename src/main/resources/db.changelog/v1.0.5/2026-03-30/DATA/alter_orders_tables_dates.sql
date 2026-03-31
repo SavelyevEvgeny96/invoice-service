@@ -1,0 +1,14 @@
+ALTER TABLE orders
+    ALTER COLUMN refund_date TYPE TIMESTAMPTZ USING refund_date AT TIME ZONE 'UTC';
+
+ALTER TABLE payment_operations
+    ALTER COLUMN update_date TYPE TIMESTAMPTZ USING update_date AT TIME ZONE 'UTC';
+
+ALTER TABLE receipts
+    ALTER COLUMN create_date TYPE TIMESTAMPTZ USING create_date AT TIME ZONE 'UTC',
+    ALTER COLUMN update_date TYPE TIMESTAMPTZ USING update_date AT TIME ZONE 'UTC',
+    ALTER COLUMN sending_time TYPE TIMESTAMPTZ USING sending_time AT TIME ZONE 'UTC';
+
+ALTER TABLE sub_orders
+    ALTER COLUMN policy_date TYPE TIMESTAMPTZ USING policy_date AT TIME ZONE 'UTC',
+    ALTER COLUMN contract_date TYPE TIMESTAMPTZ USING contract_date AT TIME ZONE 'UTC';
