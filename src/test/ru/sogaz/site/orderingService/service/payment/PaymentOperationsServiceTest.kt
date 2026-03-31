@@ -149,7 +149,7 @@ class PaymentOperationsServiceTest {
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,
-                urlPayPageShort = null
+                urlPayPageShort = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }
