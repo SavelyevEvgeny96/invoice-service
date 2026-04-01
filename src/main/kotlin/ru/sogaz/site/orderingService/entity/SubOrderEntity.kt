@@ -48,6 +48,8 @@ class SubOrderEntity(
     var premiumAmount: BigDecimal?,
     @Column(name = "manager_email")
     var managerEmail: String?,
+    @Column(name = "type_operation")
+    var typeOperation: String?,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant?,

@@ -142,6 +142,7 @@ class ReceiptServiceTest {
                 updateDate = null,
                 contractDate = null,
                 policyDate = null,
+                typeOperation = null,
             )
         validOrder =
             OrderEntity(
@@ -167,6 +168,7 @@ class ReceiptServiceTest {
                 createDate = null,
                 updateDate = null,
                 urlPayPageShort = null,
+                typePaymentOperation = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }
