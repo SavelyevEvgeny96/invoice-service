@@ -7,6 +7,7 @@ import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.SentReceiptData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.ReceiptEntity
+import ru.sogaz.site.orderingService.enums.TypeInsuranceEnum
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest.ReceiptTypeEnum
 import ru.sogaz.site.payment.receipt.client.model.PaymentReceiptCreateRequest.SystemEnum
@@ -20,7 +21,11 @@ interface ReceiptMapper {
     companion object {
         @JvmStatic
         @Named("mapToProduct")
-        fun mapChannel(order: OrderEntity): String? = order.subOrders.firstOrNull()?.typeInsurance
+        fun mapChannel(order: OrderEntity): String? {
+            val subOrder = order.subOrders.firstOrNull()
+            val typeInsurance = subOrder?.typeInsurance?.uppercase()
+            return typeInsurance?.let(TypeInsuranceEnum::valueOf)?.name
+        }
     }
 
     @Mapping(target = "client", source = "order")
