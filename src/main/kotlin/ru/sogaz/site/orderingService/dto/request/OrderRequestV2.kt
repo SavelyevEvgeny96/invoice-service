@@ -13,7 +13,7 @@ import java.time.Instant
  * DTO для запроса на создание заказа v2.
  */
 data class OrderRequestV2(
-    @get:Valid
+    @field:Valid
     var invoices: MutableList<SubOrderRequestV2> = mutableListOf(),
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")

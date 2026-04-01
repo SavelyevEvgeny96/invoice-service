@@ -26,7 +26,8 @@ data class SubOrderRequestV2(
     val insuranceKind: String? = null,
     val program: String? = null,
     val channel: String? = null,
-    val typeOperation: String? = null,
+    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
+    var typeOperation: String = "",
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
 )

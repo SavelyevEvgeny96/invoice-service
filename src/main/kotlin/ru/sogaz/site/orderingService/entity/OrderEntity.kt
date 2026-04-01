@@ -41,6 +41,8 @@ class OrderEntity(
     var subscriptionId: String?,
     @Column(name = "key_card")
     var keyCard: String?,
+    @Column(name = "type_payment_operation")
+    var typePaymentOperation: String?,
     @Column(name = "url_to_return")
     var urlToReturn: String?,
     @Column(name = "url_to_decline")
