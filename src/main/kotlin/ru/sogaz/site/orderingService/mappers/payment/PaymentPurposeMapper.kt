@@ -43,7 +43,7 @@ abstract class PaymentPurposeMapper {
     private fun SubOrderEntity.makeCardPayDescriptionForOneContract(opDate: String): String =
         PAY_CARD_ONE_CONTRACT_INFO.format(
             contractNumber,
-            contractDate?.toContractDateFormat(),
+            contractDate?.toContractDateFormat() ?: "",
             opDate,
         )
 
