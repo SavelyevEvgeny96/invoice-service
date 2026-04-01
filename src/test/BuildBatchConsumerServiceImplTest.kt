@@ -114,6 +114,7 @@ class BuildBatchConsumerServiceImplTest {
                 queueStatusResultName = "",
                 depersonalization = false,
                 urlPayPageShort = null,
+                typePaymentOperation = null,
             )
 
         subOrderEntity =
@@ -135,6 +136,7 @@ class BuildBatchConsumerServiceImplTest {
                 policyDate = Instant.now(),
                 updateDate = Instant.now(),
                 contractDate = Instant.now(),
+                typeOperation = null,
             )
 
         paymentEvent =

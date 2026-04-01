@@ -125,6 +125,7 @@ class PaymentOperationsServiceTest {
                 updateDate = null,
                 contractDate = null,
                 policyDate = null,
+                typeOperation = null,
             )
         validOrder =
             OrderEntity(
@@ -150,6 +151,7 @@ class PaymentOperationsServiceTest {
                 createDate = null,
                 updateDate = null,
                 urlPayPageShort = null,
+                typePaymentOperation = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }
