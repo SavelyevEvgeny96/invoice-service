@@ -8,10 +8,12 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dto.data.SentReceiptData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.service.order.OrderStatusService
 import ru.sogaz.site.orderingService.service.receipt.ReceiptService
 
 @Component
 class OrderReceiptHistoryConsumer(
+    private val orderStatusService: OrderStatusService,
     private val receiptService: ReceiptService,
 ) {
     private val logger = loggerFor(javaClass)
@@ -24,7 +26,10 @@ class OrderReceiptHistoryConsumer(
     @Transactional(rollbackFor = [Exception::class])
     fun addHistoryRecord(sentReceiptData: SentReceiptData) {
         try {
-            receiptService.saveSentReceiptRecord(sentReceiptData)
+            orderStatusService.updateOrderReceiptState(sentReceiptData)
+            if (sentReceiptData.receiptId != null) {
+                receiptService.saveSentReceiptRecord(sentReceiptData)
+            }
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         }
