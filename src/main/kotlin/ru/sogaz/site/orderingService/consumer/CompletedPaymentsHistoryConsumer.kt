@@ -21,7 +21,6 @@ class CompletedPaymentsHistoryConsumer(
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    @Transactional(rollbackFor = [Exception::class])
     fun addHistoryRecord(completedPaymentData: CompletedPaymentData) {
         try {
             paymentOperationsService.saveOperation(completedPaymentData)

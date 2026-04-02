@@ -23,7 +23,6 @@ class OrderReceiptHistoryConsumer(
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    @Transactional(rollbackFor = [Exception::class])
     fun addHistoryRecord(sentReceiptData: SentReceiptData) {
         try {
             orderStatusService.updateOrderReceiptState(sentReceiptData)
@@ -32,6 +31,8 @@ class OrderReceiptHistoryConsumer(
             }
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
+        } catch (ex: Exception) {
+            logger.error(ex.message)
         }
     }
 
