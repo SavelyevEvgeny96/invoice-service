@@ -22,9 +22,13 @@ interface ReceiptMapper {
         @JvmStatic
         @Named("mapToProduct")
         fun mapChannel(order: OrderEntity): String? {
-            val subOrder = order.subOrders.firstOrNull()
-            val typeInsurance = subOrder?.typeInsurance?.uppercase()
-            return typeInsurance?.let(TypeInsuranceEnum::valueOf)?.name
+            try {
+                val subOrder = order.subOrders.firstOrNull()
+                val typeInsurance = subOrder?.typeInsurance?.uppercase()
+                return typeInsurance?.let(TypeInsuranceEnum::valueOf)?.name
+            } catch (_: Exception) {
+                return null
+            }
         }
     }
 
