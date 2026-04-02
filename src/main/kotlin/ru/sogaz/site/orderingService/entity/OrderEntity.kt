@@ -63,6 +63,8 @@ class OrderEntity(
     var paymentEndDate: Instant?,
     @Column(name = "refund_date")
     var refundDate: Instant?,
+    @Column(name = "version_api")
+    var versionApi: String?,
     @Column(name = "premium_amount", precision = 19, scale = 2)
     var premiumAmount: BigDecimal?,
     @Column(name = "recipient_email", nullable = false)

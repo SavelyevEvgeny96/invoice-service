@@ -49,6 +49,7 @@ app:
     group_Id: ${PROJECT_GROUPID:ru.sogaz.site}
     app_profile: ${ENVIRONMENT:local}
     java-version: ${JAVA_VERSION:21}
+
   rabbit:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
@@ -90,6 +91,7 @@ api:
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
+    hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
 
 resilience4j:
   retry:

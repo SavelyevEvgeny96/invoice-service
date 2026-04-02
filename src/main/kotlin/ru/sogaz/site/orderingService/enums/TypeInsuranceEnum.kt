@@ -7,5 +7,5 @@ enum class TypeInsuranceEnum {
     NSFL,
     VPMG,
     IFL,
-    MORTGAGE
+    MORTGAGE,
 }
