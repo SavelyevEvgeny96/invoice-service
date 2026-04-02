@@ -7,7 +7,11 @@ import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
 
 @Mapper
 interface PaymentOperationMapper {
-    @Mapping(target = "state", source = "completedPaymentData.status")
-    @Mapping(target = "type", source = "completedPaymentData.paymentType")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "state", source = "status")
+    @Mapping(target = "type", source = "paymentType")
+    @Mapping(target = "operation", source = "operationType")
+    @Mapping(target = "amount", source = "totalAmount")
+    @Mapping(target = "pan", source = "card.maskedPan")
     fun fromCompletedPayment(completedPaymentData: CompletedPaymentData): PaymentOperationEntity
 }
