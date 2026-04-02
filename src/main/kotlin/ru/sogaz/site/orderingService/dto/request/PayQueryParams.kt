@@ -15,4 +15,8 @@ data class PayQueryParams(
     @field:Parameter(description = "Флаг необходимости анонимизированной оплаты")
     @field:Schema(defaultValue = "false")
     val depersonalization: Boolean = false,
+    @field:Parameter(description = "Канал продажи")
+    val channelSale: String? = null,
+    @field:Parameter(description = "IP пользователя, который совершает оплату")
+    val payerIP: String? = null,
 )

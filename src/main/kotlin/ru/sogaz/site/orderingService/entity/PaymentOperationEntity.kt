@@ -12,6 +12,8 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.UpdateTimestamp
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
@@ -21,12 +23,19 @@ class PaymentOperationEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID?,
-    var state: String,
+    var paymentId: UUID?,
+    @Enumerated(EnumType.STRING)
+    var state: PaymentOperationStateEnum,
     @Enumerated(EnumType.STRING)
     var bank: BankEnum,
+    var operation: String,
     var type: String,
+    var amount: BigDecimal,
     var depersonalization: Boolean = false,
-    var payDate: Instant,
+    var paymentBankId: String?,
+    var pan: String?,
+    var payDate: Instant?,
+    var payerIp: String?,
     var errorText: String?,
     @UpdateTimestamp
     var updateDate: Instant?,

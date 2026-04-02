@@ -19,7 +19,6 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OperationTypeEnum
-import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.mappers.payment.CompletedPaymentMapper
@@ -38,6 +37,8 @@ class OrderStatusServiceTest {
         private const val TEST_CONTRACT_NUMBER = "CONT123"
         private const val KEY_CARD = "KEY_CARD"
         private const val PAYMENT_TYPE = "PAYMENT_TYPE"
+        private const val PAYER_IP = "PAYER_IP"
+        private const val PAYMENT_BANK_ID = "PAYMENT_BANK_ID"
         private val BANK = BankEnum.GPB.name
 
         private val amount: BigDecimal = BigDecimal.TEN
@@ -152,6 +153,8 @@ class OrderStatusServiceTest {
                 paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
+                paymentBankId = PAYMENT_BANK_ID,
+                payerIp = PAYER_IP,
             )
     }
 }

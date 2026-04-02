@@ -8,20 +8,19 @@ import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
 import ru.sogaz.site.orderingService.dto.data.SubOrderPayload
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
-import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-@Mapper(imports = [PaymentOperationStateEnum::class])
+@Mapper
 interface PaidOrderMessagesMapper {
     companion object {
         @JvmStatic
         @Named("instantToFormattedString")
-        fun instantToFormattedString(dateTime: Instant): String =
+        fun instantToFormattedString(dateTime: Instant?): String? =
             dateTime
-                .atZone(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                ?.atZone(ZoneOffset.UTC)
+                ?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         @JvmStatic
         @Named("instantToEpochMilli")
@@ -36,7 +35,6 @@ interface PaidOrderMessagesMapper {
         target = "paySuccess",
         source = "completedPaymentData.payDate",
         qualifiedByName = ["instantToFormattedString"],
-        conditionExpression = "java( completedPaymentData.getStatus().equals(PaymentOperationStateEnum.SUCCESS) )",
     )
     @Mapping(target = "orderId", source = "order.orderId")
     @Mapping(target = "externalSystemCode", source = "order.clientId")

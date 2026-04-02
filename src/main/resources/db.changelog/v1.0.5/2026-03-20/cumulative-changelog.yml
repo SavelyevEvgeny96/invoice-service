@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-105-refactor-add-receipts-table
+      author: Sokolov Danila
+      changes:
+        - tagDatabase:
+            tag: backend-105-refactor
+  - include:
+      file: db.changelog\v1.0.5\2026-03-20\DATA\add_receipts_table.sql
