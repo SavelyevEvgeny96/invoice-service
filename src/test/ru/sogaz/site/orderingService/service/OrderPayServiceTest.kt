@@ -21,9 +21,9 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
-import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
+import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
@@ -46,9 +46,6 @@ class OrderPayServiceTest {
     private lateinit var clientSystemDao: ClientSystemDao
 
     @RelaxedMockK
-    private lateinit var orderMapper: OrderMapper
-
-    @RelaxedMockK
     private lateinit var orderManualMapper: OrderManualMapper
 
     private lateinit var orderService: OrderServiceImpl
@@ -59,8 +56,13 @@ class OrderPayServiceTest {
     @RelaxedMockK
     private lateinit var testOrder: OrderEntity
 
+    @MockK
+    private lateinit var shortLinksIntegration: ShortLinksIntegration
+
     @RelaxedMockK
     private lateinit var paymentPage: PaymentPage
+    private val hostNameApp = "https://pay.test2/"
+    private val payBasePath = "https://pay.test/"
 
     @BeforeEach
     fun beforeEach() {
@@ -68,11 +70,12 @@ class OrderPayServiceTest {
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
-                orderMapper = orderMapper,
                 clientSystemDao = clientSystemDao,
-                payBasePath = "",
+                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
+                hostNameApp = hostNameApp,
+                shortLinksIntegration = shortLinksIntegration,
             )
         every { orderDao.findById(validUUID) } returns testOrder
         every { paymentService.payCard(testOrder, payQueryParams) } returns paymentPage

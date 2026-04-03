@@ -70,6 +70,7 @@ class OrdersUserServiceImplTest {
                 depersonalization = false,
                 urlPayPageShort = null,
                 typePaymentOperation = null,
+                versionApi = null,
             )
 
         subOrderEntity =

@@ -152,6 +152,7 @@ class PaymentOperationsServiceTest {
                 updateDate = null,
                 urlPayPageShort = null,
                 typePaymentOperation = null,
+                versionApi = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }

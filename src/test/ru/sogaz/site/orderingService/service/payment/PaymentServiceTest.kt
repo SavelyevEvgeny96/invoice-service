@@ -113,6 +113,7 @@ class PaymentServiceTest {
             depersonalization = false,
             urlPayPageShort = null,
             typePaymentOperation = null,
+            versionApi = null,
         ).apply {
             subOrders.add(createSubOrder())
         }
