@@ -22,4 +22,5 @@ data class CreateOrderCommand(
     var typePaymentOperation: String? = "",
     var externalId: String? = null,
     var accountCrossId: String = "",
+    var apiVersion: String = "",
 )

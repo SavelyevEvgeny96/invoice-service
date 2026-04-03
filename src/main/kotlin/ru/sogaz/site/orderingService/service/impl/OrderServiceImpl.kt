@@ -1,5 +1,4 @@
 package ru.sogaz.site.orderingService.service.impl
-
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,9 +16,12 @@ import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
-import ru.sogaz.site.orderingService.mappers.OrderMapper
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
+import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
+import ru.sogaz.site.shortlinks.client.model.ShortLinkRequest
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 /**
@@ -36,10 +38,16 @@ class OrderServiceImpl(
     private val subOrderDao: SubOrderDao,
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
-    private val orderMapper: OrderMapper,
+    private val shortLinksIntegration: ShortLinksIntegration,
+    @Value("\${api.payment.hostNameApp}")
+    private val hostNameApp: String,
     @Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {
+    companion object {
+        const val SUFFIX = "payment/p/"
+    }
+
     override fun createOrderInternal(command: CreateOrderCommand): CreateOrderResult {
         val skipSendingErrorsQueue =
             clientSystemDao
@@ -47,11 +55,18 @@ class OrderServiceImpl(
                 ?.skipSendingErrorsQueue
                 ?: false
 
-        val order = orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue)
+        val order =
+            orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue).apply {
+                versionApi = command.apiVersion
+            }
+
+        if (command.apiVersion.contains("V2")) {
+            enrichWithShortLink(order)
+        }
+
         val savedOrder = orderDao.save(order)
 
         val subOrders = orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)
-
         subOrders.forEach(savedOrder::addSubOrder)
         subOrderDao.saveAll(subOrders)
 
@@ -99,4 +114,28 @@ class OrderServiceImpl(
             order.status.isAvailable().not() -> throw BusinessException(ERROR_CODE_ORDER_CLOSED)
             else -> {}
         }
+
+    private fun calculateExpireDays(paymentEndDate: Instant?): Int {
+        val now = Instant.now()
+
+        val days = ChronoUnit.DAYS.between(now, paymentEndDate)
+
+        return days.coerceAtLeast(0).toInt()
+    }
+
+    private fun enrichWithShortLink(order: OrderEntity) {
+        val longUrl = "$hostNameApp$SUFFIX${order.orderId}"
+
+        val expireDays = calculateExpireDays(order.paymentEndDate)
+
+        val request =
+            ShortLinkRequest().apply {
+                longUrl(longUrl)
+                maxVisits(100)
+                expireDays(expireDays)
+            }
+
+        val shortLink = shortLinksIntegration.createShortLink(request)
+        order.urlPayPageShort = shortLink?.data?.shortLink
+    }
 }

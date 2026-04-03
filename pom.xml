@@ -146,6 +146,12 @@
 			<artifactId>filter-starter</artifactId>
 			<version>1.0.5</version>
 		</dependency>
+        <!-- API-CLIENT -->
+        <dependency>
+            <groupId>ru.sogaz.site</groupId>
+            <artifactId>short-links-api-client</artifactId>
+            <version>0.0.3</version>
+        </dependency>
         <dependency>
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-api-client</artifactId>
@@ -165,11 +171,6 @@
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-receipt-api-client</artifactId>
             <version>0.0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.sogaz.site</groupId>
-            <artifactId>logging-starter</artifactId>
-            <version>1.0.11</version>
         </dependency>
 		<!-- Shedlock -->
 		<dependency>
