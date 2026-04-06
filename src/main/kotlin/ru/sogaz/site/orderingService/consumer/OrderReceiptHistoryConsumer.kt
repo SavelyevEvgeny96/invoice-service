@@ -4,7 +4,6 @@ import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.amqp.ImmediateRequeueAmqpException
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dto.data.SentReceiptData
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor

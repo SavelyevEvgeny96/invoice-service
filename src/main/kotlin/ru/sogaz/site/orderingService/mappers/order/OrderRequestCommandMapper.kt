@@ -12,7 +12,7 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
 @Mapper(componentModel = "spring")
 interface OrderRequestCommandMapper {
     @Mapping(source = "orders", target = "subOrders")
-    @Mapping(constant = "V1", target = "apiVersion")
+    @Mapping(constant = "V1", target = "versionApi")
     fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
     fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
@@ -21,7 +21,7 @@ interface OrderRequestCommandMapper {
     @Mapping(source = "email", target = "recipientEmail")
     @Mapping(source = "phoneNumber", target = "recipientPhone")
     @Mapping(source = "invoiceEndDate", target = "orderEndDate")
-    @Mapping(constant = "V2", target = "apiVersion")
+    @Mapping(constant = "V2", target = "versionApi")
     fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
     @Mapping(constant = "false", target = "mainContractCheck")

@@ -11,6 +11,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.payment.PaymentOperationsService
 
 @Component
+@Transactional
 class CompletedPaymentsHistoryConsumer(
     private val paymentOperationsService: PaymentOperationsService,
 ) {

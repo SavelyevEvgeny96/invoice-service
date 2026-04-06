@@ -14,6 +14,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.type.SqlTypes
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
@@ -63,8 +64,9 @@ class OrderEntity(
     var paymentEndDate: Instant?,
     @Column(name = "refund_date")
     var refundDate: Instant?,
+    @Enumerated(EnumType.STRING)
     @Column(name = "version_api")
-    var versionApi: String?,
+    var versionApi: ApiVersionEnum?,
     @Column(name = "premium_amount", precision = 19, scale = 2)
     var premiumAmount: BigDecimal?,
     @Column(name = "recipient_email", nullable = false)
