@@ -7,14 +7,17 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
 
 @Component
+@Transactional
 class OrderStatusSendConsumer(
     private val orderDao: OrderDao,
-    private val orderPaymentStatusEventProducer: OrderPaymentStatusEventProducer,
+    private val orderStatusEventProducer: OrderPaymentStatusEventProducer,
+    private val invoiceStatusEventProducer: OrderPaymentStatusEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 
@@ -26,7 +29,10 @@ class OrderStatusSendConsumer(
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
-            orderPaymentStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+            when(order.versionApi) {
+                ApiVersionEnum.V2 -> invoiceStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+                else -> orderStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+            }
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
         } catch (ex: IllegalArgumentException) {

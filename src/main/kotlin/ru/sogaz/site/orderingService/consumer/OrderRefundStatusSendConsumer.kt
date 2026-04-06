@@ -12,6 +12,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.producer.OrderRefundStatusEventProducer
 
 @Component
+@Transactional
 class OrderRefundStatusSendConsumer(
     private val orderDao: OrderDao,
     private val orderRefundStatusEventProducer: OrderRefundStatusEventProducer,

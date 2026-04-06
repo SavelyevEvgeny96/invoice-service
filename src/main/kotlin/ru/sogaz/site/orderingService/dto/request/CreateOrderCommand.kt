@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.dto.request
 
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.BankEnum
 import java.time.Instant
 import java.util.UUID
@@ -22,5 +23,5 @@ data class CreateOrderCommand(
     var typePaymentOperation: String? = "",
     var externalId: String? = null,
     var accountCrossId: String = "",
-    var apiVersion: String = "",
+    var versionApi: ApiVersionEnum = ApiVersionEnum.V1,
 )

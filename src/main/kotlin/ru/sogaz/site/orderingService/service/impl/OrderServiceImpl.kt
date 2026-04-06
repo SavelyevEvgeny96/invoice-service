@@ -15,6 +15,7 @@ import ru.sogaz.site.orderingService.dto.response.CreateOrderResult
 import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -57,10 +58,10 @@ class OrderServiceImpl(
 
         val order =
             orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue).apply {
-                versionApi = command.apiVersion
+                versionApi = command.versionApi
             }
 
-        if (command.apiVersion.contains("V2")) {
+        if (command.versionApi == ApiVersionEnum.V2) {
             enrichWithShortLink(order)
         }
 

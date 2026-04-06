@@ -13,11 +13,11 @@ import java.time.format.DateTimeFormatter
 @Mapper
 abstract class PaymentPurposeMapper {
     companion object {
-        private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s от %s. Платежный сервис, дата операции %s"
+        private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s%s. Платежный сервис, дата операции %s"
         private const val PAY_SBP_ONE_CONTRACT_INFO =
             "Зачисление по операции СБП договора СБП-001-8/21 от 19.09.2022." +
                 " Оплата по договору страхования %s, дата операции %s"
-        private const val CONTRACT_INFO = "%s %s"
+        private const val CONTRACT_INFO = "%s%s"
         private const val PARAM = "param"
         private const val EMPTY_PAY_INFO = "Платежный сервис, дата операции %s"
         private const val EMPTY_SUB_ORDERS = "В заказе отсутствуют контракты"
@@ -74,7 +74,7 @@ abstract class PaymentPurposeMapper {
         }
 
     private fun Instant.toContractDateFormat(): String =
-        "от " +
+        " от " +
             atZone(DEFAULT_ZONE)
                 .toLocalDate()
                 .toContractDateFormat()
@@ -92,5 +92,5 @@ abstract class PaymentPurposeMapper {
         subOrder: SubOrderEntity,
     ): Pair<String, String> = "${PARAM}${idx + 1}" to subOrder.toParamValue()
 
-    private fun SubOrderEntity.toParamValue(): String = CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat())
+    private fun SubOrderEntity.toParamValue(): String = CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat() ?: "")
 }

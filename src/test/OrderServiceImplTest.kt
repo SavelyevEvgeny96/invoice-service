@@ -14,6 +14,7 @@ import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -56,7 +57,7 @@ class OrderServiceImplTest {
 
         whenever(command.clientId).thenReturn("")
         whenever(command.subOrders).thenReturn(mutableListOf())
-        whenever(command.apiVersion).thenReturn("V1")
+        whenever(command.versionApi).thenReturn(ApiVersionEnum.V1)
 
         // не вызываем command.clientId внутри whenever(...)
         whenever(clientSystemDao.findBySystemCode("")).thenReturn(null)
@@ -80,7 +81,7 @@ class OrderServiceImplTest {
         val savedOrder = mock<OrderEntity>()
         val orderId = UUID.randomUUID()
 
-        whenever(command.apiVersion).thenReturn("V1")
+        whenever(command.versionApi).thenReturn(ApiVersionEnum.V1)
         whenever(orderManualMapper.toOrderEntity(command, false)).thenReturn(orderEntity)
         whenever(orderDao.save(orderEntity)).thenReturn(savedOrder)
         whenever(savedOrder.orderId).thenReturn(orderId)
@@ -104,7 +105,7 @@ class OrderServiceImplTest {
         val orderEntity = mock<OrderEntity>()
         val savedOrder = mock<OrderEntity>()
 
-        whenever(command.apiVersion).thenReturn("V2")
+        whenever(command.versionApi).thenReturn(ApiVersionEnum.V2)
         whenever(orderManualMapper.toOrderEntity(command, false)).thenReturn(orderEntity)
 
         whenever(orderEntity.orderId).thenReturn(orderId)
