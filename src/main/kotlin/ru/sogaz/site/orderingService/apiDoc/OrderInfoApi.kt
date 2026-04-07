@@ -19,7 +19,6 @@ interface OrderInfoApi {
     @GetMapping("v1/order/info/{orderId}")
     fun getInfoPage(
         @PathVariable orderId: UUID,
-        @Parameter(hidden = true)
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
     ): Response<CompletedPaymentInfo?>
 }
