@@ -11,9 +11,9 @@
 	</parent>
 
 	<groupId>ru.sogaz.site</groupId>
-	<artifactId>ordering-service</artifactId>
+	<artifactId>invoice-service</artifactId>
 	<version>0.0.1</version>
-	<name>ordering-service</name>
+	<name>invoice-service</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
