@@ -11,14 +11,14 @@ import ru.sogaz.site.orderingService.dto.response.CompletedPaymentInfo
 import ru.sogaz.siter.models.resonses.Response
 import java.util.UUID
 
-interface OrderInfoApi {
+interface InvoiceInfoApi {
     @Operation(
         summary = "Информация о совершенных по заказу платежах",
     )
     @Parameter(name = "orderId", description = "UUID заказа", required = true, schema = Schema(type = "string", format = "uuid"))
     @GetMapping("v1/order/info/{orderId}")
-    fun getInfoPage(
-        @PathVariable orderId: UUID,
+    fun getInvoiceInfo(
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
+        @PathVariable orderId: UUID,
     ): Response<CompletedPaymentInfo?>
 }

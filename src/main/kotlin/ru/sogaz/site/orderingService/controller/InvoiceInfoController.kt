@@ -2,7 +2,7 @@ package ru.sogaz.site.orderingService.controller
 
 import org.springframework.web.bind.annotation.RestController
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
-import ru.sogaz.site.orderingService.apiDoc.OrderInfoApi
+import ru.sogaz.site.orderingService.apiDoc.InvoiceInfoApi
 import ru.sogaz.site.orderingService.dto.response.CompletedPaymentInfo
 import ru.sogaz.site.orderingService.service.AuthorizationService
 import ru.sogaz.site.orderingService.service.order.OrderInfoService
@@ -11,17 +11,17 @@ import ru.sogaz.siter.models.resonses.getSuccessResponse
 import java.util.UUID
 
 @RestController
-class OrderInfoController(
+class InvoiceInfoController(
     private val orderInfoService: OrderInfoService,
     private val authorizationService: AuthorizationService,
-) : OrderInfoApi {
+) : InvoiceInfoApi {
     companion object {
         private const val SUCCESS_CODE = 1101521200
     }
 
-    override fun getInfoPage(
-        orderId: UUID,
+    override fun getInvoiceInfo(
         authorization: String,
+        orderId: UUID,
     ): Response<CompletedPaymentInfo?> {
         authorizationService.checkPermissionByClientId(authorization)
         return orderInfoService
