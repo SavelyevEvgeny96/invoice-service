@@ -1,7 +1,6 @@
 package ru.sogaz.site.orderingService.service.payment.impl
 
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.PaymentOperationDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData

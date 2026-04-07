@@ -29,7 +29,7 @@ class OrderStatusSendConsumer(
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
-            when(order.versionApi) {
+            when (order.versionApi) {
                 ApiVersionEnum.V2 -> invoiceStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
                 else -> orderStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
             }

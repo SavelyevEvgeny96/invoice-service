@@ -19,7 +19,7 @@ class InvoiceInfoController(
         private const val SUCCESS_CODE = 1101521200
     }
 
-    override fun getInvoiceInfo(
+    override fun getCompletedOrderInfo(
         authorization: String,
         orderId: UUID,
     ): Response<CompletedPaymentInfo?> {

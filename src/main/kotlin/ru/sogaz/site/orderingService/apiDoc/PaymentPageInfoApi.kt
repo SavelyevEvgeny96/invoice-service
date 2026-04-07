@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
+import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
 import ru.sogaz.siter.models.resonses.Response
 import java.util.UUID
 
@@ -24,4 +25,16 @@ interface PaymentPageInfoApi {
         saveCard: Boolean = false,
         unifiedId: String?,
     ): Response<DataOrderPaymentPageInfo>
+
+    @Operation(summary = "Информация о счете")
+    @Parameter(
+        name = "invoiceId",
+        description = "UUID счета для оплаты",
+        required = true,
+        schema = Schema(type = "string", format = "uuid"),
+    )
+    @GetMapping("v1/invoice/metainfo/{invoiceId}")
+    fun getMetaInfo(
+        @PathVariable invoiceId: UUID,
+    ): Response<InvoiceMetaInfo>
 }
