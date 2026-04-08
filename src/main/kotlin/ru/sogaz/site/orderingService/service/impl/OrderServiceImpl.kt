@@ -40,15 +40,13 @@ class OrderServiceImpl(
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
     private val shortLinksIntegration: ShortLinksIntegration,
-    @Value("\${api.payment.hostNameApp}")
+    @param:Value("\${api.payment.hostNameApp}")
     private val hostNameApp: String,
-    @Value("\${api.payment.paymentUrl}")
+    @param:Value("\${api.payment.paymentUrlSuffix}")
+    private val paymentUrlSuffix: String,
+    @param:Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {
-    companion object {
-        const val SUFFIX = "payment/p/"
-    }
-
     override fun createOrderInternal(command: CreateOrderCommand): CreateOrderResult {
         val skipSendingErrorsQueue =
             clientSystemDao
@@ -125,7 +123,7 @@ class OrderServiceImpl(
     }
 
     private fun enrichWithShortLink(order: OrderEntity) {
-        val longUrl = "$hostNameApp$SUFFIX${order.orderId}"
+        val longUrl = "$hostNameApp$paymentUrlSuffix${order.orderId}"
 
         val expireDays = calculateExpireDays(order.paymentEndDate)
 
