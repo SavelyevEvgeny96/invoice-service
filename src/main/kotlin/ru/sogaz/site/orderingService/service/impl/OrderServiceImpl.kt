@@ -119,7 +119,7 @@ class OrderServiceImpl(
 
         val days = ChronoUnit.DAYS.between(now, paymentEndDate)
 
-        return days.coerceAtLeast(1).toInt()
+        return days.coerceAtLeast(1).coerceAtMost(60).toInt()
     }
 
     private fun enrichWithShortLink(order: OrderEntity) {
