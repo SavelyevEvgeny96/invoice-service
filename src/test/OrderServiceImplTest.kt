@@ -49,7 +49,8 @@ class OrderServiceImplTest {
     private lateinit var command: CreateOrderCommand
 
     private val payBasePath = "https://pay.test/"
-    private val hostNameApp = "https://pay.test2/"
+    private val hostNameApp = "https://pay.test2"
+    private val paymentUrlSuffix = "/payment/p/"
 
     @BeforeEach
     fun setUp() {
@@ -71,6 +72,7 @@ class OrderServiceImplTest {
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
                 hostNameApp = hostNameApp,
+                paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
             )
     }
@@ -126,7 +128,7 @@ class OrderServiceImplTest {
 
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
-        assertEquals("${hostNameApp}payment/p/$orderId", requestToShortLink.longUrl)
+        assertEquals("$hostNameApp$paymentUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
         verify(subOrderDao).saveAll(emptyList())

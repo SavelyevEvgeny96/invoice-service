@@ -62,7 +62,8 @@ class OrderPayServiceTest {
     @RelaxedMockK
     private lateinit var paymentPage: PaymentPage
     private val hostNameApp = "https://pay.test2/"
-    private val payBasePath = "https://pay.test/"
+    private val payBasePath = "https://pay.test"
+    private val paymentUrlSuffix = "/payment/p/"
 
     @BeforeEach
     fun beforeEach() {
@@ -75,6 +76,7 @@ class OrderPayServiceTest {
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
                 hostNameApp = hostNameApp,
+                paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
             )
         every { orderDao.findById(validUUID) } returns testOrder

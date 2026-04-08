@@ -26,11 +26,13 @@ class PaymentPageInfoController(
         saveCard: Boolean,
         unifiedId: String?,
     ): Response<DataOrderPaymentPageInfo> =
-        orderPaymentPageService.getPaymentPage(orderId, payQueryParams)
+        orderPaymentPageService
+            .getPaymentPage(orderId, payQueryParams)
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_PAY_INFO_PAGE)
 
     override fun getMetaInfo(invoiceId: UUID): Response<InvoiceMetaInfo> =
-        orderPaymentPageService.getMetaInfo(invoiceId)
+        orderPaymentPageService
+            .getMetaInfo(invoiceId)
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_INVOICE_META_INFO)
 
     private fun <T> T.wrapToSuccessResponse(statusCode: Int): Response<T> = getSuccessResponse(getTraceId(), statusCode, this)
