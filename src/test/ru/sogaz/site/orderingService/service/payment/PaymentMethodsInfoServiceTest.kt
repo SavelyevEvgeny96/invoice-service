@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
+import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.FileQR
@@ -20,16 +21,20 @@ import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.MediaTypeValue
+import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapper
+import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapperImpl
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapperImpl
+import ru.sogaz.site.orderingService.service.order.impl.OrderPaymentPageServiceImpl
+import ru.sogaz.site.orderingService.service.payment.impl.PayInfoServiceImpl
 import ru.sogaz.site.orderingService.service.payment.impl.PaymentMethodURIBuilderImpl
-import ru.sogaz.site.orderingService.service.payment.impl.PaymentPageInfoServiceImpl
 import java.math.BigDecimal
 import java.net.URI
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(value = [PaymentMethodsMapperImpl::class])
+@Import(value = [PaymentMethodsMapperImpl::class, InvoiceMetaInfoMapperImpl::class])
 class PaymentMethodsInfoServiceTest {
     companion object {
         private const val QR_CONTENT = "QR Content"
@@ -63,10 +68,16 @@ class PaymentMethodsInfoServiceTest {
     @Autowired
     private lateinit var paymentMethodsMapper: PaymentMethodsMapper
 
+    @Autowired
+    private lateinit var invoiceMetaInfoMapper: InvoiceMetaInfoMapper
+    
     @MockK
     private lateinit var qrGeneratorService: QrGeneratorService
+    @MockK
+    private lateinit var orderDao: OrderDao
 
-    private lateinit var infoPageService: PaymentPageInfoService
+    private lateinit var payInfoService: PayInfoService
+    private lateinit var orderPaymentPageService: OrderPaymentPageServiceImpl
 
     private lateinit var validOrderUUID: UUID
     private lateinit var validOrder: OrderEntity
@@ -82,14 +93,16 @@ class PaymentMethodsInfoServiceTest {
         sbpPayURITemplate = initSbpPayURITemplate().toString()
         initTestOrder()
 
-        infoPageService = initInfoPageService()
+        every { orderDao.findById(validOrderUUID) } returns validOrder
+        payInfoService = initInfoPageService()
+        orderPaymentPageService = initOrderPaymentPageService()
     }
 
     @Test
     fun `getOrderPaymentPageInfo should return valid dataOrderPaymentPageInfo without sbp pay info`() {
         deactivateSbp()
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo)
             .returns(validOrderUUID, DataOrderPaymentPageInfo::orderId)
@@ -105,7 +118,7 @@ class PaymentMethodsInfoServiceTest {
     fun `getOrderPaymentPageInfo should return empty pay sbp if the request to the bank has been failed`() {
         every { paymentService.payQrSbp(validOrder, any()) } returns null
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo)
             .returns(validOrderUUID, DataOrderPaymentPageInfo::orderId)
@@ -119,7 +132,7 @@ class PaymentMethodsInfoServiceTest {
         every { paymentService.payQrSbp(validOrder, payQueryParams) } returns null
         every { validOrder.subOrders } returns mutableListOf()
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo)
             .returns(validOrderUUID, DataOrderPaymentPageInfo::orderId)
@@ -132,7 +145,7 @@ class PaymentMethodsInfoServiceTest {
     fun `getOrderPaymentPageInfo should return valid accounts`() {
         deactivateSbp()
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo.accounts)
             .anyMatch {
@@ -152,7 +165,7 @@ class PaymentMethodsInfoServiceTest {
     fun `getOrderPaymentPageInfo should return valid dataOrderPaymentPageInfo with qr requested from bank`() {
         every { paymentService.payQrSbp(validOrder, payQueryParams) } returns validBankPaySbp
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo)
             .returns(validOrderUUID, DataOrderPaymentPageInfo::orderId)
@@ -168,7 +181,7 @@ class PaymentMethodsInfoServiceTest {
         activateQrGenerator()
         every { qrGeneratorService.generateFileQR(any<URI>(), any()) } returns validFileQR
 
-        val dataOrderPaymentPageInfo = infoPageService.getInfo(validOrder, payQueryParams)
+        val dataOrderPaymentPageInfo = orderPaymentPageService.getPaymentPage(validOrderUUID, payQueryParams)
 
         assertThat(dataOrderPaymentPageInfo)
             .returns(validOrderUUID, DataOrderPaymentPageInfo::orderId)
@@ -179,14 +192,21 @@ class PaymentMethodsInfoServiceTest {
     }
 
     private fun initInfoPageService() =
-        PaymentPageInfoServiceImpl(
+        PayInfoServiceImpl(
             paymentService = paymentService,
-            paymentMethodsMapper = paymentMethodsMapper,
             paymentMethodURIBuilder = PaymentMethodURIBuilderImpl(BASE_PAYMENT_CARD_PAY_PATH, BASE_PAYMENT_SBP_PAY_PATH),
             qrGeneratorService = qrGeneratorService,
             isSbpActive = true,
             isQrGeneratorActive = false,
             qrCodeSize = 512,
+        )
+    
+    private fun initOrderPaymentPageService() =
+        OrderPaymentPageServiceImpl(
+            orderDao = orderDao,
+            payInfoService = payInfoService,
+            paymentMethodsMapper = paymentMethodsMapper,
+            invoiceMetaInfoMapper = invoiceMetaInfoMapper,
         )
 
     private fun initTestOrder() {
@@ -207,6 +227,7 @@ class PaymentMethodsInfoServiceTest {
         validOrder = mockk()
         validOrder.apply {
             every { orderId } returns validOrderUUID
+            every { status } returns OrderStatusesEnum.NEW
             every { subOrders } returns mutableListOf(firstSubOrder, secondSubOrder)
             every { premiumAmount } returns orderTestAmount
         }
@@ -218,7 +239,7 @@ class PaymentMethodsInfoServiceTest {
     private fun initSbpPayURITemplate() =
         URI.create("${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
-    private fun activateQrGenerator() = ReflectionTestUtils.setField(infoPageService, "isQrGeneratorActive", true)
+    private fun activateQrGenerator() = ReflectionTestUtils.setField(payInfoService, "isQrGeneratorActive", true)
 
-    private fun deactivateSbp() = ReflectionTestUtils.setField(infoPageService, "isSbpActive", false)
+    private fun deactivateSbp() = ReflectionTestUtils.setField(payInfoService, "isSbpActive", false)
 }

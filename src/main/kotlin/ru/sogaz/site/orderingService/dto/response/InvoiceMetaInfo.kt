@@ -18,6 +18,7 @@ data class InvoiceMetaInfo(
 data class InvoiceMetaAccount(
     val policyNumber: String?,
     val policyDate: Instant?,
+    val agreementPrice: String?,
     val agreementNumber: String?,
     val agreementDate: Instant?,
     val typeOperation: String?,
