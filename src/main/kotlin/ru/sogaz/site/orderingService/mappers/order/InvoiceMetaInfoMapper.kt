@@ -19,6 +19,7 @@ interface InvoiceMetaInfoMapper {
 
     @Mapping(source = "contractNumber", target = "agreementNumber")
     @Mapping(source = "contractDate", target = "agreementDate")
+    @Mapping(source = "premiumAmount", target = "agreementPrice")
     @Mapping(source = "typeInsurance", target = "insuranceKind")
     @Mapping(source = "insuranceProgram", target = "program")
     fun toInvoiceMetaAccounts(subOrder: SubOrderEntity): InvoiceMetaAccount
