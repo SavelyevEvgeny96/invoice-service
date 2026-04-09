@@ -1,5 +1,4 @@
 package ru.sogaz.site.orderingService.service.impl
-
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -7,54 +6,70 @@ import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_NOT_FOUND
-import ru.sogaz.site.filterStarter.services.RequestInfo
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
-import ru.sogaz.site.orderingService.dto.data.DataOrder
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
+import ru.sogaz.site.orderingService.dao.SubOrderDao
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.CreateOrderResult
 import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
-import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
-import ru.sogaz.siter.models.resonses.Response
-import ru.sogaz.siter.models.resonses.getSuccessResponse
+import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
+import ru.sogaz.site.shortlinks.client.model.ShortLinkRequest
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
+/**
+ * Метод для создания заказа.
+ * @param CreateOrderCommand Данные о заказе(содержит внутри лист CreateSubOrderCommand)
+ * @throws Exception Если данные невалидны или произошла ошибка при сохранении
+ * @return Объект DataOrder, содержащий информацию о платежном запросе
+ */
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class OrderServiceImpl(
     private val orderDao: OrderDao,
+    private val orderManualMapper: OrderManualMapper,
+    private val subOrderDao: SubOrderDao,
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
-    private val orderManualMapper: OrderManualMapper,
-    @Value("\${api.payment.paymentUrl}")
+    private val shortLinksIntegration: ShortLinksIntegration,
+    @param:Value("\${api.payment.hostNameApp}")
+    private val hostNameApp: String,
+    @param:Value("\${api.payment.paymentUrlSuffix}")
+    private val paymentUrlSuffix: String,
+    @param:Value("\${api.payment.paymentUrl}")
     private val payBasePath: String,
 ) : OrderService {
-    /**
-     * Метод для создания заказа.
-     * @param orderRequest Данные о заказе(содержит внутри лист subOrderRequest)
-     * @throws Exception Если данные невалидны или произошла ошибка при сохранении
-     * @return Объект DataOrder, содержащий информацию о платежном запросе
-     */
-    override fun createOrder(orderRequest: OrderRequest): Response<DataOrder> {
+    override fun createOrderInternal(command: CreateOrderCommand): CreateOrderResult {
         val skipSendingErrorsQueue =
             clientSystemDao
-                .findBySystemCode(orderRequest.clientId)
+                .findBySystemCode(command.clientId)
                 ?.skipSendingErrorsQueue
                 ?: false
 
-        val order = orderManualMapper.toOrderEntity(orderRequest, skipSendingErrorsQueue)
+        val order =
+            orderManualMapper.toOrderEntity(command, skipSendingErrorsQueue).apply {
+                versionApi = command.versionApi
+            }
+
+        if (command.versionApi == ApiVersionEnum.V2) {
+            enrichWithShortLink(order)
+        }
+
         val savedOrder = orderDao.save(order)
 
-        return getSuccessResponse(
-            RequestInfo.getTraceId(),
-            ServiceStatuses.STATUS_CODE_SUCCESS,
-            savedOrder.toDataOrder(payBasePath),
-        )
+        val subOrders = orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)
+        subOrders.forEach(savedOrder::addSubOrder)
+        subOrderDao.saveAll(subOrders)
+
+        return savedOrder.toCreateOrderResult(payBasePath)
     }
 
     override fun getOrderStatus(orderId: UUID): DataGetOrderStatus {
@@ -62,9 +77,13 @@ class OrderServiceImpl(
         return DataGetOrderStatus(order.status.desc)
     }
 
-    private fun OrderEntity.toDataOrder(basePath: String): DataOrder {
+    private fun OrderEntity.toCreateOrderResult(basePath: String): CreateOrderResult {
         val id = requireNotNull(orderId)
-        return DataOrder(id, "$basePath$id")
+        return CreateOrderResult(
+            orderId = id,
+            paymentUrl = "$basePath$id",
+            shortPaymentUrl = urlPayPageShort,
+        )
     }
 
     override fun payCard(
@@ -94,4 +113,28 @@ class OrderServiceImpl(
             order.status.isAvailable().not() -> throw BusinessException(ERROR_CODE_ORDER_CLOSED)
             else -> {}
         }
+
+    private fun calculateExpireDays(paymentEndDate: Instant?): Int {
+        val now = Instant.now()
+
+        val days = ChronoUnit.DAYS.between(now, paymentEndDate)
+
+        return days.coerceAtLeast(1).coerceAtMost(60).toInt()
+    }
+
+    private fun enrichWithShortLink(order: OrderEntity) {
+        val longUrl = "$hostNameApp$paymentUrlSuffix${order.orderId}"
+
+        val expireDays = calculateExpireDays(order.paymentEndDate)
+
+        val request =
+            ShortLinkRequest().apply {
+                longUrl(longUrl)
+                maxVisits(100)
+                expireDays(expireDays)
+            }
+
+        val shortLink = shortLinksIntegration.createShortLink(request)
+        order.urlPayPageShort = shortLink?.data?.shortLink
+    }
 }

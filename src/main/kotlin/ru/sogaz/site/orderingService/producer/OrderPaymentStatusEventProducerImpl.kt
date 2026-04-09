@@ -8,7 +8,7 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 
-@Component
+@Component("orderStatusEventProducer")
 class OrderPaymentStatusEventProducerImpl(
     rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,

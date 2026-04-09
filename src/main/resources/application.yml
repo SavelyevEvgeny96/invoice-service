@@ -1,7 +1,7 @@
 
 spring:
   application:
-    name: ordering-service
+    name: invoice-service
   profiles:
     active: ${ENVIRONMENT:local}
   datasource:
@@ -18,8 +18,8 @@ spring:
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
-    username: ${RABBIT_USERNAME:dev}
-    password: ${RABBIT_PASSWORD:dev}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
     virtual-host: /
     listener:
       simple:
@@ -42,13 +42,14 @@ server:
 
 app:
   info:
-    application_name: ${PROJECT_NAME:ordering service}
-    version: ${PROJECT_VERSION:1.0.0}
-    description: ${PROJECT_DESCRIPTION:ordering Service}
-    artifact_Id: ${PROJECT_ARTIFACTID:ordering-service}
+    application_name: ${PROJECT_NAME:invoice service}
+    version: ${PROJECT_VERSION:0.0.2}
+    description: ${PROJECT_DESCRIPTION:Invoice Service}
+    artifact_Id: ${PROJECT_ARTIFACTID:invoice-service}
     group_Id: ${PROJECT_GROUPID:ru.sogaz.site}
     app_profile: ${ENVIRONMENT:local}
     java-version: ${JAVA_VERSION:21}
+
   rabbit:
     orders-exchange: ${ORDER_EXCHANGE:order.exchange}
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
@@ -79,17 +80,19 @@ app:
       max-concurrency: 1
   client:
     payment:
-      basePath: ${PAYMENT_SERVICE_BASE_PATH}
+      basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
     qr:
-      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH}
+      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL}
-    paymentSbpUrl: ${PAYMENT_SBP_URL}
+    paymentUrl: ${PAYMENT_URL:https://test-gateway-site-kis.sogaz.ru/payment/pay/}
+    paymentSbpUrl: ${PAYMENT_SBP_URL:https://test-gateway-site-kis.sogaz.ru/payment/paySbp/}
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
+    hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
+    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/p/}
 
 resilience4j:
   retry:
@@ -126,11 +129,11 @@ management:
       enable: true
 
 logging:
-  level:
-    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
-    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
-#    org.springframework.amqp.rabbit.*: DEBUG
-    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
+#  level:
+#    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
+#    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
+##    org.springframework.amqp.rabbit.*: DEBUG
+#    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
 
   rabbit:
     enabled: ${LOGGING_RABBIT_ENABLED:true}

@@ -68,6 +68,9 @@ class OrdersUserServiceImplTest {
                 refundDate = Instant.now(),
                 queueStatusResultName = "",
                 depersonalization = false,
+                urlPayPageShort = null,
+                typePaymentOperation = null,
+                versionApi = null,
             )
 
         subOrderEntity =
@@ -89,6 +92,7 @@ class OrdersUserServiceImplTest {
                 policyDate = Instant.now(),
                 updateDate = Instant.now(),
                 contractDate = Instant.now(),
+                typeOperation = null,
             )
     }
 

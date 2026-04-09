@@ -113,6 +113,7 @@ class OrderStatusServiceTest {
                 updateDate = null,
                 contractDate = null,
                 policyDate = null,
+                typeOperation = null,
             )
         validOrder =
             OrderEntity(
@@ -137,6 +138,9 @@ class OrderStatusServiceTest {
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,
+                urlPayPageShort = null,
+                typePaymentOperation = null,
+                versionApi = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }

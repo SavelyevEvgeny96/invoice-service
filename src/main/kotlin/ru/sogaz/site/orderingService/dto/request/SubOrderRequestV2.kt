@@ -8,30 +8,26 @@ import java.math.BigDecimal
 import java.time.Instant
 
 /**
- * DTO для запроса на создание заказа.
+ * DTO для запроса на создание подзаказа v2.
  */
-data class SubOrderRequest(
+data class SubOrderRequestV2(
     @field:NotNull(message = "{validation.orderRequest.premiumAmount.notNull}")
     @field:Positive(message = "{validation.orderRequest.premiumAmount.positive}")
-    val premiumAmount: BigDecimal = BigDecimal.ZERO,
+    val premium: BigDecimal = BigDecimal.ZERO,
     val policyId: String = "",
     val policyNumber: String = "",
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    val typeInsurance: String? = null,
-    val insuranceProgram: String? = null,
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    override val mainContractCheck: Boolean = false,
-    val sendStatusProduct: Boolean? = false,
-    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val contractNumber: String? = null,
-    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val contractId: String? = null,
-    val docType: String? = null,
     val policyDate: Instant? = null,
+    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
+    val agreementNumber: String? = null,
+    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
+    val agreementId: String? = null,
+    val agreementDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    val contractDate: Instant? = null,
+    val insuranceKind: String? = null,
+    val program: String? = null,
+    val channel: String? = null,
+    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
+    var typeOperation: String = "",
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
-    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
-    val channel: String = "",
-) : HasMainContractCheck
+)
