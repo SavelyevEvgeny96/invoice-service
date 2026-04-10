@@ -67,6 +67,7 @@ class OrderServiceImpl(
 
         val subOrders = orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)
         subOrders.forEach(savedOrder::addSubOrder)
+        subOrderDao.saveAll(subOrders)
         savedOrder = orderDao.save(savedOrder)
 
         return savedOrder.toCreateOrderResult(payBasePath)
