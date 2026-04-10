@@ -70,9 +70,10 @@ class PaymentMethodsInfoServiceTest {
 
     @Autowired
     private lateinit var invoiceMetaInfoMapper: InvoiceMetaInfoMapper
-    
+
     @MockK
     private lateinit var qrGeneratorService: QrGeneratorService
+
     @MockK
     private lateinit var orderDao: OrderDao
 
@@ -200,7 +201,7 @@ class PaymentMethodsInfoServiceTest {
             isQrGeneratorActive = false,
             qrCodeSize = 512,
         )
-    
+
     private fun initOrderPaymentPageService() =
         OrderPaymentPageServiceImpl(
             orderDao = orderDao,

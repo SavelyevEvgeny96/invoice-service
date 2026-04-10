@@ -14,16 +14,17 @@ import java.util.UUID
 @RestController
 class InvoicePayPageInfoController(
     private val orderPaymentPageService: OrderPaymentPageService,
-): InvoicePayPageInfoV2Api {
+) : InvoicePayPageInfoV2Api {
     companion object {
         private const val SUCCESS_STATUS_CODE_PAY_INFO_PAGE = 1101540200
         private const val SUCCESS_STATUS_CODE_INVOICE_META_INFO = 1101544200
     }
+
     override fun getInvoicePayPage(
         invoiceId: UUID,
         payQueryParams: PayQueryParams,
         saveCard: Boolean,
-        unifiedId: String?
+        unifiedId: String?,
     ): Response<InvoicePayPageInfo> =
         orderPaymentPageService
             .getInvoicePayPageInfo(invoiceId, payQueryParams)
