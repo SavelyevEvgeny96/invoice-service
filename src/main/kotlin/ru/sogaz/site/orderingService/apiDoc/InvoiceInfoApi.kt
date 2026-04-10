@@ -15,10 +15,10 @@ interface InvoiceInfoApi {
     @Operation(
         summary = "Информация о совершенных по заказу платежах",
     )
-    @Parameter(name = "orderId", description = "UUID заказа", required = true, schema = Schema(type = "string", format = "uuid"))
-    @GetMapping("v1/order/info/{orderId}")
+    @Parameter(name = "invoiceId", description = "UUID заказа", required = true, schema = Schema(type = "string", format = "uuid"))
+    @GetMapping("v2/invoice/info/{invoiceId}")
     fun getCompletedOrderInfo(
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
-        @PathVariable orderId: UUID,
+        @PathVariable invoiceId: UUID,
     ): Response<CompletedPaymentInfo?>
 }

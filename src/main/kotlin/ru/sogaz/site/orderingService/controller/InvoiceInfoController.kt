@@ -21,11 +21,11 @@ class InvoiceInfoController(
 
     override fun getCompletedOrderInfo(
         authorization: String,
-        orderId: UUID,
+        invoiceId: UUID,
     ): Response<CompletedPaymentInfo?> {
         authorizationService.checkPermissionByClientId(authorization)
         return orderInfoService
-            .getCompletedOrderInfo(orderId)
+            .getCompletedOrderInfo(invoiceId)
             .wrapToSuccessResponse(SUCCESS_CODE)
     }
 

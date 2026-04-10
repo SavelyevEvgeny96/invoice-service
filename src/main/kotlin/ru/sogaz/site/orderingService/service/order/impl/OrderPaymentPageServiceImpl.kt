@@ -58,12 +58,14 @@ class OrderPaymentPageServiceImpl(
     }
 
     private fun OrderEntity.checkStatus() {
-        when(status) {
+        when (status) {
             SUCCESS -> throw BusinessException(ERROR_CODE_ORDER_SUCCESS)
             OVERDUE,
-            MARKEDDEL -> throw BusinessException(ERROR_CODE_ORDER_OVERDUE)
+            MARKEDDEL,
+            -> throw BusinessException(ERROR_CODE_ORDER_OVERDUE)
             CANCELED,
-            REFUND -> throw BusinessException(ERROR_CODE_ORDER_CANCELED)
+            REFUND,
+            -> throw BusinessException(ERROR_CODE_ORDER_CANCELED)
             else -> {}
         }
     }

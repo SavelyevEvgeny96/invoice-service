@@ -59,11 +59,13 @@ class OrderServiceImpl(
                 versionApi = command.versionApi
             }
 
+        var savedOrder = orderDao.save(order)
+
         if (command.versionApi == ApiVersionEnum.V2) {
-            enrichWithShortLink(order)
+            enrichWithShortLink(savedOrder)
         }
 
-        val savedOrder = orderDao.save(order)
+        savedOrder = orderDao.save(savedOrder)
 
         val subOrders = orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)
         subOrders.forEach(savedOrder::addSubOrder)
