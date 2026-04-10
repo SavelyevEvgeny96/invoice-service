@@ -1,3 +1,4 @@
+import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -83,10 +84,10 @@ class OrderServiceImplTest {
         val savedOrder = mock<OrderEntity>()
         val orderId = UUID.randomUUID()
 
+        whenever(savedOrder.orderId).thenReturn(orderId)
         whenever(command.versionApi).thenReturn(ApiVersionEnum.V1)
         whenever(orderManualMapper.toOrderEntity(command, false)).thenReturn(orderEntity)
-        whenever(orderDao.save(orderEntity)).thenReturn(savedOrder)
-        whenever(savedOrder.orderId).thenReturn(orderId)
+        whenever(orderDao.save(any())).thenReturn(savedOrder)
         whenever(orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)).thenReturn(emptyList())
 
         val result = service.createOrderInternal(command)
@@ -97,7 +98,7 @@ class OrderServiceImplTest {
         verify(orderManualMapper).toOrderEntity(command, false)
         verify(orderDao).save(orderEntity)
         verify(orderManualMapper).toSubOrderEntities(savedOrder, command.subOrders)
-        verify(subOrderDao).saveAll(emptyList())
+        verify(orderDao).save(savedOrder)
         verify(shortLinksIntegration, never()).createShortLink(any())
     }
 
@@ -110,12 +111,11 @@ class OrderServiceImplTest {
         whenever(command.versionApi).thenReturn(ApiVersionEnum.V2)
         whenever(orderManualMapper.toOrderEntity(command, false)).thenReturn(orderEntity)
 
-        whenever(orderEntity.orderId).thenReturn(orderId)
-        whenever(orderEntity.paymentEndDate).thenReturn(
+        whenever(orderDao.save(any())).thenReturn(savedOrder)
+        whenever(savedOrder.orderId).thenReturn(orderId)
+        whenever(savedOrder.paymentEndDate).thenReturn(
             Instant.now().plusSeconds(5 * 24 * 60 * 60L),
         )
-        whenever(orderDao.save(orderEntity)).thenReturn(savedOrder)
-        whenever(savedOrder.orderId).thenReturn(orderId)
         whenever(orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)).thenReturn(emptyList())
 
         val result = service.createOrderInternal(command)
@@ -131,6 +131,6 @@ class OrderServiceImplTest {
         assertEquals("$hostNameApp$paymentUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
-        verify(subOrderDao).saveAll(emptyList())
+        verify(orderDao).save(savedOrder)
     }
 }
