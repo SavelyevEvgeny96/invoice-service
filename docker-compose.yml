@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: nexus.sogaz.ru/rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP для приложения
+      - "15672:15672"   # Web UI

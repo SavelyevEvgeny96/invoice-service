@@ -111,6 +111,9 @@ class PaymentServiceTest {
             skipSendingQueue = false,
             skipSendingReceipt = false,
             depersonalization = false,
+            urlPayPageShort = null,
+            typePaymentOperation = null,
+            versionApi = null,
         ).apply {
             subOrders.add(createSubOrder())
         }
@@ -134,5 +137,6 @@ class PaymentServiceTest {
             updateDate = null,
             contractDate = Instant.now(),
             policyDate = null,
+            typeOperation = null,
         )
 }

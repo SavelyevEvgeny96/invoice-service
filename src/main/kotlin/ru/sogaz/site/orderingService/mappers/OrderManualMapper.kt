@@ -1,10 +1,12 @@
 package ru.sogaz.site.orderingService.mappers
 
 import org.springframework.stereotype.Component
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
-import ru.sogaz.site.orderingService.dto.request.SubOrderRequest
+import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
+import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Component
 class OrderManualMapper(
@@ -15,27 +17,29 @@ class OrderManualMapper(
     }
 
     fun toOrderEntity(
-        orderRequest: OrderRequest,
+        command: CreateOrderCommand,
         skipSendingErrors: Boolean,
     ): OrderEntity =
-        orderMapper.fromRequestDto(orderRequest).apply {
-            val subOrders = attachSubOrders(this, orderRequest.orders)
-            this.subOrders.addAll(subOrders)
-
+        orderMapper.fromCommand(command).apply {
             skipSendingErrorsQueue = skipSendingErrors
             queueStatusResultName = buildQueueStatusResultName(clientId)
-            premiumAmount = calculatePremiumAmount()
+            premiumAmount = calculatePremiumAmount(command.subOrders)
         }
 
-    private fun attachSubOrders(
+    fun toSubOrderEntities(
         order: OrderEntity,
-        requests: List<SubOrderRequest>,
+        subOrders: List<CreateSubOrderCommand>,
     ): List<SubOrderEntity> =
-        requests.map { request ->
-            orderMapper.fromRequestDto(request).apply {
+        subOrders.map { subOrderCommand ->
+            orderMapper.fromCommand(subOrderCommand).apply {
                 orderEntity = order
             }
         }
+
+    private fun calculatePremiumAmount(subOrders: List<CreateSubOrderCommand>): BigDecimal =
+        subOrders
+            .sumOf { it.premiumAmount }
+            .setScale(2, RoundingMode.HALF_UP)
 
     private fun buildQueueStatusResultName(clientId: String?): String? =
         clientId

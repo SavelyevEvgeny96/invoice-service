@@ -12,6 +12,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.producer.OrderRefundStatusEventProducer
 
 @Component
+@Transactional
 class OrderRefundStatusSendConsumer(
     private val orderDao: OrderDao,
     private val orderRefundStatusEventProducer: OrderRefundStatusEventProducer,
@@ -23,7 +24,6 @@ class OrderRefundStatusSendConsumer(
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    @Transactional(rollbackFor = [Exception::class])
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
             val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)

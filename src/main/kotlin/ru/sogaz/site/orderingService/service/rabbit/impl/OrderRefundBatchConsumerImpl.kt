@@ -192,9 +192,6 @@ class OrderRefundBatchConsumerImpl(
      * 4. Публикация сообщения на создание чека.
      * 5. ACK при успехе, REJECT для фатальных ошибок, NACK с requeue=true для временных.
      */
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-payment-status-refund}"],
-    )
     override fun handleMessageToOrderRefundStatus(
         messages: Message,
         channel: Channel,

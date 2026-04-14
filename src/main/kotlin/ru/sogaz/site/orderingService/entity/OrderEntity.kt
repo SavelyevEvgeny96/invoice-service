@@ -1,6 +1,5 @@
 package ru.sogaz.site.orderingService.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -15,10 +14,10 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.type.SqlTypes
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import java.util.UUID
 
@@ -43,12 +42,16 @@ class OrderEntity(
     var subscriptionId: String?,
     @Column(name = "key_card")
     var keyCard: String?,
+    @Column(name = "type_payment_operation")
+    var typePaymentOperation: String?,
     @Column(name = "url_to_return")
     var urlToReturn: String?,
     @Column(name = "url_to_decline")
     var urlToDecline: String?,
     @Column(name = "save_card")
     var saveCard: Boolean?,
+    @Column(name = "url_pay_page_short")
+    var urlPayPageShort: String?,
     @Column(name = "reg_card")
     var regCard: Boolean = false,
     @Enumerated(EnumType.STRING)
@@ -61,6 +64,9 @@ class OrderEntity(
     var paymentEndDate: Instant?,
     @Column(name = "refund_date")
     var refundDate: Instant?,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "version_api")
+    var versionApi: ApiVersionEnum?,
     @Column(name = "premium_amount", precision = 19, scale = 2)
     var premiumAmount: BigDecimal?,
     @Column(name = "recipient_email", nullable = false)
@@ -89,11 +95,11 @@ class OrderEntity(
     @UpdateTimestamp
     var updateDate: Instant?,
 ) {
-    @OneToMany(cascade = [(CascadeType.PERSIST)], fetch = FetchType.LAZY, mappedBy = "orderEntity")
-    val subOrders: MutableList<SubOrderEntity> = mutableListOf()
+    fun addSubOrder(subOrder: SubOrderEntity) {
+        subOrders.add(subOrder)
+        subOrder.orderEntity = this
+    }
 
-    fun calculatePremiumAmount(): BigDecimal =
-        subOrders
-            .sumOf { it.premiumAmount ?: BigDecimal.ZERO }
-            .setScale(2, RoundingMode.HALF_UP)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderEntity")
+    val subOrders: MutableList<SubOrderEntity> = mutableListOf()
 }

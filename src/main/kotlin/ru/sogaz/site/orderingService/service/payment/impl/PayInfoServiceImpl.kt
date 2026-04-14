@@ -3,20 +3,17 @@ package ru.sogaz.site.orderingService.service.payment.impl
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
-import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.entity.OrderEntity
-import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapper
+import ru.sogaz.site.orderingService.service.payment.PayInfoService
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
-import ru.sogaz.site.orderingService.service.payment.PaymentPageInfoService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.payment.QrGeneratorService
 import java.net.URI
 
 @Service
-class PaymentPageInfoServiceImpl(
+class PayInfoServiceImpl(
     private val paymentService: PaymentService,
-    private val paymentMethodsMapper: PaymentMethodsMapper,
     private val paymentMethodURIBuilder: PaymentMethodURIBuilder,
     private val qrGeneratorService: QrGeneratorService,
     @param:Value("\${api.payment.isSbpActive}")
@@ -25,7 +22,7 @@ class PaymentPageInfoServiceImpl(
     private val isQrGeneratorActive: Boolean,
     @param:Value("\${api.payment.qrCodeSize}")
     private val qrCodeSize: Int,
-) : PaymentPageInfoService {
+) : PayInfoService {
     companion object {
         private const val NULL_ORDER_ID_ERROR = "orderId не может быть пустым"
     }
@@ -33,7 +30,7 @@ class PaymentPageInfoServiceImpl(
     override fun getInfo(
         order: OrderEntity,
         payQueryParams: PayQueryParams,
-    ): DataOrderPaymentPageInfo {
+    ): Pair<URI, PaySbp?> {
         val payCardLink = order.formPayCardLink(payQueryParams)
         val paySbp =
             when {
@@ -41,7 +38,7 @@ class PaymentPageInfoServiceImpl(
                 isSbpActive -> getBankQrPaySbp(order, payQueryParams)
                 else -> null
             }
-        return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardLink, paySbp)
+        return Pair(payCardLink, paySbp)
     }
 
     private fun formInnerQrPaySbp(

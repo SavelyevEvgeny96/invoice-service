@@ -22,11 +22,11 @@ import java.util.UUID
  * @property urlToDecline URL для перехода после неуспешной оплаты (обязательное поле)
 
  */
-data class OrderRequest(
+data class OrderRequestV1(
     @get:Valid
     @field:UniqueMainContract(message = "{validation.orderRequest.uniqueMainContract}")
     @field:SameChannelInOrders(message = "{validation.orderRequest.sameChannelInOrders}")
-    var orders: MutableList<SubOrderRequest> = mutableListOf(),
+    var orders: MutableList<SubOrderRequestV1> = mutableListOf(),
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     @field:Future(message = "{validation.orderRequest.date.future}")
     var orderEndDate: Instant? = null,

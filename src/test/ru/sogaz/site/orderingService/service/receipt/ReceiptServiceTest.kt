@@ -60,6 +60,7 @@ class ReceiptServiceTest {
 
     @MockK
     private lateinit var orderDao: OrderDao
+
     @MockK
     private lateinit var receiptDao: ReceiptDao
 
@@ -141,6 +142,7 @@ class ReceiptServiceTest {
                 updateDate = null,
                 contractDate = null,
                 policyDate = null,
+                typeOperation = null,
             )
         validOrder =
             OrderEntity(
@@ -165,6 +167,9 @@ class ReceiptServiceTest {
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,
+                urlPayPageShort = null,
+                typePaymentOperation = null,
+                versionApi = null,
             ).apply {
                 subOrders.add(validSubOrder)
             }

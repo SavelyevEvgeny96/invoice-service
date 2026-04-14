@@ -1,0 +1,2 @@
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS version_api VARCHAR(255);

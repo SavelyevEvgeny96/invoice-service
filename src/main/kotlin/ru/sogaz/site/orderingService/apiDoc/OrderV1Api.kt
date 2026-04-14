@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestHeader
 import ru.sogaz.site.orderingService.apiDoc.response.ForbiddenApiResponse
 import ru.sogaz.site.orderingService.apiDoc.response.UnauthorizedApiResponse
 import ru.sogaz.site.orderingService.apiDoc.response.ValidationErrorApiResponse
-import ru.sogaz.site.orderingService.dto.data.DataOrder
-import ru.sogaz.site.orderingService.dto.request.OrderRequest
+import ru.sogaz.site.orderingService.dto.data.CreateOrderDataV1
+import ru.sogaz.site.orderingService.dto.request.OrderRequestV1
 import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.siter.models.resonses.Response
 import java.util.UUID
@@ -64,7 +64,7 @@ interface OrderV1Api {
             required = true,
             content = [
                 Content(
-                    schema = Schema(implementation = OrderRequest::class),
+                    schema = Schema(implementation = OrderRequestV1::class),
                     examples = [
                         ExampleObject(
                             value =
@@ -112,10 +112,10 @@ interface OrderV1Api {
             ],
         )
         @Valid
-        @RequestBody request: OrderRequest,
+        @RequestBody request: OrderRequestV1,
         @Parameter(hidden = true)
         @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
-    ): Response<DataOrder>
+    ): Response<CreateOrderDataV1>
 
     @GetMapping("order/status/{orderId}")
     @ApiResponse(responseCode = "200", description = "Успешное получение статуса")

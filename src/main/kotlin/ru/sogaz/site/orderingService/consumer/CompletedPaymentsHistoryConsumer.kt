@@ -11,6 +11,7 @@ import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.service.payment.PaymentOperationsService
 
 @Component
+@Transactional
 class CompletedPaymentsHistoryConsumer(
     private val paymentOperationsService: PaymentOperationsService,
 ) {
@@ -21,7 +22,6 @@ class CompletedPaymentsHistoryConsumer(
         containerFactory = "concurrentContainerFactory",
     )
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
-    @Transactional(rollbackFor = [Exception::class])
     fun addHistoryRecord(completedPaymentData: CompletedPaymentData) {
         try {
             paymentOperationsService.saveOperation(completedPaymentData)
