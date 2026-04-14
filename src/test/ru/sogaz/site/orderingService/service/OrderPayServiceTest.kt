@@ -21,7 +21,7 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
-import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
+import ru.sogaz.site.orderingService.service.order.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
 import java.util.UUID

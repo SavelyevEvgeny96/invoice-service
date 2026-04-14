@@ -10,7 +10,7 @@ import ru.sogaz.site.orderingService.mappers.order.CreateOrderResponseMapper
 import ru.sogaz.site.orderingService.mappers.order.OrderRequestCommandMapper
 import ru.sogaz.site.orderingService.properties.ServiceStatuses
 import ru.sogaz.site.orderingService.service.AuthorizationService
-import ru.sogaz.site.orderingService.service.OrderService
+import ru.sogaz.site.orderingService.service.order.OrderService
 import ru.sogaz.siter.models.resonses.Response
 import ru.sogaz.siter.models.resonses.getSuccessResponse
 

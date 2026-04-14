@@ -2,6 +2,8 @@ package ru.sogaz.site.orderingService.dao.impl
 
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
+import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
+import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
@@ -20,9 +22,7 @@ open class SubOrderDaoImpl(
         private const val LOG_EXECUTE = "Выполняем batchUpdate() для %d записей"
         private const val LOG_DONE = "Завершён upsertSubOrders: size=%d"
         private const val GET_SUB_ORDER_LIST = "Получение списка sub_orders по orderId: %s"
-        private const val GET_SUB_ORDER_LIST_IS_TRUE_MAIN_CONTRACT_CHECK =
-            "Получение sub_order с параметром " +
-                "main_contract_check = true по orderId: %s   для генерации description в возвратах "
+        const val LOG_ERROR_SUB_ORDER_SAVE = "Не удалось сохранить данные по подзаказу"
     }
 
     private val logger = loggerFor(javaClass)
@@ -76,4 +76,12 @@ open class SubOrderDaoImpl(
         logger.info(GET_SUB_ORDER_LIST.format(orderId))
         return subOrderRepository.findAllByOrderEntityOrderId(orderId)
     }
+    override fun save(subOrder: SubOrderEntity): SubOrderEntity =
+        try {
+            subOrderRepository.save(subOrder)
+        } catch (e: Exception) {
+            logger.error(LOG_ERROR_SUB_ORDER_SAVE, e)
+            throw InnerException(getTraceId(), LOG_ERROR_SUB_ORDER_SAVE + e.message)
+        }
+
 }

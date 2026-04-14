@@ -5,16 +5,16 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
+import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Component
 class OrderManualMapper(
     private val orderMapper: OrderMapper,
+    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
 ) {
-    private companion object {
-        val NON_ALPHANUMERIC_REGEX = Regex("[^A-Za-zА-Яа-яЁё0-9]")
-    }
 
     fun toOrderEntity(
         command: CreateOrderCommand,
@@ -22,7 +22,8 @@ class OrderManualMapper(
     ): OrderEntity =
         orderMapper.fromCommand(command).apply {
             skipSendingErrorsQueue = skipSendingErrors
-            queueStatusResultName = buildQueueStatusResultName(clientId)
+            queueStatusResultName =
+                queueStatusResultNameNormalizeService.buildQueueStatusResultName(PAYMENT_STATUS_PATTERN, clientId)
             premiumAmount = calculatePremiumAmount(command.subOrders)
         }
 
@@ -41,9 +42,4 @@ class OrderManualMapper(
             .sumOf { it.premiumAmount }
             .setScale(2, RoundingMode.HALF_UP)
 
-    private fun buildQueueStatusResultName(clientId: String?): String? =
-        clientId
-            ?.takeIf { it.isNotBlank() }
-            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
-            ?.let { "payment.status.$it.created" }
 }

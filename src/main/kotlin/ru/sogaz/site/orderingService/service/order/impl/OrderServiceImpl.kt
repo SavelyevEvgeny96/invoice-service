@@ -1,11 +1,10 @@
-package ru.sogaz.site.orderingService.service.impl
+package ru.sogaz.site.orderingService.service.order.impl
+
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
-import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID
-import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED
-import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_NOT_FOUND
+import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
@@ -16,18 +15,23 @@ import ru.sogaz.site.orderingService.dto.response.DataGetOrderStatus
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
+import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
-import ru.sogaz.site.orderingService.service.OrderService
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
+import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.ORDER_STATUS_PATTERN
+import ru.sogaz.site.orderingService.service.order.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
 import ru.sogaz.site.shortlinks.client.model.ShortLinkRequest
+import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 /**
  * Метод для создания заказа.
- * @param CreateOrderCommand Данные о заказе(содержит внутри лист CreateSubOrderCommand)
+ * @param ru.sogaz.site.orderingService.dto.request.CreateOrderCommand Данные о заказе(содержит внутри лист CreateSubOrderCommand)
  * @throws Exception Если данные невалидны или произошла ошибка при сохранении
  * @return Объект DataOrder, содержащий информацию о платежном запросе
  */
@@ -40,6 +44,7 @@ class OrderServiceImpl(
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
     private val shortLinksIntegration: ShortLinksIntegration,
+    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
     @param:Value("\${api.payment.hostNameApp}")
     private val hostNameApp: String,
     @param:Value("\${api.payment.paymentUrlSuffix}")
@@ -105,13 +110,40 @@ class OrderServiceImpl(
         return paymentService.paySbp(order, payQueryParams)
     }
 
+    override fun createRegestryOrder(
+        unifiedId: String,
+        payQueryParams: PayQueryParams,
+        clientId: String,
+    ): OrderEntity =
+        OrderEntity(
+            paymentEndDate = Instant.now().plus(4, ChronoUnit.HOURS),
+            premiumAmount = BigDecimal("1"),
+            unifiedId = unifiedId,
+            urlToReturn = payQueryParams.urlToReturnS.toString(),
+            urlToDecline = payQueryParams.urlToReturnF.toString(),
+            saveCard = true,
+            regCard = true,
+            skipSendingReceipt = true,
+            skipSendingQueue = false,
+            queueStatusResultName =
+                queueStatusResultNameNormalizeService.buildQueueStatusResultName(
+                    ORDER_STATUS_PATTERN,
+                    clientId,
+                ),
+            bank = BankEnum.GPB.code,
+            clientId = clientId,
+        ).run(orderDao::save)
+
     private fun findOrderByIdOrThrow(orderId: UUID): OrderEntity =
-        orderDao.findById(orderId) ?: throw BusinessException(ERROR_CODE_ORDER_NOT_FOUND)
+        orderDao.findById(orderId)
+            ?: throw BusinessException(CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_NOT_FOUND)
 
     private fun checkOrderStatus(order: OrderEntity): Unit =
         when {
-            order.status.isPaidFor() -> throw BusinessException(ERROR_CODE_ORDER_ALREADY_PAID)
-            order.status.isAvailable().not() -> throw BusinessException(ERROR_CODE_ORDER_CLOSED)
+            order.status.isPaidFor() -> throw BusinessException(CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID)
+            order.status.isAvailable()
+                .not() -> throw BusinessException(CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED)
+
             else -> {}
         }
 
