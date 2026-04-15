@@ -92,7 +92,7 @@ api:
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
-    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/p/}
+    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/pay/}
 
 resilience4j:
   retry:
