@@ -39,8 +39,9 @@ class PaymentMethodsInfoServiceTest {
     companion object {
         private const val QR_CONTENT = "QR Content"
         private const val BANK_PAYMENT_URL = "http://some-bank.ru/payment"
-        private const val BASE_PAYMENT_CARD_PAY_PATH = "http://payment-card-test.ru/"
-        private const val BASE_PAYMENT_SBP_PAY_PATH = "http://payment-sbp-test.ru/"
+        private const val BASE_HOST_URL = "http://payment-test.ru"
+        private const val BASE_PAYMENT_CARD_PAY_PATH = "card/"
+        private const val BASE_PAYMENT_SBP_PAY_PATH = "sbp/"
 
         private const val FIRST_SUB_ORDER_POLICY_NUMBER = "first-policy-number"
         private const val FIRST_SUB_ORDER_CONTRACT_NUMBER = "first-contract-number"
@@ -195,7 +196,7 @@ class PaymentMethodsInfoServiceTest {
     private fun initInfoPageService() =
         PayInfoServiceImpl(
             paymentService = paymentService,
-            paymentMethodURIBuilder = PaymentMethodURIBuilderImpl(BASE_PAYMENT_CARD_PAY_PATH, BASE_PAYMENT_SBP_PAY_PATH),
+            paymentMethodURIBuilder = PaymentMethodURIBuilderImpl(BASE_HOST_URL, BASE_PAYMENT_CARD_PAY_PATH, BASE_PAYMENT_SBP_PAY_PATH),
             qrGeneratorService = qrGeneratorService,
             isSbpActive = true,
             isQrGeneratorActive = false,
@@ -235,10 +236,10 @@ class PaymentMethodsInfoServiceTest {
     }
 
     private fun initPayURITemplate() =
-        URI.create("${BASE_PAYMENT_CARD_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
+        URI.create("$BASE_HOST_URL$BASE_PAYMENT_CARD_PAY_PATH$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun initSbpPayURITemplate() =
-        URI.create("${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
+        URI.create("$BASE_HOST_URL${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun activateQrGenerator() = ReflectionTestUtils.setField(payInfoService, "isQrGeneratorActive", true)
 

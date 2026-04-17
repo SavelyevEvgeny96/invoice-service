@@ -63,7 +63,7 @@ class OrderPayServiceTest {
     private lateinit var paymentPage: PaymentPage
     private val hostNameApp = "https://pay.test2/"
     private val payBasePath = "https://pay.test"
-    private val paymentUrlSuffix = "/payment/p/"
+    private val pagepayinfoUrlSuffix = "/payment/pay/"
 
     @BeforeEach
     fun beforeEach() {
@@ -72,11 +72,10 @@ class OrderPayServiceTest {
                 orderDao = orderDao,
                 paymentService = paymentService,
                 clientSystemDao = clientSystemDao,
-                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
                 hostNameApp = hostNameApp,
-                paymentUrlSuffix = paymentUrlSuffix,
+                pagepayinfoUrlSuffix = pagepayinfoUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
             )
         every { orderDao.findById(validUUID) } returns testOrder

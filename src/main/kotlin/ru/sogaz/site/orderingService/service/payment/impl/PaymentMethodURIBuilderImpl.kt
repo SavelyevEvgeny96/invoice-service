@@ -14,10 +14,12 @@ import java.util.UUID
 
 @Service
 class PaymentMethodURIBuilderImpl(
-    @param:Value("\${api.payment.paymentUrl}")
-    val cardPayBaseUri: String,
-    @param:Value("\${api.payment.paymentSbpUrl}")
-    val sbpPayBaseUri: String,
+    @param:Value("\${api.payment.hostNameApp}")
+    private val hostNameApp: String,
+    @param:Value("\${api.payment.paymentUrlSuffix}")
+    private val cardPayUriSuffix: String,
+    @param:Value("\${api.payment.paymentSbpUrlSuffix}")
+    private val sbpPayBaseUriSuffix: String,
 ) : PaymentMethodURIBuilder {
     private val objectMapper: ObjectMapper = ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
@@ -26,7 +28,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$cardPayBaseUri$orderId",
+            "$hostNameApp$cardPayUriSuffix$orderId",
             payQueryParams.toQueryParams(),
         )
 
@@ -35,7 +37,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$sbpPayBaseUri$orderId",
+            "$hostNameApp$sbpPayBaseUriSuffix$orderId",
             payQueryParams.toQueryParams(),
         )
 

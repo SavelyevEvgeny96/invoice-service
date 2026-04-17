@@ -1,4 +1,3 @@
-import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -49,9 +48,9 @@ class OrderServiceImplTest {
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
-    private val payBasePath = "https://pay.test/"
-    private val hostNameApp = "https://pay.test2"
-    private val paymentUrlSuffix = "/payment/p/"
+    private val payBasePath = "https://pay.test/payment/pay/"
+    private val hostNameApp = "https://pay.test"
+    private val pagepayinfoUrlSuffix = "/payment/pay/"
 
     @BeforeEach
     fun setUp() {
@@ -69,11 +68,10 @@ class OrderServiceImplTest {
                 orderDao = orderDao,
                 paymentService = paymentService,
                 clientSystemDao = clientSystemDao,
-                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
                 hostNameApp = hostNameApp,
-                paymentUrlSuffix = paymentUrlSuffix,
+                pagepayinfoUrlSuffix = pagepayinfoUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
             )
     }
@@ -128,7 +126,7 @@ class OrderServiceImplTest {
 
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
-        assertEquals("$hostNameApp$paymentUrlSuffix$orderId", requestToShortLink.longUrl)
+        assertEquals("$hostNameApp$pagepayinfoUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
         verify(orderDao).save(savedOrder)
