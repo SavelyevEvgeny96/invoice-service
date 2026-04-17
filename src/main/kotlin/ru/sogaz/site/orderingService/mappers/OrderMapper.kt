@@ -38,7 +38,6 @@ abstract class OrderMapper {
     @Mapping(target = "createDate", expression = "java( Instant.now() )")
     @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
     @Mapping(target = "queueStatusResultName", source = "metaInfo", qualifiedByName = ["mapQueueResultName"])
-    @Mapping(target = "subOrders", ignore = true)
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
     @Mapping(target = "orderEntity", source = "order")
