@@ -13,5 +13,6 @@ interface PaymentOperationMapper {
     @Mapping(target = "operation", source = "operationType")
     @Mapping(target = "amount", source = "totalAmount")
     @Mapping(target = "pan", source = "card.maskedPan")
+    @Mapping(target = "paymentSystem", source = "card.paymentSystem")
     fun fromCompletedPayment(completedPaymentData: CompletedPaymentData): PaymentOperationEntity
 }

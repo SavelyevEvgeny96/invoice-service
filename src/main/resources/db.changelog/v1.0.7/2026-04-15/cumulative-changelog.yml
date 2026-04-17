@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-107-add-column-to-payment-operations
+      author: Sokolov Danila
+      changes:
+        - tagDatabase:
+            tag: backend-107
+  - include:
+      file: db.changelog\v1.0.7\2026-04-15\DATA\add_column_to_payment_operations.sql
