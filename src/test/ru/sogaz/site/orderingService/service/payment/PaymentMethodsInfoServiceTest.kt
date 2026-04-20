@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.service.payment
 
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
@@ -26,6 +27,7 @@ import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapper
 import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapperImpl
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapperImpl
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.order.impl.OrderPaymentPageServiceImpl
 import ru.sogaz.site.orderingService.service.payment.impl.PayInfoServiceImpl
 import ru.sogaz.site.orderingService.service.payment.impl.PaymentMethodURIBuilderImpl
@@ -39,9 +41,11 @@ class PaymentMethodsInfoServiceTest {
     companion object {
         private const val QR_CONTENT = "QR Content"
         private const val BANK_PAYMENT_URL = "http://some-bank.ru/payment"
-        private const val BASE_HOST_URL = "http://payment-test.ru"
+        private const val BASE_PAGE_INFO_HOST = "http://test-pay.ru/"
+        private const val BASE_PAY_HOST = "http://agw.ru/"
         private const val BASE_PAYMENT_CARD_PAY_PATH = "card/"
         private const val BASE_PAYMENT_SBP_PAY_PATH = "sbp/"
+        private const val BASE_PAGE_INFO_PATH = "pagepayinfo/"
 
         private const val FIRST_SUB_ORDER_POLICY_NUMBER = "first-policy-number"
         private const val FIRST_SUB_ORDER_CONTRACT_NUMBER = "first-contract-number"
@@ -78,6 +82,9 @@ class PaymentMethodsInfoServiceTest {
     @MockK
     private lateinit var orderDao: OrderDao
 
+    @RelaxedMockK
+    private lateinit var paymentApiProperties: PaymentApiProperties
+
     private lateinit var payInfoService: PayInfoService
     private lateinit var orderPaymentPageService: OrderPaymentPageServiceImpl
 
@@ -94,6 +101,7 @@ class PaymentMethodsInfoServiceTest {
         payURITemplate = initPayURITemplate()
         sbpPayURITemplate = initSbpPayURITemplate().toString()
         initTestOrder()
+        initPaymentApiConfig()
 
         every { orderDao.findById(validOrderUUID) } returns validOrder
         payInfoService = initInfoPageService()
@@ -196,7 +204,7 @@ class PaymentMethodsInfoServiceTest {
     private fun initInfoPageService() =
         PayInfoServiceImpl(
             paymentService = paymentService,
-            paymentMethodURIBuilder = PaymentMethodURIBuilderImpl(BASE_HOST_URL, BASE_PAYMENT_CARD_PAY_PATH, BASE_PAYMENT_SBP_PAY_PATH),
+            paymentMethodURIBuilder = PaymentMethodURIBuilderImpl(paymentApiProperties),
             qrGeneratorService = qrGeneratorService,
             isSbpActive = true,
             isQrGeneratorActive = false,
@@ -210,6 +218,17 @@ class PaymentMethodsInfoServiceTest {
             paymentMethodsMapper = paymentMethodsMapper,
             invoiceMetaInfoMapper = invoiceMetaInfoMapper,
         )
+
+    private fun initPaymentApiConfig() {
+        with(paymentApiProperties) {
+            every { paymentHost } returns BASE_PAY_HOST
+            every { paymentUrlSuffix } returns BASE_PAYMENT_CARD_PAY_PATH
+            every { paymentSbpUrlSuffix } returns BASE_PAYMENT_SBP_PAY_PATH
+
+            every { pagepayinfoHost } returns BASE_PAGE_INFO_HOST
+            every { pagepayinfoUrlSuffix } returns BASE_PAGE_INFO_PATH
+        }
+    }
 
     private fun initTestOrder() {
         firstSubOrder = mockk()
@@ -236,10 +255,10 @@ class PaymentMethodsInfoServiceTest {
     }
 
     private fun initPayURITemplate() =
-        URI.create("$BASE_HOST_URL$BASE_PAYMENT_CARD_PAY_PATH$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
+        URI.create("$BASE_PAY_HOST$BASE_PAYMENT_CARD_PAY_PATH$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun initSbpPayURITemplate() =
-        URI.create("$BASE_HOST_URL${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
+        URI.create("$BASE_PAY_HOST${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun activateQrGenerator() = ReflectionTestUtils.setField(payInfoService, "isQrGeneratorActive", true)
 

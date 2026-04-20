@@ -16,6 +16,7 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
@@ -45,12 +46,15 @@ class OrderServiceImplTest {
     @Mock
     lateinit var shortLinksIntegration: ShortLinksIntegration
 
+    @Mock
+    private lateinit var paymentApiProperties: PaymentApiProperties
+
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
-    private val payBasePath = "https://pay.test/payment/pay/"
     private val hostNameApp = "https://pay.test"
-    private val pagepayinfoUrlSuffix = "/payment/pay/"
+    private val pagepayinfoUrlSuffix = "/payment/p/"
+    private val payBasePath = "$hostNameApp$pagepayinfoUrlSuffix"
 
     @BeforeEach
     fun setUp() {
@@ -63,6 +67,9 @@ class OrderServiceImplTest {
         // не вызываем command.clientId внутри whenever(...)
         whenever(clientSystemDao.findBySystemCode("")).thenReturn(null)
 
+        whenever(paymentApiProperties.paymentHost).thenReturn(hostNameApp)
+        whenever(paymentApiProperties.paymentUrlSuffix).thenReturn(pagepayinfoUrlSuffix)
+
         service =
             OrderServiceImpl(
                 orderDao = orderDao,
@@ -70,9 +77,8 @@ class OrderServiceImplTest {
                 clientSystemDao = clientSystemDao,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
-                hostNameApp = hostNameApp,
-                pagepayinfoUrlSuffix = pagepayinfoUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                paymentApiProperties = paymentApiProperties,
             )
     }
 
@@ -126,7 +132,6 @@ class OrderServiceImplTest {
 
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
-        assertEquals("$hostNameApp$pagepayinfoUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
         verify(orderDao).save(savedOrder)

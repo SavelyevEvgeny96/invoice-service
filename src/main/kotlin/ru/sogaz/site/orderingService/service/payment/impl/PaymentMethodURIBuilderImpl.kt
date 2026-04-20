@@ -8,18 +8,14 @@ import org.springframework.stereotype.Service
 import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
 import java.net.URI
 import java.util.UUID
 
 @Service
 class PaymentMethodURIBuilderImpl(
-    @param:Value("\${api.payment.hostNameApp}")
-    private val hostNameApp: String,
-    @param:Value("\${api.payment.paymentUrlSuffix}")
-    private val cardPayUriSuffix: String,
-    @param:Value("\${api.payment.paymentSbpUrlSuffix}")
-    private val sbpPayBaseUriSuffix: String,
+    private val paymentApiProperties: PaymentApiProperties,
 ) : PaymentMethodURIBuilder {
     private val objectMapper: ObjectMapper = ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
@@ -28,7 +24,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$hostNameApp$cardPayUriSuffix$orderId",
+            "${paymentApiProperties.paymentHost}${paymentApiProperties.paymentUrlSuffix}$orderId",
             payQueryParams.toQueryParams(),
         )
 
@@ -37,7 +33,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$hostNameApp$sbpPayBaseUriSuffix$orderId",
+            "${paymentApiProperties.paymentHost}${paymentApiProperties.paymentSbpUrlSuffix}$orderId",
             payQueryParams.toQueryParams(),
         )
 

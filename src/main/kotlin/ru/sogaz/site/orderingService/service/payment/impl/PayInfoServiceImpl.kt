@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.payment.PayInfoService
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
 import ru.sogaz.site.orderingService.service.payment.PaymentService

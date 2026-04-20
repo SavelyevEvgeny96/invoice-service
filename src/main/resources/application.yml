@@ -86,13 +86,15 @@ app:
 
 api:
   payment:
-    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/invoice/pay/}
+    paymentHost: ${PAYMENT_HOST:https://test-gateway-site-kis.sogaz.ru/}
+    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/pay/}
     paymentSbpUrlSuffix: ${PAYMENT_SBP_URL_SUFFIX:/invoice/paySbp/}
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
-    pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/pay/}
+    pagepayinfoHost: ${PAGEPAYINFO_HOST:https://test-pay.sogaz.ru/}
+    pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/p/}
 
 resilience4j:
   retry:
