@@ -21,6 +21,7 @@ data class CompletedPaymentData(
     val paymentType: String,
     val operationType: OperationTypeEnum,
     val payDate: Instant,
+    val externalErrorCode: String?,
     val errorText: String?,
 )
 

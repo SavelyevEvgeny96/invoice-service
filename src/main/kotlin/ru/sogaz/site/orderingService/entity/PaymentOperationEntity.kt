@@ -34,8 +34,10 @@ class PaymentOperationEntity(
     var depersonalization: Boolean = false,
     var paymentBankId: String?,
     var pan: String?,
+    var paymentSystem: String?,
     var payDate: Instant?,
     var payerIp: String?,
+    var externalErrorCode: String?,
     var errorText: String?,
     @UpdateTimestamp
     var updateDate: Instant?,
