@@ -2,43 +2,32 @@ package ru.sogaz.site.orderingService.service.payment.impl
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
-import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
-import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomPaymentErrors.Companion.CODE_ERROR_REGISTRY_CARD_NOT_AVAILABLE_INFO
-import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.mappers.payment.PayRegOperationMapper
 import ru.sogaz.site.orderingService.service.order.OrderService
 import ru.sogaz.site.orderingService.service.payment.CardRegistryService
 import ru.sogaz.site.orderingService.service.subOrder.SubOrderService
-import ru.sogaz.site.payment.client.model.DataPay
-import ru.sogaz.site.paymentService.dto.data.DataPay
-import ru.sogaz.site.paymentService.dto.request.PayQueryParams
-import ru.sogaz.site.paymentService.entity.Order
-import ru.sogaz.site.paymentService.orThrow
-import ru.sogaz.site.paymentService.service.CardRegistryService
-import ru.sogaz.site.paymentService.service.OrderService
-import ru.sogaz.site.paymentService.service.PaymentService
-import ru.sogaz.site.paymentService.service.SubOrderService
-import ru.sogaz.site.paymentService.service.payment.RegisterPaymentServiceImpl
-import kotlin.let
+import ru.sogaz.site.payment.client.api.CardRegistryV2ControllerApi
 
 @Service
 class CardRegistryServiceImpl(
     private val orderService: OrderService,
-    private val subOrderService: SubOrderService
+    private val subOrderService: SubOrderService,
+    private val cardRegistryV2Api: CardRegistryV2ControllerApi,
+    private val payRegOperationMapper: PayRegOperationMapper,
 ) : CardRegistryService {
     @Transactional
     override fun registry(
         unifiedId: String,
         payQueryParams: PayQueryParams,
         clientId: String,
-    ): DataPay {
+    ): String {
         val order: OrderEntity = createRegistryOrder(unifiedId, payQueryParams, clientId)
-        return order.orderId
-
+        val payRegOperationRequestMapping = payRegOperationMapper.mapToRequest(order, payQueryParams)
+        val url = cardRegistryV2Api.cardRegistry(payRegOperationRequestMapping)
+        return url.paymentPageUrl
     }
-
 
     private fun createRegistryOrder(
         unifiedId: String,

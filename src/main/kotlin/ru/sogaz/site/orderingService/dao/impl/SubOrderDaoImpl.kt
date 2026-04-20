@@ -76,6 +76,7 @@ open class SubOrderDaoImpl(
         logger.info(GET_SUB_ORDER_LIST.format(orderId))
         return subOrderRepository.findAllByOrderEntityOrderId(orderId)
     }
+
     override fun save(subOrder: SubOrderEntity): SubOrderEntity =
         try {
             subOrderRepository.save(subOrder)
@@ -83,5 +84,4 @@ open class SubOrderDaoImpl(
             logger.error(LOG_ERROR_SUB_ORDER_SAVE, e)
             throw InnerException(getTraceId(), LOG_ERROR_SUB_ORDER_SAVE + e.message)
         }
-
 }

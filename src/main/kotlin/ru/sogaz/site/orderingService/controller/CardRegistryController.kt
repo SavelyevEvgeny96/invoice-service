@@ -17,10 +17,6 @@ import ru.sogaz.site.orderingService.dto.request.PayQueryParamsWithRequiredField
 import ru.sogaz.site.orderingService.entity.ClientSystemEntity
 import ru.sogaz.site.orderingService.service.AuthorizationService
 import ru.sogaz.site.orderingService.service.payment.CardRegistryService
-import ru.sogaz.site.paymentService.dto.request.PayQueryParamsWithRequiredFields
-import ru.sogaz.site.paymentService.entity.ClientSystem
-import ru.sogaz.site.paymentService.service.AuthorizationService
-import ru.sogaz.site.paymentService.service.CardRegistryService
 
 @RestController
 @Tag(name = "Card registration", description = "Регистрация карт")
@@ -64,6 +60,6 @@ class CardRegistryController(
                 unifiedId = unifiedId,
                 payQueryParams = payQueryParams,
                 clientId = clientSystem.externalSystemCode,
-            ).wrapToRedirectView()
+            ).toRedirectView()
     }
 }

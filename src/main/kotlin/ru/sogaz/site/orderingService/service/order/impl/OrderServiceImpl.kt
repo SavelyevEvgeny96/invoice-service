@@ -25,7 +25,6 @@ import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
 import ru.sogaz.site.shortlinks.client.model.ShortLinkRequest
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
@@ -141,7 +140,8 @@ class OrderServiceImpl(
     private fun checkOrderStatus(order: OrderEntity): Unit =
         when {
             order.status.isPaidFor() -> throw BusinessException(CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID)
-            order.status.isAvailable()
+            order.status
+                .isAvailable()
                 .not() -> throw BusinessException(CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED)
 
             else -> {}

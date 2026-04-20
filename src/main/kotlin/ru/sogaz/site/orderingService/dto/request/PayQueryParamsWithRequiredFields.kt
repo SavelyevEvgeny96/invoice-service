@@ -2,14 +2,13 @@ package ru.sogaz.site.orderingService.dto.request
 
 import io.swagger.v3.oas.annotations.Parameter
 import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
-import java.net.URI
 import javax.validation.constraints.NotNull
 
 data class PayQueryParamsWithRequiredFields(
     @param:Parameter(name = "urlToReturn", description = "Ссылка для редиректа после успешной оплаты")
     @field:SogazDomain
     @field:NotNull(message = "urlToReturn is required")
-    override val urlToReturn: URI?,
+    override val urlToReturn: String?,
     @param:Parameter(name = "urlToReturnS", description = "Ссылка для редиректа после успешной оплаты")
     @field:SogazDomain
     @field:NotNull(message = "urlToReturn is required")

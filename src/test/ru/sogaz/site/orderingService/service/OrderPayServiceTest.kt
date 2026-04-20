@@ -60,6 +60,9 @@ class OrderPayServiceTest {
     private lateinit var shortLinksIntegration: ShortLinksIntegration
 
     @RelaxedMockK
+    private lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
+
+    @RelaxedMockK
     private lateinit var paymentPage: PaymentPage
     private val hostNameApp = "https://pay.test2/"
     private val payBasePath = "https://pay.test"
@@ -78,6 +81,7 @@ class OrderPayServiceTest {
                 hostNameApp = hostNameApp,
                 paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                queueStatusResultNameNormalizeService = queueStatusResultNameNormalizeService,
             )
         every { orderDao.findById(validUUID) } returns testOrder
         every { paymentService.payCard(testOrder, payQueryParams) } returns paymentPage

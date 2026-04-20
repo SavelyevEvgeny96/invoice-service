@@ -13,9 +13,8 @@ import java.math.RoundingMode
 @Component
 class OrderManualMapper(
     private val orderMapper: OrderMapper,
-    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
+    private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) {
-
     fun toOrderEntity(
         command: CreateOrderCommand,
         skipSendingErrors: Boolean,
@@ -41,5 +40,4 @@ class OrderManualMapper(
         subOrders
             .sumOf { it.premiumAmount }
             .setScale(2, RoundingMode.HALF_UP)
-
 }

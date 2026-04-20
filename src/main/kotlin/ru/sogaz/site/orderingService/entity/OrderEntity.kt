@@ -35,23 +35,23 @@ class OrderEntity(
     @Column(name = "bank")
     var bank: String? = null,
     @Column(name = "policyholder")
-    var policyholder: String?= null,
+    var policyholder: String? = null,
     @Column(name = "payment_type")
-    var paymentType: String?= null,
+    var paymentType: String? = null,
     @Column(name = "subscription_id")
-    var subscriptionId: String?= null,
+    var subscriptionId: String? = null,
     @Column(name = "key_card")
-    var keyCard: String?= null,
+    var keyCard: String? = null,
     @Column(name = "type_payment_operation")
-    var typePaymentOperation: String?= null,
+    var typePaymentOperation: String? = null,
     @Column(name = "url_to_return")
-    var urlToReturn: String?= null,
+    var urlToReturn: String? = null,
     @Column(name = "url_to_decline")
-    var urlToDecline: String?= null,
+    var urlToDecline: String? = null,
     @Column(name = "save_card")
-    var saveCard: Boolean?= null,
+    var saveCard: Boolean? = null,
     @Column(name = "url_pay_page_short")
-    var urlPayPageShort: String?= null,
+    var urlPayPageShort: String? = null,
     @Column(name = "reg_card")
     var regCard: Boolean = false,
     @Enumerated(EnumType.STRING)
@@ -61,20 +61,20 @@ class OrderEntity(
     @Column(name = "recurrent")
     var recurrent: Boolean? = null,
     @Column(name = "payment_end_date")
-    var paymentEndDate: Instant?= null,
+    var paymentEndDate: Instant? = null,
     @Column(name = "refund_date")
-    var refundDate: Instant?= null,
+    var refundDate: Instant? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "version_api")
-    var versionApi: ApiVersionEnum?= null,
+    var versionApi: ApiVersionEnum? = null,
     @Column(name = "premium_amount", precision = 19, scale = 2)
-    var premiumAmount: BigDecimal?= null,
+    var premiumAmount: BigDecimal? = null,
     @Column(name = "recipient_email", nullable = false)
-    var recipientEmail: String?= null,
+    var recipientEmail: String? = null,
     @Column(name = "recipient_phone", nullable = false)
-    var recipientPhone: String?= null,
+    var recipientPhone: String? = null,
     @Column(name = "recipient_user_id")
-    var recipientUserId: String?= null,
+    var recipientUserId: String? = null,
     @Column(name = "queue_status_result_name")
     var queueStatusResultName: String?,
     @Column(name = "skip_sending_queue")
@@ -87,13 +87,13 @@ class OrderEntity(
     @Column(name = "receipt_state")
     var receiptState: ReceiptState = ReceiptState.NONE,
     @Column(name = "depersonalization")
-    var depersonalization: Boolean?= null,
+    var depersonalization: Boolean? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
-    var createDate: Instant?= null,
+    var createDate: Instant? = null,
     @Column(name = "update_date")
     @UpdateTimestamp
-    var updateDate: Instant?= null,
+    var updateDate: Instant? = null,
 ) {
     fun addSubOrder(subOrder: SubOrderEntity) {
         subOrders.add(subOrder)

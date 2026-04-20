@@ -1,4 +1,4 @@
-import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -17,6 +17,7 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.order.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
@@ -46,6 +47,8 @@ class OrderServiceImplTest {
     @Mock
     lateinit var shortLinksIntegration: ShortLinksIntegration
 
+    @RelaxedMockK
+    private lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
@@ -75,6 +78,7 @@ class OrderServiceImplTest {
                 hostNameApp = hostNameApp,
                 paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                queueStatusResultNameNormalizeService = queueStatusResultNameNormalizeService,
             )
     }
 

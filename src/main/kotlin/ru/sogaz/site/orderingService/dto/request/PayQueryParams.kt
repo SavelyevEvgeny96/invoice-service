@@ -3,12 +3,11 @@ package ru.sogaz.site.orderingService.dto.request
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springdoc.core.annotations.ParameterObject
-import java.net.URI
 
 @ParameterObject
 open class PayQueryParams(
     @field:Parameter(description = "Ссылка для возврата", example = "http://www.sogaz.ru")
-    open val urlToReturn: URI? = null,
+    open val urlToReturn: String? = null,
     @field:Parameter(description = "Ссылка для редиректа после успешной оплаты")
     open val urlToReturnS: String? = null,
     @field:Parameter(description = "Ссылка для редиректа после неуспешной оплаты")
