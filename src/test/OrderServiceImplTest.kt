@@ -1,4 +1,3 @@
-import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -47,7 +46,7 @@ class OrderServiceImplTest {
     @Mock
     lateinit var shortLinksIntegration: ShortLinksIntegration
 
-    @RelaxedMockK
+    @Mock
     private lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand

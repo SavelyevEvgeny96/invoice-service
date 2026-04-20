@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
+import ru.sogaz.site.payment.client.api.CardRegistryV2ControllerApi
 import ru.sogaz.site.payment.client.api.PayV2Api
 import ru.sogaz.site.qr.generator.client.api.QrCodeControllerApi
 
@@ -18,6 +19,13 @@ class ApiClientConfig {
     ) = ru.sogaz.site.payment.client.invoker.ApiClient().apply {
         basePath = paymentBasePath
     }
+
+    @Bean
+    fun cardRegistryV2ControllerApi(paymentApiClient: ru.sogaz.site.payment.client.invoker.ApiClient): CardRegistryV2ControllerApi =
+        CardRegistryV2ControllerApi(paymentApiClient)
+
+    @Bean
+    fun payClientV2(paymentApiClient: ru.sogaz.site.payment.client.invoker.ApiClient): PayV2Api = PayV2Api(paymentApiClient)
 
     @Bean
     fun payClient(paymentApiClient: ru.sogaz.site.payment.client.invoker.ApiClient): PayV2Api = PayV2Api(paymentApiClient)

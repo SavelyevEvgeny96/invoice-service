@@ -93,6 +93,7 @@ api:
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
     paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/p/}
+    sogazUrlPattern: ${SOGAZ_URL_PATTERN:^.*.sogaz.ru$|^lk.health-and-care.ru$}
 
 resilience4j:
   retry:
