@@ -83,6 +83,8 @@ app:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
     qr:
       basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
+    shortLink:
+      basePath: ${SHORT_LINK_SERVICE_BASE_PATH:}
 
 api:
   payment:
