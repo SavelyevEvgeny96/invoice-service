@@ -1,6 +1,7 @@
 package ru.sogaz.site.orderingService.dto.response
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class InvoiceStatusEvent(
@@ -14,9 +15,11 @@ data class InvoiceStatusEvent(
     val maskedPan: String?, // Маскированный номер карты
     val paymentSystem: String?, // Наименование платёжной системы
     val issuerName: String?, // Кем выдана карта (банк-эмитент)
+    val title: String?,
     val paymentType: String?, // Источник совершения операции (из portalType)
     val keyCard: String?,
     val bank: String? = null,
+    val paySucces: Instant?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -30,5 +33,5 @@ data class SubInvoiceData(
     val agreementDate: String?,
     val insuranceKind: String?,
     val channel: String?,
-    val program: String?
+    val program: String?,
 )
