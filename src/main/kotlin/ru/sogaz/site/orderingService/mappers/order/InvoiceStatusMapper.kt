@@ -20,6 +20,7 @@ interface InvoiceStatusMapper {
     @Mapping(target = "issuerName", source = "completedPaymentData.card.issuerName")
     @Mapping(target = "maskedPan", source = "completedPaymentData.card.maskedPan")
     @Mapping(target = "paymentSystem", source = "completedPaymentData.card.paymentSystem")
+    @Mapping(target = "title", source = "completedPaymentData.card.title")
     @Mapping(target = "bank", source = "completedPaymentData.bank")
     @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
     @Mapping(target = "paySucces", source = "completedPaymentData.payDate")
