@@ -3,21 +3,18 @@ package ru.sogaz.site.orderingService.service.payment.impl
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
 import java.net.URI
 import java.util.UUID
 
 @Service
 class PaymentMethodURIBuilderImpl(
-    @param:Value("\${api.payment.paymentUrl}")
-    val cardPayBaseUri: String,
-    @param:Value("\${api.payment.paymentSbpUrl}")
-    val sbpPayBaseUri: String,
+    private val paymentApiProperties: PaymentApiProperties,
 ) : PaymentMethodURIBuilder {
     private val objectMapper: ObjectMapper = ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
@@ -26,7 +23,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$cardPayBaseUri$orderId",
+            "${paymentApiProperties.paymentHostPagePayInfo}${paymentApiProperties.paymentUrlSuffix}$orderId",
             payQueryParams.toQueryParams(),
         )
 
@@ -35,7 +32,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "$sbpPayBaseUri$orderId",
+            "${paymentApiProperties.paymentHost}${paymentApiProperties.paymentSbpUrlSuffix}$orderId",
             payQueryParams.toQueryParams(),
         )
 

@@ -22,6 +22,8 @@ interface InvoiceStatusMapper {
     ): InvoiceStatusEvent
 
     @Mapping(target = "premium", source = "premiumAmount")
-    @Mapping(target = "insuranceKind", source = "insuranceProgram")
+    @Mapping(target = "insuranceKind", source = "typeInsurance")
+    @Mapping(target = "agreementId", source = "contractId")
+    @Mapping(target = "agreementNumber", source = "contractNumber")
     fun toInvoiceData(subOrder: SubOrderEntity): SubInvoiceData
 }

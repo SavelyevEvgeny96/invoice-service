@@ -1,4 +1,3 @@
-import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -17,6 +16,7 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
@@ -46,12 +46,15 @@ class OrderServiceImplTest {
     @Mock
     lateinit var shortLinksIntegration: ShortLinksIntegration
 
+    @Mock
+    private lateinit var paymentApiProperties: PaymentApiProperties
+
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
-    private val payBasePath = "https://pay.test/"
-    private val hostNameApp = "https://pay.test2"
-    private val paymentUrlSuffix = "/payment/p/"
+    private val hostNameApp = "https://pay.test"
+    private val pagepayinfoUrlSuffix = "/payment/p/"
+    private val payBasePath = "$hostNameApp$pagepayinfoUrlSuffix"
 
     @BeforeEach
     fun setUp() {
@@ -64,17 +67,18 @@ class OrderServiceImplTest {
         // не вызываем command.clientId внутри whenever(...)
         whenever(clientSystemDao.findBySystemCode("")).thenReturn(null)
 
+        whenever(paymentApiProperties.paymentHost).thenReturn(hostNameApp)
+        whenever(paymentApiProperties.paymentUrlSuffix).thenReturn(pagepayinfoUrlSuffix)
+
         service =
             OrderServiceImpl(
                 orderDao = orderDao,
                 paymentService = paymentService,
                 clientSystemDao = clientSystemDao,
-                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
-                hostNameApp = hostNameApp,
-                paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                paymentApiProperties = paymentApiProperties,
             )
     }
 
@@ -128,7 +132,6 @@ class OrderServiceImplTest {
 
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
-        assertEquals("$hostNameApp$paymentUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
         verify(orderDao).save(savedOrder)

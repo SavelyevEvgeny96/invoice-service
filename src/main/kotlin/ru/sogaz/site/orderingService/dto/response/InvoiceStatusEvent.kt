@@ -19,10 +19,9 @@ data class SubInvoiceData(
     val policyId: String?,
     val policyNumber: String?,
     val policyDate: String?,
-    val contractId: String?,
-    val contractNumber: String?,
+    val agreementId: String?,
+    val agreementNumber: String?,
     val contractDate: String?,
-    val typeInsurance: String?,
     val insuranceKind: String?,
     val channel: String?,
 )

@@ -21,6 +21,7 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
@@ -60,10 +61,13 @@ class OrderPayServiceTest {
     private lateinit var shortLinksIntegration: ShortLinksIntegration
 
     @RelaxedMockK
+    private lateinit var paymentApiProperties: PaymentApiProperties
+
+    @RelaxedMockK
     private lateinit var paymentPage: PaymentPage
     private val hostNameApp = "https://pay.test2/"
     private val payBasePath = "https://pay.test"
-    private val paymentUrlSuffix = "/payment/p/"
+    private val pagepayinfoUrlSuffix = "/payment/pay/"
 
     @BeforeEach
     fun beforeEach() {
@@ -72,12 +76,10 @@ class OrderPayServiceTest {
                 orderDao = orderDao,
                 paymentService = paymentService,
                 clientSystemDao = clientSystemDao,
-                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
-                hostNameApp = hostNameApp,
-                paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                paymentApiProperties = paymentApiProperties,
             )
         every { orderDao.findById(validUUID) } returns testOrder
         every { paymentService.payCard(testOrder, payQueryParams) } returns paymentPage

@@ -1,5 +1,4 @@
 package ru.sogaz.site.orderingService.service.impl
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
@@ -17,6 +16,7 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.OrderService
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
@@ -40,12 +40,7 @@ class OrderServiceImpl(
     private val paymentService: PaymentService,
     private val clientSystemDao: ClientSystemDao,
     private val shortLinksIntegration: ShortLinksIntegration,
-    @param:Value("\${api.payment.hostNameApp}")
-    private val hostNameApp: String,
-    @param:Value("\${api.payment.paymentUrlSuffix}")
-    private val paymentUrlSuffix: String,
-    @param:Value("\${api.payment.paymentUrl}")
-    private val payBasePath: String,
+    private val paymentApiProperties: PaymentApiProperties,
 ) : OrderService {
     override fun createOrderInternal(command: CreateOrderCommand): CreateOrderResult {
         val skipSendingErrorsQueue =
@@ -70,7 +65,7 @@ class OrderServiceImpl(
         subOrderDao.saveAll(subOrders)
         savedOrder = orderDao.save(savedOrder)
 
-        return savedOrder.toCreateOrderResult(payBasePath)
+        return savedOrder.toCreateOrderResult()
     }
 
     override fun getOrderStatus(orderId: UUID): DataGetOrderStatus {
@@ -78,11 +73,11 @@ class OrderServiceImpl(
         return DataGetOrderStatus(order.status.desc)
     }
 
-    private fun OrderEntity.toCreateOrderResult(basePath: String): CreateOrderResult {
+    private fun OrderEntity.toCreateOrderResult(): CreateOrderResult {
         val id = requireNotNull(orderId)
         return CreateOrderResult(
             orderId = id,
-            paymentUrl = "$basePath$id",
+            paymentUrl = "${paymentApiProperties.paymentHost}${paymentApiProperties.paymentUrlSuffix}$id",
             shortPaymentUrl = urlPayPageShort,
         )
     }
@@ -124,7 +119,7 @@ class OrderServiceImpl(
     }
 
     private fun enrichWithShortLink(order: OrderEntity) {
-        val longUrl = "$hostNameApp$paymentUrlSuffix${order.orderId}"
+        val longUrl = "${paymentApiProperties.pagepayinfoHost}${paymentApiProperties.pagepayinfoUrlSuffix}${order.orderId}"
 
         val expireDays = calculateExpireDays(order.paymentEndDate)
 

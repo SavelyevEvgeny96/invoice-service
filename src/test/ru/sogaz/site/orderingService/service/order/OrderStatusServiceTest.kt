@@ -4,7 +4,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import org.assertj.core.api.Assertions.assertThat
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -77,12 +77,11 @@ class OrderStatusServiceTest {
 
     @Test
     fun `updatePaidOrder should correctly update order`() {
-        val order = orderStatusService.updatePaidOrder(validCompletedPayment)
+        orderStatusService.updatePaidOrder(validCompletedPayment)
 
-        assertThat(order)
-            .returns(PAYMENT_TYPE) { it.paymentType }
-            .returns(BANK) { it.bank }
-            .returns(KEY_CARD) { it.keyCard }
+        verify { validOrder.paymentType = validCompletedPayment.paymentType }
+        verify { validOrder.bank = validCompletedPayment.bank }
+        verify { validOrder.keyCard = validCompletedPayment.card?.cardId }
     }
 
     @Test
@@ -94,56 +93,18 @@ class OrderStatusServiceTest {
 
     private fun initOrdersTestData() {
         validOrderId = UUID.randomUUID()
+        val subId = UUID.randomUUID()
 
-        validSubOrder =
-            SubOrderEntity(
-                contractNumber = TEST_CONTRACT_NUMBER,
-                premiumAmount = amount,
-                id = UUID.randomUUID(),
-                orderEntity = validOrder,
-                policyId = "",
-                contractId = null,
-                docType = null,
-                channel = null,
-                mainContractCheck = true,
-                insuranceProgram = null,
-                typeInsurance = null,
-                managerEmail = null,
-                createDate = null,
-                updateDate = null,
-                contractDate = null,
-                policyDate = null,
-                typeOperation = null,
-            )
-        validOrder =
-            OrderEntity(
-                orderId = validOrderId,
-                premiumAmount = amount,
-                recipientEmail = TEST_CLIENT_EMAIL,
-                unifiedId = null,
-                bank = null,
-                policyholder = null,
-                paymentType = null,
-                subscriptionId = null,
-                keyCard = null,
-                urlToReturn = null,
-                urlToDecline = null,
-                saveCard = null,
-                recurrent = null,
-                paymentEndDate = null,
-                refundDate = null,
-                recipientPhone = null,
-                recipientUserId = null,
-                queueStatusResultName = null,
-                depersonalization = false,
-                createDate = null,
-                updateDate = null,
-                urlPayPageShort = null,
-                typePaymentOperation = null,
-                versionApi = null,
-            ).apply {
-                subOrders.add(validSubOrder)
-            }
+        every { validSubOrder.id } returns subId
+        every { validSubOrder.contractNumber } returns TEST_CONTRACT_NUMBER
+        every { validSubOrder.premiumAmount } returns amount
+        every { validSubOrder.orderEntity } returns validOrder
+
+        every { validOrder.orderId } returns validOrderId
+        every { validOrder.recipientEmail } returns TEST_CLIENT_EMAIL
+        every { validOrder.premiumAmount } returns amount
+        every { validOrder.subOrders } returns mutableListOf(validSubOrder)
+
         validCompletedPayment =
             CompletedPaymentData(
                 paymentId = UUID.randomUUID(),
@@ -157,6 +118,7 @@ class OrderStatusServiceTest {
                 paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
+                externalErrorCode = null,
                 paymentBankId = PAYMENT_BANK_ID,
                 payerIp = PAYER_IP,
             )
