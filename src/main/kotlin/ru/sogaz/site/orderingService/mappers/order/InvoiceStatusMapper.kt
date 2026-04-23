@@ -22,6 +22,7 @@ interface InvoiceStatusMapper {
     @Mapping(target = "paymentSystem", source = "completedPaymentData.card.paymentSystem")
     @Mapping(target = "bank", source = "completedPaymentData.bank")
     @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
+    @Mapping(target = "paySucces", source = "completedPaymentData.payDate")
     fun toInvoiceStatusEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
@@ -32,5 +33,6 @@ interface InvoiceStatusMapper {
     @Mapping(target = "agreementId", source = "contractId")
     @Mapping(target = "agreementNumber", source = "contractNumber")
     @Mapping(target = "program", source = "insuranceProgram")
+    @Mapping(target = "agreementDate", source = "contractDate")
     fun toInvoiceData(subOrder: SubOrderEntity): SubInvoiceData
 }

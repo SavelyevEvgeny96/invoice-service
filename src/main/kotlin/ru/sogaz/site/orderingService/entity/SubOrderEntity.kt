@@ -60,5 +60,4 @@ class SubOrderEntity(
     var contractDate: Instant?,
     @Column(name = "policy_date")
     var policyDate: Instant?,
-
 )
