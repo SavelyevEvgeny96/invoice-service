@@ -42,7 +42,8 @@ class PaymentMethodsInfoServiceTest {
         private const val QR_CONTENT = "QR Content"
         private const val BANK_PAYMENT_URL = "http://some-bank.ru/payment"
         private const val BASE_PAGE_INFO_HOST = "http://test-pay.ru/"
-        private const val BASE_PAY_HOST = "http://agw.ru/"
+        private const val BASE_PAY_HOST = "http://agw1.ru/"
+        private const val BASE_PAY_HOST_SBP = "http://agw.ru/"
         private const val BASE_PAYMENT_CARD_PAY_PATH = "card/"
         private const val BASE_PAYMENT_SBP_PAY_PATH = "sbp/"
         private const val BASE_PAGE_INFO_PATH = "pagepayinfo/"
@@ -221,6 +222,7 @@ class PaymentMethodsInfoServiceTest {
 
     private fun initPaymentApiConfig() {
         with(paymentApiProperties) {
+            every { paymentHost } returns BASE_PAY_HOST_SBP
             every { paymentHostPagePayInfo } returns BASE_PAY_HOST
             every { paymentUrlSuffix } returns BASE_PAYMENT_CARD_PAY_PATH
             every { paymentSbpUrlSuffix } returns BASE_PAYMENT_SBP_PAY_PATH
@@ -258,7 +260,7 @@ class PaymentMethodsInfoServiceTest {
         URI.create("$BASE_PAY_HOST$BASE_PAYMENT_CARD_PAY_PATH$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun initSbpPayURITemplate() =
-        URI.create("$BASE_PAY_HOST${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
+        URI.create("$BASE_PAY_HOST_SBP${BASE_PAYMENT_SBP_PAY_PATH}$validOrderUUID?urlToReturn=${RETURN_URL}&depersonalization=false")
 
     private fun activateQrGenerator() = ReflectionTestUtils.setField(payInfoService, "isQrGeneratorActive", true)
 
