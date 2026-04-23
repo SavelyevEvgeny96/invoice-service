@@ -88,6 +88,7 @@ app:
 
 api:
   payment:
+    paymentHostPagePayInfo: ${PAYMENT_HOST_PAGE_PAY_INFO:https://test-gateway-site-dmz.sogaz.ru/}
     paymentHost: ${PAYMENT_HOST:https://test-gateway-site-kis.sogaz.ru/}
     paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/pay/}
     paymentSbpUrlSuffix: ${PAYMENT_SBP_URL_SUFFIX:/invoice/paySbp/}

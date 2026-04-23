@@ -221,7 +221,7 @@ class PaymentMethodsInfoServiceTest {
 
     private fun initPaymentApiConfig() {
         with(paymentApiProperties) {
-            every { paymentHost } returns BASE_PAY_HOST
+            every { paymentHostPagePayInfo } returns BASE_PAY_HOST
             every { paymentUrlSuffix } returns BASE_PAYMENT_CARD_PAY_PATH
             every { paymentSbpUrlSuffix } returns BASE_PAYMENT_SBP_PAY_PATH
 

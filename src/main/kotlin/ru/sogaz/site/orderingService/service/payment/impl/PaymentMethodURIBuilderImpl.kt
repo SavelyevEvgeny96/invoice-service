@@ -3,7 +3,6 @@ package ru.sogaz.site.orderingService.service.payment.impl
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.util.MultiValueMap
 import org.springframework.web.util.UriComponentsBuilder
@@ -24,7 +23,7 @@ class PaymentMethodURIBuilderImpl(
         payQueryParams: PayQueryParams,
     ): URI =
         buildUri(
-            "${paymentApiProperties.paymentHost}${paymentApiProperties.paymentUrlSuffix}$orderId",
+            "${paymentApiProperties.paymentHostPagePayInfo}${paymentApiProperties.paymentUrlSuffix}$orderId",
             payQueryParams.toQueryParams(),
         )
 

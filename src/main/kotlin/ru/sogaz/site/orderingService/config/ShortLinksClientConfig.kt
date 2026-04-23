@@ -8,14 +8,14 @@ import ru.sogaz.site.shortlinks.client.invoker.ApiClient
 
 @Configuration
 class ShortLinksClientConfig {
-
     @Bean
     fun shortLinkControllerApi(
-        @Value("\${app.client.shortLink.basePath}") shortLinkBasePath: String
+        @Value("\${app.client.shortLink.basePath}") shortLinkBasePath: String,
     ): ShortLinkControllerApi {
-        val apiClient = ApiClient().apply {
-            basePath = shortLinkBasePath
-        }
+        val apiClient =
+            ApiClient().apply {
+                basePath = shortLinkBasePath
+            }
         return ShortLinkControllerApi(apiClient)
     }
 }

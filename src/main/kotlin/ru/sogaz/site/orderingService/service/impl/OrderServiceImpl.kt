@@ -1,5 +1,4 @@
 package ru.sogaz.site.orderingService.service.impl
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
