@@ -15,6 +15,7 @@ data class InvoiceStatusEvent(
     val maskedPan: String?, // Маскированный номер карты
     val paymentSystem: String?, // Наименование платёжной системы
     val issuerName: String?, // Кем выдана карта (банк-эмитент)
+    val title: String?,
     val paymentType: String?, // Источник совершения операции (из portalType)
     val keyCard: String?,
     val bank: String? = null,
