@@ -5,7 +5,7 @@ import org.springframework.web.servlet.view.RedirectView
 import ru.sogaz.site.orderingService.apiDoc.PayApi
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
-import ru.sogaz.site.orderingService.service.OrderService
+import ru.sogaz.site.orderingService.service.order.OrderService
 import java.util.UUID
 
 @RestController

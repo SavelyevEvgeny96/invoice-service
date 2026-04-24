@@ -17,7 +17,8 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.properties.PaymentApiProperties
-import ru.sogaz.site.orderingService.service.impl.OrderServiceImpl
+import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
+import ru.sogaz.site.orderingService.service.order.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.shortLinks.ShortLinksIntegration
 import ru.sogaz.site.shortlinks.client.model.ShortLinkRequest
@@ -49,6 +50,8 @@ class OrderServiceImplTest {
     @Mock
     private lateinit var paymentApiProperties: PaymentApiProperties
 
+    @Mock
+    private lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
@@ -63,12 +66,11 @@ class OrderServiceImplTest {
         whenever(command.clientId).thenReturn("")
         whenever(command.subOrders).thenReturn(mutableListOf())
         whenever(command.versionApi).thenReturn(ApiVersionEnum.V1)
+        whenever(paymentApiProperties.paymentHost).thenReturn(hostNameApp)
+        whenever(paymentApiProperties.paymentUrlSuffix).thenReturn(pagepayinfoUrlSuffix)
 
         // не вызываем command.clientId внутри whenever(...)
         whenever(clientSystemDao.findBySystemCode("")).thenReturn(null)
-
-        whenever(paymentApiProperties.paymentHost).thenReturn(hostNameApp)
-        whenever(paymentApiProperties.paymentUrlSuffix).thenReturn(pagepayinfoUrlSuffix)
 
         service =
             OrderServiceImpl(
@@ -79,6 +81,7 @@ class OrderServiceImplTest {
                 orderManualMapper = orderManualMapper,
                 shortLinksIntegration = shortLinksIntegration,
                 paymentApiProperties = paymentApiProperties,
+                queueStatusResultNameNormalizeService = queueStatusResultNameNormalizeService,
             )
     }
 
