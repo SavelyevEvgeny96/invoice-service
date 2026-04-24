@@ -98,6 +98,7 @@ api:
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
     pagepayinfoHost: ${PAGEPAYINFO_HOST:https://test-pay.sogaz.ru}
     pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/p/}
+    sogazUrlPattern: ${SOGAZ_URL_PATTERN:^.*.sogaz.ru$|^lk.health-and-care.ru$}
 
 resilience4j:
   retry:
