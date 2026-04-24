@@ -83,17 +83,21 @@ app:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
     qr:
       basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
+    shortLink:
+      basePath: ${SHORT_LINK_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/short-links-service}
 
 api:
   payment:
-    paymentUrl: ${PAYMENT_URL:https://test-gateway-site-kis.sogaz.ru/payment/pay/}
-    paymentSbpUrl: ${PAYMENT_SBP_URL:https://test-gateway-site-kis.sogaz.ru/payment/paySbp/}
+    paymentHostPagePayInfo: ${PAYMENT_HOST_PAGE_PAY_INFO:https://test-gateway-site-dmz.sogaz.ru/}
+    paymentHost: ${PAYMENT_HOST:https://test-gateway-site-kis.sogaz.ru/}
+    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/pay/}
+    paymentSbpUrlSuffix: ${PAYMENT_SBP_URL_SUFFIX:/invoice/paySbp/}
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
     qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
-    paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/p/}
-    sogazUrlPattern: ${SOGAZ_URL_PATTERN:^.*.sogaz.ru$|^lk.health-and-care.ru$}
+    pagepayinfoHost: ${PAGEPAYINFO_HOST:https://test-pay.sogaz.ru}
+    pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/p/}
 
 resilience4j:
   retry:

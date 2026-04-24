@@ -169,6 +169,7 @@ class PaymentOperationsServiceTest {
                 paymentType = PAYMENT_TYPE,
                 payDate = Instant.now(),
                 errorText = null,
+                externalErrorCode = null,
                 paymentBankId = PAYMENT_BANK_ID,
                 payerIp = PAYER_IP,
             )

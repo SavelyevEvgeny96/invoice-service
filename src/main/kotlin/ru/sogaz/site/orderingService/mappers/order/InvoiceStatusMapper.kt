@@ -16,12 +16,24 @@ interface InvoiceStatusMapper {
     @Mapping(target = "email", source = "order.recipientEmail")
     @Mapping(target = "status", source = "completedPaymentData.status")
     @Mapping(target = "invoices", source = "order.subOrders")
+    @Mapping(target = "keyCard", source = "completedPaymentData.card.cardId")
+    @Mapping(target = "issuerName", source = "completedPaymentData.card.issuerName")
+    @Mapping(target = "maskedPan", source = "completedPaymentData.card.maskedPan")
+    @Mapping(target = "paymentSystem", source = "completedPaymentData.card.paymentSystem")
+    @Mapping(target = "title", source = "completedPaymentData.card.title")
+    @Mapping(target = "bank", source = "completedPaymentData.bank")
+    @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
+    @Mapping(target = "paySucces", source = "completedPaymentData.payDate")
     fun toInvoiceStatusEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): InvoiceStatusEvent
 
     @Mapping(target = "premium", source = "premiumAmount")
-    @Mapping(target = "insuranceKind", source = "insuranceProgram")
+    @Mapping(target = "insuranceKind", source = "typeInsurance")
+    @Mapping(target = "agreementId", source = "contractId")
+    @Mapping(target = "agreementNumber", source = "contractNumber")
+    @Mapping(target = "program", source = "insuranceProgram")
+    @Mapping(target = "agreementDate", source = "contractDate")
     fun toInvoiceData(subOrder: SubOrderEntity): SubInvoiceData
 }

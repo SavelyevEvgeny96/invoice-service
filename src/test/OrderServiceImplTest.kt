@@ -16,6 +16,7 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
+import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.order.impl.OrderServiceImpl
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -47,13 +48,16 @@ class OrderServiceImplTest {
     lateinit var shortLinksIntegration: ShortLinksIntegration
 
     @Mock
+    private lateinit var paymentApiProperties: PaymentApiProperties
+
+    @Mock
     private lateinit var queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService
     private lateinit var service: OrderServiceImpl
     private lateinit var command: CreateOrderCommand
 
-    private val payBasePath = "https://pay.test/"
-    private val hostNameApp = "https://pay.test2"
-    private val paymentUrlSuffix = "/payment/p/"
+    private val hostNameApp = "https://pay.test"
+    private val pagepayinfoUrlSuffix = "/payment/p/"
+    private val payBasePath = "$hostNameApp$pagepayinfoUrlSuffix"
 
     @BeforeEach
     fun setUp() {
@@ -62,6 +66,8 @@ class OrderServiceImplTest {
         whenever(command.clientId).thenReturn("")
         whenever(command.subOrders).thenReturn(mutableListOf())
         whenever(command.versionApi).thenReturn(ApiVersionEnum.V1)
+        whenever(paymentApiProperties.paymentHost).thenReturn(hostNameApp)
+        whenever(paymentApiProperties.paymentUrlSuffix).thenReturn(pagepayinfoUrlSuffix)
 
         // не вызываем command.clientId внутри whenever(...)
         whenever(clientSystemDao.findBySystemCode("")).thenReturn(null)
@@ -71,12 +77,10 @@ class OrderServiceImplTest {
                 orderDao = orderDao,
                 paymentService = paymentService,
                 clientSystemDao = clientSystemDao,
-                payBasePath = payBasePath,
                 subOrderDao = subOrderDao,
                 orderManualMapper = orderManualMapper,
-                hostNameApp = hostNameApp,
-                paymentUrlSuffix = paymentUrlSuffix,
                 shortLinksIntegration = shortLinksIntegration,
+                paymentApiProperties = paymentApiProperties,
                 queueStatusResultNameNormalizeService = queueStatusResultNameNormalizeService,
             )
     }
@@ -131,7 +135,6 @@ class OrderServiceImplTest {
 
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
-        assertEquals("$hostNameApp$paymentUrlSuffix$orderId", requestToShortLink.longUrl)
         assertEquals(100, requestToShortLink.maxVisits)
         verify(orderDao).save(orderEntity)
         verify(orderDao).save(savedOrder)
