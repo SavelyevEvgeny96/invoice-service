@@ -68,6 +68,7 @@ class OrderPayServiceTest {
 
     @RelaxedMockK
     private lateinit var paymentPage: PaymentPage
+
     @BeforeEach
     fun beforeEach() {
         orderService =
