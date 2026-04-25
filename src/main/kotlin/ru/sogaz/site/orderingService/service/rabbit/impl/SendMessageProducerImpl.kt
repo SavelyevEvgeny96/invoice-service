@@ -298,7 +298,7 @@ class SendMessageProducerImpl(
             { message ->
 
                 // 4.1) Технические headers для трассировки и диагностики
-                message.messageProperties.headers["author"] = "payService"
+                message.messageProperties.headers["author"] = "invoiceService"
                 message.messageProperties.headers["flowCode"] = "ResultPay"
                 message.messageProperties.headers["timestamp"] = timestamp
 
