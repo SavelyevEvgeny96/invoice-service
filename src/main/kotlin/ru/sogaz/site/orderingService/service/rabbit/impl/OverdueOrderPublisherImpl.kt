@@ -15,7 +15,7 @@ class OverdueOrderPublisherImpl(
     private val overdueInvoiceV2Mapper: OverdueInvoiceV2Mapper,
     private val overdueInvoiceV1Mapper: OverdueInvoiceV1Mapper,
     private val sendMessageProducer: SendMessageProducer,
-    @Value("\${rabbit.payments.exchange}")
+    @param:Value("\${app.rabbit.payments-exchange}")
     private val exchange: String,
 ) : OverdueOrderPublisher {
     private val logger = loggerFor(javaClass)
@@ -25,11 +25,9 @@ class OverdueOrderPublisherImpl(
             val routingKey = order.queueStatusResultName ?: return@forEach
 
             when (order.versionApi) {
-                ApiVersionEnum.V1 -> publishV1(order, routingKey)
+                ApiVersionEnum.V1, null -> publishV1(order, routingKey)
                 ApiVersionEnum.V2 -> publishV2(order, routingKey)
-                else -> {
-                    logger.warn("Unsupported versionApi={} for orderId={}", order.versionApi, order.orderId)
-                }
+
             }
         }
     }
