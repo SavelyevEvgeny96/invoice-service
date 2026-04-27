@@ -104,7 +104,7 @@ class SendMessageProducerImplTest {
         val processed = mppCaptor.firstValue.postProcessMessage(message)
         val headers = processed.messageProperties.headers
 
-        assertEquals("payService", headers["author"])
+        assertEquals("invoiceService", headers["author"])
         assertEquals("ResultPay", headers["flowCode"])
 
         val ts = headers["timestamp"] as String?

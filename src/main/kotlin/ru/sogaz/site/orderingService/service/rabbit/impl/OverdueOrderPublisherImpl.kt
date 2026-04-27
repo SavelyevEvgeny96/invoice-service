@@ -27,7 +27,6 @@ class OverdueOrderPublisherImpl(
             when (order.versionApi) {
                 ApiVersionEnum.V1, null -> publishV1(order, routingKey)
                 ApiVersionEnum.V2 -> publishV2(order, routingKey)
-
             }
         }
     }
