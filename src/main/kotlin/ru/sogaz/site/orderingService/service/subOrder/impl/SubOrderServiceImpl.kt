@@ -5,6 +5,7 @@ import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.service.subOrder.SubOrderService
+import java.time.Instant
 
 @Service
 class SubOrderServiceImpl(
@@ -24,5 +25,9 @@ class SubOrderServiceImpl(
             premiumAmount = order.premiumAmount,
             mainContractCheck = true,
             channel = clientId,
+            policyId = "",
+            contractNumber = "",
+            contractId = "",
+            createDate = Instant.now(),
         ).run(subOrderDao::save)
 }

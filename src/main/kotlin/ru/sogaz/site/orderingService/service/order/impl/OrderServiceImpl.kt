@@ -128,6 +128,8 @@ class OrderServiceImpl(
                 ),
             bank = BankEnum.GPB.code,
             clientId = clientId,
+            recipientEmail = "",
+            recipientPhone = "",
         ).run(orderDao::save)
 
     private fun findOrderByIdOrThrow(orderId: UUID): OrderEntity =

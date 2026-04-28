@@ -9,6 +9,7 @@ import ru.sogaz.site.orderingService.service.order.OrderService
 import ru.sogaz.site.orderingService.service.payment.CardRegistryService
 import ru.sogaz.site.orderingService.service.subOrder.SubOrderService
 import ru.sogaz.site.payment.client.api.CardRegistryV2ControllerApi
+import ru.sogaz.site.payment.client.model.BankPaymentPageData
 
 @Service
 class CardRegistryServiceImpl(
@@ -25,8 +26,9 @@ class CardRegistryServiceImpl(
     ): String {
         val order: OrderEntity = createRegistryOrder(unifiedId, payQueryParams, clientId)
         val payRegOperationRequestMapping = payRegOperationMapper.mapToRequest(order, payQueryParams)
-        val url = cardRegistryV2Api.cardRegistry(payRegOperationRequestMapping)
-        return url.paymentPageUrl
+        val response: BankPaymentPageData =
+            cardRegistryV2Api.cardRegistry(payRegOperationRequestMapping)
+        return response.paymentPageUrl
     }
 
     private fun createRegistryOrder(
