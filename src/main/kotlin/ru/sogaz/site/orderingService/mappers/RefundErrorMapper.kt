@@ -30,9 +30,9 @@ interface RefundErrorMapper {
     }
 
     @Mapping(target = "metaInfo", source = "payload.metaInfo")
-    @Mapping(target = "orderId", source = "payload.orderId")
+    @Mapping(target = "invoiceId", source = "payload.invoiceId")
     @Mapping(target = "status", constant = "error")
-    @Mapping(target = "premiumAmount", source = "payload.amount")
+    @Mapping(target = "amount", source = "payload.amount")
     @Mapping(target = "errorText", source = "reason", qualifiedByName = ["mapErrorText"])
     fun toErrorDto(
         payload: RefundPayloadDto,

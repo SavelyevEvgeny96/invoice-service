@@ -10,8 +10,8 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
     imports = [ArrayList::class],
 )
 interface OrderRefundMapper {
-    @Mapping(target = "premiumAmount", source = "order.premiumAmount")
-    @Mapping(target = "orderId", source = "order.orderId")
+    @Mapping(target = "amount", source = "order.premiumAmount")
+    @Mapping(target = "invoiceId", source = "order.orderId")
     @Mapping(target = "status", source = "completedPaymentData.status")
     @Mapping(target = "metaInfo", expression = "java( new ArrayList<MetaInfoOrder>() )")
     fun toRefundResponseDto(
