@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-108-add-system
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-108
+  - include:
+      file: db.changelog\v1.0.8\2026-04-28\DATA\add_system.sql
