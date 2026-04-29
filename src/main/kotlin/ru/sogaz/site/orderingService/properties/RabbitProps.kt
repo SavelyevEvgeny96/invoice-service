@@ -11,7 +11,7 @@ class RabbitProps {
     lateinit var receiptExchange: String
     lateinit var paymentsExchange: String
     lateinit var queueOrder: String
-    lateinit var queueOrderDlq: String
+    lateinit var queueInvoiceReversalDlq: String
     lateinit var queueInvoiceReversal: String
     lateinit var queuePayment: String
     lateinit var queuePaymentStatusRefund: String
@@ -32,7 +32,7 @@ class RabbitProps {
         logger.info("queueOrder = $queueOrder")
         logger.info("queueInvoiceReversal = $queueInvoiceReversal")
         logger.info("queuePaymentStatusRefund = $queuePaymentStatusRefund")
-        logger.info("queueOrderDlq = $queueOrderDlq")
+        logger.info("queueInvoiceReversalDlq = $queueInvoiceReversalDlq")
         logger.info("queuePayment = $queuePayment")
         logger.info("routingKeyOrder = $routingKeyOrder")
         logger.info("routingKeyOrderDlq = $routingKeyOrderDlq")
