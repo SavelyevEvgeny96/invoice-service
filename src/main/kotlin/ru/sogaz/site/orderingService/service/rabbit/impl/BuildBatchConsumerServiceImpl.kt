@@ -30,7 +30,7 @@ class BuildBatchConsumerServiceImpl(
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
-        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.refund.%s.created"
+        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.reversal.%s.created"
     }
 
     private val logger = loggerFor(javaClass)
@@ -69,13 +69,13 @@ class BuildBatchConsumerServiceImpl(
         val orderIds =
             prepared
                 .asSequence()
-                .map { it.orderId }
+                .map { it.invoiceId }
                 .distinct()
                 .toList()
         val ordersById = orderDao.findByIds(orderIds).associateBy { it.orderId }
 
         // 2) missing = те, у кого ордер НЕ найден
-        val (existsInDb, missing) = prepared.partition { ordersById.containsKey(it.orderId) }
+        val (existsInDb, missing) = prepared.partition { ordersById.containsKey(it.invoiceId) }
 
         // 3) Для тех, у кого ордер найден — проверяем доступ по author (external_system_code)
         val authors = existsInDb.mapNotNull { it.metaInfo.firstOrNull()?.author }.distinct()
@@ -101,7 +101,7 @@ class BuildBatchConsumerServiceImpl(
         // 5) notForPaid (НЕ оплаченные) / found (оплаченные)
         val (foundRaw, notForPaid) =
             foundWithAccess.partition { p ->
-                val order = ordersById[p.orderId]
+                val order = ordersById[p.invoiceId]
                 order != null &&
                     order.status.isPaidFor() &&
                     LocalDate.now().isEqual(extractPayDate(order))
@@ -109,11 +109,11 @@ class BuildBatchConsumerServiceImpl(
 
         val found =
             foundRaw.map { p ->
-                val order = ordersById[p.orderId]!!
+                val order = ordersById[p.invoiceId]!!
                 val subOrder = subOrderDao.findFirstByOrderEntityOrderId(order.orderId)
                 val description = buildRefundDescription(subOrder)
                 p.copy(
-                    orderId = order.orderId,
+                    invoiceId = order.orderId,
                     description = description,
                     amount = order.premiumAmount,
                 )
@@ -128,10 +128,14 @@ class BuildBatchConsumerServiceImpl(
     }
 
     private fun buildRefundDescription(subOrder: SubOrderEntity?): String =
-        when {
-            subOrder != null -> "Отмена транзакции по договору №${subOrder.contractNumber} от ${subOrder.contractDate}"
-            else -> "Отмена транзакции по договору"
-        }
+        subOrder?.let {
+            buildString {
+                append("Отмена транзакции по договору №${it.contractNumber}")
+                it.contractDate?.let { date ->
+                    append(" от $date")
+                }
+            }
+        } ?: "Отмена транзакции по договору"
 
     private fun extractPayDate(order: OrderEntity): LocalDate? =
         order.createDate

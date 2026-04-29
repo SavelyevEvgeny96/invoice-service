@@ -7,8 +7,8 @@ import java.util.UUID
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class RefundResponseDto(
     val metaInfo: List<MetaInfoOrder>,
-    val orderId: UUID,
+    val invoiceId: UUID,
     val status: String,
-    val premiumAmount: BigDecimal?,
+    val amount: BigDecimal?,
     val errorText: String? = null,
 )
