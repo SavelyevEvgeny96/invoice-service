@@ -106,7 +106,7 @@ class OrderRefundBatchConsumerImpl(
      * @param channel Канал RabbitMQ, используемый для ACK/Reject сообщений.
      */
     @RabbitListener(
-        queues = ["\${app.rabbit.queue-order-refund}"],
+        queues = ["\${app.rabbit.queue-invoice-reversal}"],
         containerFactory = "batchContainerFactory",
     )
     override fun handleBatchRefundCreated(

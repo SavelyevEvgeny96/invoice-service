@@ -55,9 +55,9 @@ app:
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
-    queue-order-refund: ${ORDER_CREATED_REFUND_QUEUE:order.refund.queue}
+    queue-invoice-reversal: ${INVOICE_CREATED_REVERSAL_QUEUE:invoice.reversal.queue}
     queue-payment-status-refund: ${PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.queue}
-    queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
+    queue-invoice-reversal-dlq: ${INVOICE_CREATED_REVERSAL_QUEUE_DLQ:invoice.reversal.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
     queue-send-status-order: ${ORDER_STATUS_SEND_QUEUE:order.status.send.queue}
