@@ -62,8 +62,8 @@ class OrderRefundStatusEventProducerTest {
         val refundMessage = getCapturedTestMessage()
 
         assertThat(refundMessage)
-            .returns(order.orderId, RefundResponseDto::orderId)
-            .returns(order.premiumAmount, RefundResponseDto::premiumAmount)
+            .returns(order.orderId, RefundResponseDto::invoiceId)
+            .returns(order.premiumAmount, RefundResponseDto::amount)
             .returns(completedPaymentData.status.toString(), RefundResponseDto::status)
             .returns(completedPaymentData.errorText, RefundResponseDto::errorText)
     }

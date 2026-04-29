@@ -86,7 +86,7 @@ class SendMessageProducerImpl(
             batch.forEach { item ->
                 val rk = item.routingKeyStatus.orEmpty()
                 val errorDto = refundErrorMapper.toErrorDto(item, reason)
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, item.orderId)
+                sendMessage(rk, errorDto, rabbitProps.ordersExchange, item.invoiceId)
             }
         }
 
@@ -95,12 +95,12 @@ class SendMessageProducerImpl(
             val successDto =
                 RefundPayloadDto(
                     item.metaInfo,
-                    item.orderId,
+                    item.invoiceId,
                     null,
                     item.amount,
                     item.description,
                 )
-            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.orderId)
+            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.invoiceId)
         }
     }
 

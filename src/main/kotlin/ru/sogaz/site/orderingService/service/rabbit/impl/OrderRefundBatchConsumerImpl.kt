@@ -213,7 +213,7 @@ class OrderRefundBatchConsumerImpl(
                     logger.info(
                         String.format(
                             LOG_REFUND_MESSAGE_RECEIVED,
-                            dto.orderId,
+                            dto.invoiceId,
                             dto.status,
                             tag,
                         ),
@@ -221,12 +221,12 @@ class OrderRefundBatchConsumerImpl(
 
                     // 1. Поиск заказа
                     val order =
-                        orderDao.findById(dto.orderId)
+                        orderDao.findById(dto.invoiceId)
                             ?: run {
                                 logger.warn(
                                     String.format(
                                         LOG_ORDER_NOT_FOUND,
-                                        dto.orderId,
+                                        dto.invoiceId,
                                         tag,
                                     ),
                                 )
@@ -239,7 +239,7 @@ class OrderRefundBatchConsumerImpl(
                         logger.warn(
                             String.format(
                                 LOG_INVALID_REFUND_STATUS,
-                                dto.orderId,
+                                dto.invoiceId,
                                 dto.status,
                                 tag,
                             ),
