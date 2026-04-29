@@ -30,7 +30,7 @@ class BuildBatchConsumerServiceImpl(
 ) : BuildBatchConsumerService {
     companion object {
         private const val LOG_START = "Старт batch upsertOrders: size=%d"
-        private const val PREFIX_REFUND_ROUTING_KEY = "order.status.reversal.%s.created"
+        private const val PREFIX_REFUND_ROUTING_KEY = "invoice.status.reversal.%s.created"
     }
 
     private val logger = loggerFor(javaClass)

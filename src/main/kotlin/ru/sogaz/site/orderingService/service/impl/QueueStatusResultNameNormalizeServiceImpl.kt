@@ -12,7 +12,7 @@ class QueueStatusResultNameNormalizeServiceImpl(
     companion object {
         const val PAYMENT_STATUS_PATTERN = "payment.status.%s.created"
         const val ORDER_STATUS_PATTERN = "order.status.reg.%s.created"
-        const val ORDER_STATUS_REFUND_PATTERN = "order.status.reversal.%s.created"
+        const val ORDER_STATUS_REFUND_PATTERN = "invoice.status.reversal.%s.created"
     }
 
     override fun buildQueueStatusResultName(
