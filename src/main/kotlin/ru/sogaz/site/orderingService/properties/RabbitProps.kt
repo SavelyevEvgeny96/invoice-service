@@ -12,12 +12,12 @@ class RabbitProps {
     lateinit var paymentsExchange: String
     lateinit var queueOrder: String
     lateinit var queueOrderDlq: String
-    lateinit var queueOrderRefund: String
+    lateinit var queueInvoiceReversal: String
     lateinit var queuePayment: String
     lateinit var queuePaymentStatusRefund: String
     lateinit var routingKeyOrder: String
     lateinit var routingKeyOrderDlq: String
-    lateinit var routingKeyOrderRefund: String
+    lateinit var routingKeyInvoiceReversal: String
     lateinit var routingKeyPayment: String
     lateinit var routingKeyReceipt: String
     lateinit var routingKeyRefundPayment: String
@@ -30,14 +30,14 @@ class RabbitProps {
         logger.info("paymentsExchange = $paymentsExchange")
         logger.info("ordersExchange = $ordersExchange")
         logger.info("queueOrder = $queueOrder")
-        logger.info("queueOrderRefund = $queueOrderRefund")
+        logger.info("queueInvoiceReversal = $queueInvoiceReversal")
         logger.info("queuePaymentStatusRefund = $queuePaymentStatusRefund")
         logger.info("queueOrderDlq = $queueOrderDlq")
         logger.info("queuePayment = $queuePayment")
         logger.info("routingKeyOrder = $routingKeyOrder")
         logger.info("routingKeyOrderDlq = $routingKeyOrderDlq")
         logger.info("routingKeyPayment = $routingKeyPayment")
-        logger.info("routingKeyOrderRefund = $routingKeyOrderRefund")
+        logger.info("routingKeyInvoiceReversal = $routingKeyInvoiceReversal")
         logger.info("routingKeyRefundPayment = $routingKeyRefundPayment")
         logger.info("routingKeyPaymentStatusRefund = $routingKeyPaymentStatusRefund")
     }

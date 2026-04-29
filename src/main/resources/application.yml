@@ -67,7 +67,7 @@ app:
     queue-fill-history-receipts: ${RECEIPT_SENT_QUEUE:receipt.sent.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
     routing-key-order-dlq: ${ROUTING_KEY_ORDER_CREATED_DLQ:order.created.dlq}
-    routing-key-order-refund: ${ROUTING_KEY_ORDER_CREATED:order.refund.created}
+    routing-key-invoice-reversal: ${ROUTING_KEY_ORDER_CREATED:invoice.reversal.created}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-receipt: ${ROUTING_KEY_RECEIPT_REQUESTED:receipt.requested}
     routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
