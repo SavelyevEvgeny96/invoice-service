@@ -148,7 +148,7 @@ logging:
     returns-enabled: ${LOGGING_RABBIT_RETURNS_ENABLED:false}
 crons:
   overdue:
-    cron: ${CRON_JOB_STATUS_ORDERS:0 0 * * * *}
+    cron: ${CRON_JOB_STATUS_ORDERS:0 */10 * * * *}
 
 logstash:
   host: ${LOG_SERVER_HOST:localhost}
