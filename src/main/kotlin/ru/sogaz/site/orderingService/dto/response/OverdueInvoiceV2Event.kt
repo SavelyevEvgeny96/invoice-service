@@ -22,7 +22,6 @@ data class OverdueSubInvoiceV2Dto(
     val agreementId: String?,
     val agreementNumber: String?,
     val agreementDate: String?,
-    val typeInsurance: String?,
     val insuranceKind: String?,
     val channel: String?,
 )
