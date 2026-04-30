@@ -5,8 +5,10 @@ import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN
+import ru.sogaz.site.orderingService.service.impl.QueueStatusResultNameNormalizeServiceImpl.Companion.PAYMENT_STATUS_PATTERN_V2
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -21,8 +23,19 @@ class OrderManualMapper(
     ): OrderEntity =
         orderMapper.fromCommand(command).apply {
             skipSendingErrorsQueue = skipSendingErrors
+
+            val pattern =
+                when (command.versionApi) {
+                    ApiVersionEnum.V2 -> PAYMENT_STATUS_PATTERN_V2
+                    else -> PAYMENT_STATUS_PATTERN
+                }
+
             queueStatusResultName =
-                queueStatusResultNameNormalizeService.buildQueueStatusResultName(PAYMENT_STATUS_PATTERN, clientId)
+                queueStatusResultNameNormalizeService.buildQueueStatusResultName(
+                    pattern,
+                    clientId,
+                )
+
             premiumAmount = calculatePremiumAmount(command.subOrders)
         }
 

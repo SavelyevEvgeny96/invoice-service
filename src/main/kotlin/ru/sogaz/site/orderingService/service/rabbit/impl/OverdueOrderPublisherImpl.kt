@@ -16,7 +16,9 @@ class OverdueOrderPublisherImpl(
     private val overdueInvoiceV1Mapper: OverdueInvoiceV1Mapper,
     private val sendMessageProducer: SendMessageProducer,
     @param:Value("\${app.rabbit.payments-exchange}")
-    private val exchange: String,
+    private val paymentsExchange: String,
+    @param:Value("\${app.rabbit.orders-exchange}")
+    private val orderExchange: String,
 ) : OverdueOrderPublisher {
     private val logger = loggerFor(javaClass)
 
@@ -35,12 +37,12 @@ class OverdueOrderPublisherImpl(
         order: OrderEntity,
         routingKey: String,
     ) {
-        val payload = overdueInvoiceV2Mapper.toEvent(order)
+        val payload = overdueInvoiceV1Mapper.toEvent(order)
 
         sendMessageProducer.sendMessage(
             routingKey = routingKey,
             payload = payload,
-            exchange = exchange,
+            exchange = paymentsExchange,
             orderId = order.orderId,
         )
     }
@@ -49,12 +51,12 @@ class OverdueOrderPublisherImpl(
         order: OrderEntity,
         routingKey: String,
     ) {
-        val payload = overdueInvoiceV1Mapper.toEvent(order)
+        val payload = overdueInvoiceV2Mapper.toEvent(order)
 
         sendMessageProducer.sendMessage(
             routingKey = routingKey,
             payload = payload,
-            exchange = exchange,
+            exchange = orderExchange,
             orderId = order.orderId,
         )
     }

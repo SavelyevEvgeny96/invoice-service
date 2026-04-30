@@ -12,7 +12,7 @@ interface OverdueInvoiceV2Mapper {
     @Mapping(target = "invoiceId", source = "orderId")
     @Mapping(target = "externalSystemCode", source = "clientId")
     @Mapping(target = "externalId", source = "subscriptionId")
-    @Mapping(target = "status", constant = "error")
+    @Mapping(target = "status", constant = "OVERDUE")
     @Mapping(target = "errorText", constant = "Срок жизни счета истек, счет не был оплачен")
     @Mapping(target = "invoices", source = "subOrders")
     @Mapping(target = "email", source = "recipientEmail")

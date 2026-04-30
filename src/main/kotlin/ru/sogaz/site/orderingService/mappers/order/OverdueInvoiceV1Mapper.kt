@@ -10,7 +10,7 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 @Mapper(componentModel = "spring")
 interface OverdueInvoiceV1Mapper {
     @Mapping(target = "externalSystemCode", source = "clientId")
-    @Mapping(target = "status", constant = "error")
+    @Mapping(target = "status", constant = "OVERDUE")
     @Mapping(target = "errorText", constant = "Срок жизни счета истек, счет не был оплачен")
     @Mapping(target = "subOrders", source = "subOrders")
     fun toEvent(order: OrderEntity): OverdueInvoiceV1Event
