@@ -100,7 +100,7 @@ class SendMessageProducerImpl(
                     item.amount,
                     item.description,
                 )
-            sendMessage(rabbitProps.routingKeyRefundPayment, successDto, rabbitProps.paymentsExchange, item.invoiceId)
+            sendMessage(rabbitProps.routingKeyReversalPayment, successDto, rabbitProps.paymentsExchange, item.invoiceId)
         }
     }
 

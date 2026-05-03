@@ -56,7 +56,6 @@ app:
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
     queue-invoice-reversal: ${INVOICE_CREATED_REVERSAL_QUEUE:invoice.reversal.queue}
-    queue-payment-status-refund: ${PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.queue}
     queue-invoice-reversal-dlq: ${INVOICE_CREATED_REVERSAL_QUEUE_DLQ:invoice.reversal.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
@@ -70,7 +69,7 @@ app:
     routing-key-invoice-reversal: ${ROUTING_KEY_ORDER_CREATED:invoice.reversal.created}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-receipt: ${ROUTING_KEY_RECEIPT_REQUESTED:receipt.requested}
-    routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
+    routing-key-reversal-payment: ${ROUTING_KEY_REVERSAL_PAYMENT_CREATED:payment.reversal.created}
     routing-key-payment-status-refund: ${ROUTING_KEY_PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.created}
     routing-key-payment-receipt-create-check: ${ROUTING_KEY_PAYMENT_RECEIPT_CHECK_QUEUE:receipt.created}
     listener:
