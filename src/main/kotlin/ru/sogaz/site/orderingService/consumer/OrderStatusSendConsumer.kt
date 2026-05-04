@@ -10,6 +10,7 @@ import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
+import ru.sogaz.site.orderingService.producer.InvoicePaymentStatusRegEventProducer
 import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
 
 @Component
@@ -18,6 +19,7 @@ class OrderStatusSendConsumer(
     private val orderDao: OrderDao,
     private val orderStatusEventProducer: OrderPaymentStatusEventProducer,
     private val invoiceStatusEventProducer: OrderPaymentStatusEventProducer,
+    private val invoiceStatusEventRegProducer: InvoicePaymentStatusRegEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 
@@ -28,10 +30,17 @@ class OrderStatusSendConsumer(
     @Retry(name = "rabbitConsumerRetry", fallbackMethod = "requeue")
     fun sendOrderStatus(completedPaymentData: CompletedPaymentData) {
         try {
-            val order = orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(completedPaymentData.orderId)
-            when (order.versionApi) {
-                ApiVersionEnum.V2 -> invoiceStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
-                else -> orderStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+            val order =
+                orderDao.findById(completedPaymentData.orderId) ?: throw OrderNotFoundException(
+                    completedPaymentData.orderId,
+                )
+            if (order.regCard) {
+                invoiceStatusEventRegProducer.sendPaymentStatusRegEvent(order, completedPaymentData)
+            } else {
+                when (order.versionApi) {
+                    ApiVersionEnum.V2 -> invoiceStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+                    else -> orderStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
+                }
             }
         } catch (ex: OrderNotFoundException) {
             logger.warn(ex.message)
