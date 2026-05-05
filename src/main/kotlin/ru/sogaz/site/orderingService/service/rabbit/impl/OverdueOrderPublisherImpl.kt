@@ -26,7 +26,7 @@ class OverdueOrderPublisherImpl(
 
     override fun publish(orders: List<OrderEntity>) {
         orders.forEach { order ->
-            val routingKey = order.queueStatusResultName ?: return@forEach
+            val routingKey = order.queueStatusResultName
             if (order.regCard) {
                 publishReg(order, routingKey)
             } else {

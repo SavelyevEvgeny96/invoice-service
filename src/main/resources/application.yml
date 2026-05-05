@@ -135,11 +135,11 @@ management:
       enable: true
 
 logging:
-#  level:
-#    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
-#    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
-##    org.springframework.amqp.rabbit.*: DEBUG
-#    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
+  level:
+    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
+    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
+#    org.springframework.amqp.rabbit.*: DEBUG
+    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
 
   rabbit:
     enabled: ${LOGGING_RABBIT_ENABLED:true}

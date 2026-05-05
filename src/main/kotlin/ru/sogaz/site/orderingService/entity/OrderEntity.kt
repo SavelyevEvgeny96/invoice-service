@@ -76,7 +76,7 @@ class OrderEntity(
     @Column(name = "recipient_user_id")
     var recipientUserId: String? = null,
     @Column(name = "queue_status_result_name")
-    var queueStatusResultName: String?,
+    var queueStatusResultName: String,
     @Column(name = "skip_sending_queue")
     var skipSendingQueue: Boolean? = false,
     @Column(name = "skip_sending_receipt")
