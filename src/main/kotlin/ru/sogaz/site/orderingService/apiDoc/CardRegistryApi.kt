@@ -48,7 +48,7 @@ interface CardRegistryApi {
             name = "payerIP",
             description = "IP пользователя, который совершает оплату",
             example = "2256",
-            required = true,
+            required = false,
         ),
     )
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")

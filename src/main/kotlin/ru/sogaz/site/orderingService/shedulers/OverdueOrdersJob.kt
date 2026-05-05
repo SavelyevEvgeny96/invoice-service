@@ -25,7 +25,6 @@ class OverdueOrdersJob(
     @Transactional
     fun run() {
         val now: Instant = Instant.now(clock)
-        logger.info("Запуск job -> удаление просроченных order")
         val orders =
             orderRepository.findOverdueOrders(
                 states = listOf(OrderStatusesEnum.NEW, OrderStatusesEnum.UPDATE),
@@ -33,11 +32,11 @@ class OverdueOrdersJob(
             )
 
         if (orders.isEmpty()) return
-
+        logger.info("Запуск job -> удаление просроченных order")
         orders.forEach { order ->
             order.status = OrderStatusesEnum.OVERDUE
             order.updateDate = now
-            logger.info("Обновлен статус у orderId:${order.orderId}")
+            logger.info("Обновлен статус c NEW/UPDATE -> OVERDUE у orderId:${order.orderId}")
         }
 
         eventPublisher.publishEvent(OverdueOrdersEvent(orders))
