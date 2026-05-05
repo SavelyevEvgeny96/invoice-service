@@ -17,6 +17,7 @@ import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.mappers.OrderManualMapper
 import ru.sogaz.site.orderingService.properties.PaymentApiProperties
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
@@ -130,6 +131,7 @@ class OrderServiceImpl(
             clientId = clientId,
             recipientEmail = "",
             recipientPhone = "",
+            typePaymentOperation = OperationTypeEnum.REGISTRATION.name,
         ).run(orderDao::save)
 
     private fun findOrderByIdOrThrow(orderId: UUID): OrderEntity =
@@ -151,7 +153,8 @@ class OrderServiceImpl(
     }
 
     private fun enrichWithShortLink(order: OrderEntity) {
-        val longUrl = "${paymentApiProperties.pagepayinfoHost}${paymentApiProperties.pagepayinfoUrlSuffix}${order.orderId}"
+        val longUrl =
+            "${paymentApiProperties.pagepayinfoHost}${paymentApiProperties.pagepayinfoUrlSuffix}${order.orderId}"
 
         val expireDays = calculateExpireDays(order.paymentEndDate)
 
