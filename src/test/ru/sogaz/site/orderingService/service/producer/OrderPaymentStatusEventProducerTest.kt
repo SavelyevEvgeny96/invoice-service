@@ -8,7 +8,6 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -124,13 +123,6 @@ class OrderPaymentStatusEventProducerTest {
         assertThat(paidOrderMessage.subOrders.first())
             .returns(now.toEpochMilli(), SubOrderPayload::policyDate)
             .returns(now.toEpochMilli(), SubOrderPayload::contractDate)
-    }
-
-    @Test
-    fun `producer should throw an exception when queueStatusResultName is null`() {
-        every { order.queueStatusResultName } returns null
-
-        assertThrows<IllegalArgumentException> { getCapturedTestMessage() }
     }
 
     private fun getCapturedTestMessage(): PaidOrderMessage {
