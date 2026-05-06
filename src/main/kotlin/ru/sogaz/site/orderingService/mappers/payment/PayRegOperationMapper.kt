@@ -19,6 +19,7 @@ interface PayRegOperationMapper {
     @Mapping(target = "saveCard", constant = "true")
     @Mapping(target = "payItems", ignore = true)
     @Mapping(target = "params", source = "params")
+    @Mapping(target = "payerIP", source = "params.payerIP")
     fun mapToRequest(
         order: OrderEntity,
         params: PayQueryParams,

@@ -18,4 +18,5 @@ data class PayQueryParamsWithRequiredFields(
     @field:NotNull(message = "urlToReturn is required")
     override val urlToReturnF: String?,
     override val depersonalization: Boolean = false,
+    override val payerIP: String? = null,
 ) : PayQueryParams()

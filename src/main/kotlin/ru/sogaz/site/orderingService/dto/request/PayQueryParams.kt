@@ -18,5 +18,5 @@ open class PayQueryParams(
     @field:Parameter(description = "Канал продажи")
     val channelSale: String? = null,
     @field:Parameter(description = "IP пользователя, который совершает оплату")
-    val payerIP: String? = null,
+    open val payerIP: String? = null,
 )
