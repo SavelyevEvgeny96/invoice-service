@@ -23,23 +23,6 @@ class RabbitConfig(
     @Primary
     fun jacksonMessageConverter(objectMapper: ObjectMapper): MessageConverter = Jackson2JsonMessageConverter(objectMapper)
 
-    @Bean("batchContainerFactory")
-    fun batchContainerFactory(noOpMessageConverter: NoOpMessageConverter): SimpleRabbitListenerContainerFactory =
-        SimpleRabbitListenerContainerFactory().apply {
-            setConnectionFactory(connectionFactory)
-            setBatchListener(true)
-            setConsumerBatchEnabled(true)
-            setDeBatchingEnabled(true)
-            setBatchSize(propsListener.batchSize)
-            setPrefetchCount(propsListener.prefetch)
-            setConcurrentConsumers(propsListener.concurrency)
-            setMaxConcurrentConsumers(propsListener.maxConcurrency)
-            setAcknowledgeMode(AcknowledgeMode.MANUAL)
-            setChannelTransacted(false)
-            setDefaultRequeueRejected(false)
-
-            setMessageConverter(noOpMessageConverter)
-        }
 
     @Bean
     fun concurrentContainerFactory(
@@ -50,6 +33,9 @@ class RabbitConfig(
             setConnectionFactory(connectionFactory)
             setMessageConverter(jacksonMessageConverter)
             setChannelTransacted(true)
+            setConcurrentConsumers(propsListener.consumers)
+            setMaxConcurrentConsumers(propsListener.maxConsumers)
+            setStopConsumerMinInterval(propsListener.stopConsumerMinIntervalMs)
             setConcurrentConsumers(propsListener.concurrency)
             setMaxConcurrentConsumers(propsListener.maxConcurrency)
         }

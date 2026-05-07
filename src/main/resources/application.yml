@@ -73,10 +73,11 @@ app:
     routing-key-payment-status-refund: ${ROUTING_KEY_PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.created}
     routing-key-payment-receipt-create-check: ${ROUTING_KEY_PAYMENT_RECEIPT_CHECK_QUEUE:receipt.created}
     listener:
-      batch-size: 50
-      prefetch: 50
       concurrency: 1
       max-concurrency: 1
+      consumers: ${RABBIT_CONCURRENCY_CONSUMERS:2}
+      maxConsumers: ${RABBIT_CONCURRENCY_MAX_CONSUMERS:5}
+      stopConsumerMinIntervalMs: ${RABBIT_CONCURRENCY_STOP_CONSUMERS_MIN_INTERVALS_MS:10000}
   client:
     payment:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
