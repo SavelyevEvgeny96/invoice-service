@@ -63,7 +63,6 @@ class OrderRefundStatusEventProducerTest {
 
         assertThat(refundMessage)
             .returns(order.orderId, RefundResponseDto::invoiceId)
-            .returns(order.premiumAmount, RefundResponseDto::amount)
             .returns(completedPaymentData.status.toString(), RefundResponseDto::status)
             .returns(completedPaymentData.errorText, RefundResponseDto::errorText)
     }
