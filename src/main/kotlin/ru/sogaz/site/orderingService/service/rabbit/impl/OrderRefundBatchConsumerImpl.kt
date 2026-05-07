@@ -38,7 +38,7 @@ class OrderRefundBatchConsumerImpl(
         private const val ERR_NOT_PAID = "Заказ не оплачен"
         private const val ERR_PAYMENT_DAY_EXPIRED = "Платеж недоступен для отмены. Прошло более суток с момента совершения оплаты"
         private const val LOG_INVALID_FORMAT_MISSING_ID = "Получено сообщение неверного формата (invoiceId отсутствует): {}"
-        private const val LOG_ORDER_NOT_FOUND = "Заказ не найден для refund. Сообщение: {}"
+        private const val LOG_ORDER_NOT_FOUND = "Заказ не найден для reversal. Сообщение: {}"
         private const val LOG_TECHNICAL_ERROR = "Техническая ошибка при обработке refund-сообщения: {}"
     }
 
@@ -60,10 +60,11 @@ class OrderRefundBatchConsumerImpl(
     ) {
         val raw = message.body.toString(Charsets.UTF_8)
         try {
-            val invoiceId = refundEvent.invoiceId ?: run {
-                logger.error(LOG_INVALID_FORMAT_MISSING_ID, raw)
-                return
-            }
+            val invoiceId =
+                refundEvent.invoiceId ?: run {
+                    logger.error(LOG_INVALID_FORMAT_MISSING_ID, raw)
+                    return
+                }
 
             val order = orderDao.findById(invoiceId)
             if (order == null) {
@@ -117,5 +118,4 @@ class OrderRefundBatchConsumerImpl(
         val zone = ZoneId.systemDefault()
         return payDate.atZone(zone).toLocalDate() == java.time.LocalDate.now(zone)
     }
-
 }

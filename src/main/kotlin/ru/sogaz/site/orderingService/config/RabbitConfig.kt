@@ -37,7 +37,6 @@ class RabbitConfig(
             setAcknowledgeMode(AcknowledgeMode.MANUAL)
             setChannelTransacted(false)
             setDefaultRequeueRejected(false)
-
             setMessageConverter(noOpMessageConverter)
         }
 
