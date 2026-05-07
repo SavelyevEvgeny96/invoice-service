@@ -7,7 +7,8 @@ import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 
 interface OrderRefundBatchConsumer {
     fun handleBatchRefundCreated(
-        @Payload refundEvent: RefundPayloadDto
+        @Payload refundEvent: RefundPayloadDto,
+        message: Message,
+        channel: Channel,
     )
-
 }

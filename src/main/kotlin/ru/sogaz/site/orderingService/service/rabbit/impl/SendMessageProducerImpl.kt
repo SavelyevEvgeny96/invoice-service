@@ -12,11 +12,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
-import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
-import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
-import ru.sogaz.site.orderingService.enums.RefundErrorReason
 import ru.sogaz.site.orderingService.loggerFor
-import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
@@ -48,7 +44,6 @@ import java.util.UUID
 class SendMessageProducerImpl(
     private val rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
-    private val refundErrorMapper: RefundErrorMapper,
     private val queueStatusResultNameNormalizeService: QueueStatusResultNameNormalizeService,
 ) : SendMessageProducer {
     private val logger = loggerFor(OrderBatchConsumerImpl::class.java)
@@ -56,53 +51,6 @@ class SendMessageProducerImpl(
         jacksonObjectMapper()
             .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP))
             .registerModule(JavaTimeModule())
-
-    /**
-     * Отправляет сообщения по результатам подготовки refund-заказов.
-     *
-     * На вход получает результат, который уже содержит разнесение по сценариям:
-     * - missing     — ордер не найден в БД
-     * - noAccess    — нет прав/доступа у author
-     * - notForPaid  — ордер существует, но не оплачен (или статус не SUCCESS)
-     * - found       — ордер найден, доступ есть, статус корректный -> отправляем успех
-     *
-     * Для каждой записи:
-     * - Формируем ответный DTO (error/success)
-     * - Отправляем в exchange
-     *
-     * @param resultOrder Результат подготовки, содержащий сгруппированные элементы
-     */
-    override fun sendMessageRefund(resultOrder: RefundPreparationResult) {
-        // 1) Ошибочные группы сводим в одну мапу "причина -> список"
-        val errorBatches: Map<RefundErrorReason, List<RefundPayloadDto>> =
-            mapOf(
-                RefundErrorReason.ORDER_NOT_FOUND to resultOrder.missing,
-                RefundErrorReason.NOT_PAID_FOR to resultOrder.notForPaid,
-                RefundErrorReason.NO_ACCESS to resultOrder.noAccess,
-            )
-
-        // 2) Обрабатываем все ошибки одинаково
-        errorBatches.forEach { (reason, batch) ->
-            batch.forEach { item ->
-                val rk = item.routingKeyStatus.orEmpty()
-                val errorDto = refundErrorMapper.toErrorDto(item, reason)
-                sendMessage(rk, errorDto, rabbitProps.ordersExchange, item.invoiceId)
-            }
-        }
-
-        // 3) Успех отдельно (тут другой DTO)
-        resultOrder.found.forEach { item ->
-            val successDto =
-                RefundPayloadDto(
-                    item.metaInfo,
-                    item.invoiceId,
-                    null,
-                    item.amount,
-                    item.description,
-                )
-            sendMessage(rabbitProps.routingKeyReversalPayment, successDto, rabbitProps.paymentsExchange, item.invoiceId)
-        }
-    }
 
     /**
      * Обрабатывает битое сообщение, из которого удалось извлечь {@code author}.
