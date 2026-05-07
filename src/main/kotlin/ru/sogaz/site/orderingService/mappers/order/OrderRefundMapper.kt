@@ -2,20 +2,24 @@ package ru.sogaz.site.orderingService.mappers.order
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
-import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
-import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.dto.data.RefundReversalPaymentDto
+import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
 
-@Mapper(
-    imports = [ArrayList::class],
-)
+/**
+ * Маппер DTO для ответа и команды возврата.
+ */
+@Mapper(componentModel = "spring")
 interface OrderRefundMapper {
-    @Mapping(target = "amount", source = "order.premiumAmount")
-    @Mapping(target = "invoiceId", source = "order.orderId")
-    @Mapping(target = "status", source = "completedPaymentData.status")
-    @Mapping(target = "metaInfo", expression = "java( new ArrayList<MetaInfoOrder>() )")
-    fun toRefundResponseDto(
-        order: OrderEntity,
-        completedPaymentData: CompletedPaymentData,
+    @Mapping(target = "status", constant = "error")
+    @Mapping(target = "errorText", source = "errorText")
+    fun toErrorDto(
+        invoiceId: java.util.UUID,
+        errorText: String,
     ): RefundResponseDto
+
+    fun toReversalPaymentDto(
+        payment: PaymentOperationEntity,
+        description: String,
+    ): RefundReversalPaymentDto
 }
