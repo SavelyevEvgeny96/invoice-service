@@ -1,9 +1,9 @@
 package ru.sogaz.site.orderingService.service.rabbit.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
@@ -17,7 +17,6 @@ import ru.sogaz.site.orderingService.mappers.order.OrderRefundMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.OrderRefundBatchConsumer
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
-import java.nio.charset.StandardCharsets
 import java.time.ZoneId
 
 /**
@@ -25,7 +24,6 @@ import java.time.ZoneId
  */
 @Service
 class OrderRefundBatchConsumerImpl(
-    private val objectMapper: ObjectMapper,
     private val orderDao: OrderDao,
     private val clientSystemDao: ClientSystemDao,
     private val paymentOperationDao: PaymentOperationDao,
@@ -40,6 +38,9 @@ class OrderRefundBatchConsumerImpl(
         private const val ERR_NO_ACCESS = "У системы отсутствуют права на выполнение операции возврата"
         private const val ERR_NOT_PAID = "Заказ не оплачен"
         private const val ERR_PAYMENT_DAY_EXPIRED = "Платеж недоступен для отмены. Прошло более суток с момента совершения оплаты"
+        private const val LOG_INVALID_FORMAT_MISSING_ID = "Получено сообщение неверного формата (invoiceId отсутствует): {}"
+        private const val LOG_ORDER_NOT_FOUND = "Заказ не найден для refund. Сообщение: {}"
+        private const val LOG_TECHNICAL_ERROR = "Техническая ошибка при обработке refund-сообщения: {}"
     }
 
     /**
@@ -54,20 +55,20 @@ class OrderRefundBatchConsumerImpl(
         containerFactory = "concurrentContainerFactory",
     )
     override fun handleBatchRefundCreated(
+        @Payload refundEvent: RefundPayloadDto,
         message: Message,
         channel: Channel,
     ) {
-        val raw = message.body.toString(StandardCharsets.UTF_8)
+        val raw = message.body.toString(Charsets.UTF_8)
         try {
-            val payload = parsePayload(raw) ?: return
-            val invoiceId = payload.invoiceId ?: run {
-                logger.error("Получено сообщение неверного формата (invoiceId отсутствует): {}", raw)
+            val invoiceId = refundEvent.invoiceId ?: run {
+                logger.error(LOG_INVALID_FORMAT_MISSING_ID, raw)
                 return
             }
 
             val order = orderDao.findById(invoiceId)
             if (order == null) {
-                logger.error("Заказ не найден для refund. Сообщение: {}", raw)
+                logger.error(LOG_ORDER_NOT_FOUND, raw)
                 return
             }
 
@@ -99,18 +100,10 @@ class OrderRefundBatchConsumerImpl(
                 invoiceId,
             )
         } catch (ex: Exception) {
-            logger.error("Техническая ошибка при обработке refund-сообщения: {}", raw, ex)
+            logger.error(LOG_TECHNICAL_ERROR, raw, ex)
             throw ex
         }
     }
-
-    private fun parsePayload(raw: String): RefundPayloadDto? =
-        try {
-            objectMapper.readValue(raw, RefundPayloadDto::class.java)
-        } catch (ex: Exception) {
-            logger.error("Получено сообщение неверного формата: {}", raw)
-            null
-        }
 
     private fun sendError(
         order: OrderEntity,
