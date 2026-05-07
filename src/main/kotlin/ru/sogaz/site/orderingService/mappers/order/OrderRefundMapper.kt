@@ -5,21 +5,38 @@ import org.mapstruct.Mapping
 import ru.sogaz.site.orderingService.dto.data.RefundResponseDto
 import ru.sogaz.site.orderingService.dto.data.RefundReversalPaymentDto
 import ru.sogaz.site.orderingService.entity.PaymentOperationEntity
+import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import java.time.ZoneId
 
 /**
  * Маппер DTO для ответа и команды возврата.
  */
 @Mapper(componentModel = "spring")
-interface OrderRefundMapper {
+abstract class OrderRefundMapper {
+    companion object {
+        private const val REFUND_DESCRIPTION_EMPTY = "Отмена транзакции по договору"
+        private const val REFUND_DESCRIPTION_PATTERN = "Отмена транзакции по договору №%s"
+        private const val REFUND_DATE_SUFFIX = " от %s"
+    }
+
     @Mapping(target = "status", constant = "error")
     @Mapping(target = "errorText", source = "errorText")
-    fun toErrorDto(
+    abstract fun toErrorDto(
         invoiceId: java.util.UUID,
         errorText: String,
     ): RefundResponseDto
 
-    fun toReversalPaymentDto(
+    @Mapping(target = "description", expression = "java(buildRefundDescription(subOrder))")
+    abstract fun toReversalPaymentDto(
         payment: PaymentOperationEntity,
-        description: String,
+        subOrder: SubOrderEntity?,
     ): RefundReversalPaymentDto
+
+    protected fun buildRefundDescription(subOrder: SubOrderEntity?): String {
+        if (subOrder?.contractNumber.isNullOrBlank()) return REFUND_DESCRIPTION_EMPTY
+
+        val base = REFUND_DESCRIPTION_PATTERN.format(subOrder.contractNumber)
+        val localDate = subOrder.contractDate?.atZone(ZoneId.systemDefault())?.toLocalDate()
+        return if (localDate == null) base else base + REFUND_DATE_SUFFIX.format(localDate)
+    }
 }

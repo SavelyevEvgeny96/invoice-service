@@ -11,7 +11,6 @@ import ru.sogaz.site.orderingService.dao.PaymentOperationDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
 import ru.sogaz.site.orderingService.dto.data.RefundPayloadDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
-import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.mappers.order.OrderRefundMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -90,8 +89,7 @@ class OrderRefundBatchConsumerImpl(
             }
 
             val subOrder = subOrderDao.findFirstByOrderEntityOrderId(invoiceId)
-            val description = buildDescription(subOrder)
-            val reversalDto = refundMapper.toReversalPaymentDto(payment, description)
+            val reversalDto = refundMapper.toReversalPaymentDto(payment, subOrder)
 
             sendMessageProducer.sendMessage(
                 rabbitProps.routingKeyReversalPayment,
@@ -120,12 +118,4 @@ class OrderRefundBatchConsumerImpl(
         return payDate.atZone(zone).toLocalDate() == java.time.LocalDate.now(zone)
     }
 
-    private fun buildDescription(subOrder: SubOrderEntity?): String {
-        if (subOrder?.contractNumber.isNullOrBlank()) {
-            return "Отмена транзакции по договору"
-        }
-        val base = "Отмена транзакции по договору №${subOrder?.contractNumber}"
-        val contractDate = subOrder?.contractDate?.atZone(ZoneId.systemDefault())?.toLocalDate()
-        return if (contractDate != null) "$base от $contractDate" else base
-    }
 }
