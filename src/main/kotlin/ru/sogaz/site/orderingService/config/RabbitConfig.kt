@@ -50,6 +50,9 @@ class RabbitConfig(
             setConnectionFactory(connectionFactory)
             setMessageConverter(jacksonMessageConverter)
             setChannelTransacted(true)
+            setConcurrentConsumers(propsListener.consumers)
+            setMaxConcurrentConsumers(propsListener.maxConsumers)
+            setStopConsumerMinInterval(propsListener.stopConsumerMinIntervalMs)
             setConcurrentConsumers(propsListener.concurrency)
             setMaxConcurrentConsumers(propsListener.maxConcurrency)
         }
