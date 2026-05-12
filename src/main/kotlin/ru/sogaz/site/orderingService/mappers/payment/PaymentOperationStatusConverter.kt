@@ -9,7 +9,7 @@ import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 abstract class PaymentOperationStatusConverter {
     fun convertStatus(completedPaymentData: CompletedPaymentData): OrderStatusesEnum =
         when {
-            completedPaymentData.operationType == OperationTypeEnum.REFUND -> OrderStatusesEnum.REFUND
+            completedPaymentData.operationType == OperationTypeEnum.REVERSAL -> OrderStatusesEnum.REFUND
             else -> OrderStatusesEnum.SUCCESS
         }
 }
