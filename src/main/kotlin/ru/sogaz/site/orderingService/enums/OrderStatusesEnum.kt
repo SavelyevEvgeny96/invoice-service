@@ -13,7 +13,7 @@ enum class OrderStatusesEnum(
     SUCCESS("SUCCESS"),
     CANCELED("CANCELED"),
     REFUND("REFUND"),
-    REVERSAL("REVERSAL")
+    REVERSAL("REVERSAL"),
     ;
 
     companion object {

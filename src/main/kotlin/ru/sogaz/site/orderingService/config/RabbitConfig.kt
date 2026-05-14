@@ -52,7 +52,5 @@ class RabbitConfig(
             setConcurrentConsumers(propsListener.consumers)
             setMaxConcurrentConsumers(propsListener.maxConsumers)
             setStopConsumerMinInterval(propsListener.stopConsumerMinIntervalMs)
-            setConcurrentConsumers(propsListener.concurrency)
-            setMaxConcurrentConsumers(propsListener.maxConcurrency)
         }
 }

@@ -5,6 +5,8 @@ import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.PaymentOperationDao
@@ -49,6 +51,10 @@ class OrderRefundBatchConsumerImpl(
      * Для технических ошибок исключение пробрасывается выше, чтобы сообщение не терялось
      * и было обработано стандартными retry-механизмами брокера/контейнера.
      */
+    @Transactional(
+        propagation = Propagation.REQUIRES_NEW,
+        readOnly = false
+    )
     @RabbitListener(
         queues = ["\${app.rabbit.queue-invoice-reversal}"],
         containerFactory = "concurrentContainerFactory",
