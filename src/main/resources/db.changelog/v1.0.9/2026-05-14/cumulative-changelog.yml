@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-109-add-type-enum
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-109
+  - include:
+      file: db.changelog\v1.0.9\2026-05-14\DATA\add_type_enum.sql
+  - include:
+      file: db.changelog\v1.0.9\2026-05-14\DATA\insert_enum.sql
+

@@ -53,7 +53,7 @@ class OrderRefundBatchConsumerImpl(
      */
     @Transactional(
         propagation = Propagation.REQUIRES_NEW,
-        readOnly = false
+        readOnly = false,
     )
     @RabbitListener(
         queues = ["\${app.rabbit.queue-invoice-reversal}"],
