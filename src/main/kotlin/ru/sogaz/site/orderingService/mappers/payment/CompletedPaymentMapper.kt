@@ -18,7 +18,7 @@ interface CompletedPaymentMapper {
     @Mapping(
         target = "refundDate",
         source = "payDate",
-        conditionExpression = "java(completedPaymentData.getOperationType().equals(OperationTypeEnum.REFUND))",
+        conditionExpression = "java(completedPaymentData.getOperationType().equals(OperationTypeEnum.REVERSAL))",
     )
     fun fillPaidOrder(
         @MappingTarget order: OrderEntity,

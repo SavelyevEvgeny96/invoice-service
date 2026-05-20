@@ -22,7 +22,7 @@ abstract class ReceiptPaymentMapper {
 
     fun mapPaymentType(operationType: OperationTypeEnum): PaymentReceiptCreateRequest.ReceiptTypeEnum =
         when (operationType) {
-            OperationTypeEnum.REFUND -> PaymentReceiptCreateRequest.ReceiptTypeEnum.SELL_REFUND
+            OperationTypeEnum.REVERSAL -> PaymentReceiptCreateRequest.ReceiptTypeEnum.SELL_REFUND
             else -> PaymentReceiptCreateRequest.ReceiptTypeEnum.SELL
         }
 }
