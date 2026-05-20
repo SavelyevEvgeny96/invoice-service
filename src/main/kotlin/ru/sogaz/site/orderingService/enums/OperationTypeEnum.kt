@@ -5,4 +5,5 @@ enum class OperationTypeEnum {
     RECURRENT,
     REGISTRATION,
     REFUND,
+    REVERSAL,
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.response.InvoiceStatusEvent
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusMapper
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusRegMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -29,12 +30,24 @@ class InvoicePaymentStatusEventProducerImpl(
     override fun sendPaymentOrderEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
-    ) = sendMessageProducer.sendMessage(
-        buildRoutingKey(order, completedPaymentData),
-        eventMapper.toInvoiceStatusEvent(order, completedPaymentData),
-        rabbitProps.ordersExchange,
-        order.orderId,
-    )
+    ) {
+        if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
+            sendMessageProducer.sendMessage(
+                buildRoutingKey(order, completedPaymentData),
+                eventMapper.toInvoiceReversalStatusEvent(completedPaymentData),
+                rabbitProps.ordersExchange,
+                order.orderId,
+            )
+            return
+        }
+
+        sendMessageProducer.sendMessage(
+            buildRoutingKey(order, completedPaymentData),
+            eventMapper.toInvoiceStatusEvent(order, completedPaymentData),
+            rabbitProps.ordersExchange,
+            order.orderId,
+        )
+    }
 
     override fun sendPaymentStatusRegEvent(
         order: OrderEntity,

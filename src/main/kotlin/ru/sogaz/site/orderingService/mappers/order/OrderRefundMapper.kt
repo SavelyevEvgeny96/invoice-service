@@ -24,7 +24,7 @@ abstract class OrderRefundMapper {
         private const val REFUND_DATE_SUFFIX = " от %s"
     }
 
-    @Mapping(target = "status", constant = "error")
+    @Mapping(target = "status", constant = "ERROR")
     @Mapping(target = "errorText", source = "errorText")
     abstract fun toErrorDto(
         invoiceId: java.util.UUID,
