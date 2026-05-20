@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.amqp.support.converter.MessageConverter
+import org.springframework.amqp.support.converter.SimpleMessageConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -38,6 +39,17 @@ class RabbitConfig(
             setChannelTransacted(false)
             setDefaultRequeueRejected(false)
             setMessageConverter(noOpMessageConverter)
+        }
+
+    @Bean
+    fun rawMessageContainerFactory(connectionFactory: ConnectionFactory): SimpleRabbitListenerContainerFactory =
+        SimpleRabbitListenerContainerFactory().apply {
+            setConnectionFactory(connectionFactory)
+            setMessageConverter(SimpleMessageConverter())
+            setChannelTransacted(true)
+            setConcurrentConsumers(propsListener.consumers)
+            setMaxConcurrentConsumers(propsListener.maxConsumers)
+            setStopConsumerMinInterval(propsListener.stopConsumerMinIntervalMs)
         }
 
     @Bean
