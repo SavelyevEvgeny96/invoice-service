@@ -59,7 +59,7 @@ class InvoicePaymentStatusEventProducerImpl(
         order.orderId,
     )
 
-    private fun buildRoutingKey(
+     override fun buildRoutingKey(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): String {
