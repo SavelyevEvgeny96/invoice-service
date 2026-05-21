@@ -16,7 +16,7 @@ class OrderPaymentStatusEventProducerImpl(
     private val rabbitProps: RabbitProps,
     private val paidOrderMessagesMapper: PaidOrderMessagesMapper,
     private val invoicePaymentStatusRegEventProducer: InvoicePaymentStatusRegEventProducer,
-    private val sendMessageProducer: SendMessageProducer
+    private val sendMessageProducer: SendMessageProducer,
 ) : RabbitProducer<PaidOrderMessage>(rabbitTemplate),
     OrderPaymentStatusEventProducer {
     companion object {
@@ -28,15 +28,15 @@ class OrderPaymentStatusEventProducerImpl(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ) {
-
-        val rk = if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
-            invoicePaymentStatusRegEventProducer.buildRoutingKey(
-                order,
-                completedPaymentData
-            )
-        } else {
-            order.queueStatusResultName
-        }
+        val rk =
+            if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
+                invoicePaymentStatusRegEventProducer.buildRoutingKey(
+                    order,
+                    completedPaymentData,
+                )
+            } else {
+                order.queueStatusResultName
+            }
         sendMessageProducer.sendMessage(
             rk,
             paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData),
@@ -44,5 +44,4 @@ class OrderPaymentStatusEventProducerImpl(
             order.orderId,
         )
     }
-
 }

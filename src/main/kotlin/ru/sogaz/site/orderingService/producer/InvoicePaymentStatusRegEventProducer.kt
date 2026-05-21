@@ -8,6 +8,7 @@ interface InvoicePaymentStatusRegEventProducer {
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     )
+
     fun buildRoutingKey(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
