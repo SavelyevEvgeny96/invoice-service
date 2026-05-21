@@ -16,7 +16,6 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapper
-import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapperImpl
 import ru.sogaz.site.orderingService.producer.InvoicePaymentStatusRegEventProducer
 import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducerImpl
 import ru.sogaz.site.orderingService.properties.RabbitProps
