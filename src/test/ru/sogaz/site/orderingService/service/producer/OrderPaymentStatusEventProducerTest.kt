@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mapstruct.factory.Mappers
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
@@ -51,7 +52,7 @@ class OrderPaymentStatusEventProducerTest {
 
     @BeforeEach
     fun beforeEach() {
-        paidOrderMessagesMapper = PaidOrderMessagesMapperImpl()
+        paidOrderMessagesMapper = Mappers.getMapper(PaidOrderMessagesMapper::class.java)
 
         every { rabbitProps.ordersExchange } returns "orders.exchange"
         every { order.queueStatusResultName } returns "queue.status.result"
