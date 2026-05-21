@@ -14,12 +14,11 @@ import java.time.format.DateTimeFormatter
 abstract class PaymentPurposeMapper {
     companion object {
         private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s%s. Платежный сервис, дата операции %s"
-        private const val PAY_SBP_ONE_CONTRACT_INFO =
-            "Зачисление по операции СБП договора СБП-001-8/21 от 19.09.2022." +
-                " Оплата по договору страхования %s, дата операции %s"
+        private const val PAY_SBP_ONE_CONTRACT_INFO = "Оплата по договору страхования %s"
         private const val CONTRACT_INFO = "%s%s"
         private const val PARAM = "param"
         private const val EMPTY_PAY_INFO = "Платежный сервис, дата операции %s"
+        private const val EMPTY_SBP_PAY_INFO = "Оплата по договору страхования"
         private const val EMPTY_SUB_ORDERS = "В заказе отсутствуют контракты"
 
         private val DEFAULT_ZONE: ZoneId = ZoneId.systemDefault()
@@ -48,24 +47,11 @@ abstract class PaymentPurposeMapper {
         )
 
     @Named("mapSbpRequestContractDescription")
-    protected fun mapSbpRequestContractDescription(subOrders: List<SubOrderEntity>): String {
-        val operationDate = LocalDate.now(DEFAULT_ZONE).toContractDateFormat()
-        return runCatching { mapSbpRequestContractDescription(operationDate, subOrders) }
-            .getOrElse { EMPTY_PAY_INFO.format(operationDate) }
-    }
+    protected fun mapSbpRequestContractDescription(subOrders: List<SubOrderEntity>): String =
+        runCatching { subOrders.findMainContract().makeSbpPayDescriptionForOneContract() }
+            .getOrElse { EMPTY_SBP_PAY_INFO }
 
-    private fun mapSbpRequestContractDescription(
-        operationDate: String,
-        subOrders: List<SubOrderEntity>,
-    ) = subOrders
-        .findMainContract()
-        .makeSbpPayDescriptionForOneContract(operationDate)
-
-    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(opDate: String): String =
-        PAY_SBP_ONE_CONTRACT_INFO.format(
-            contractNumber,
-            opDate,
-        )
+    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(): String = PAY_SBP_ONE_CONTRACT_INFO.format(contractNumber)
 
     private fun List<SubOrderEntity>.findMainContract(): SubOrderEntity =
         when (size) {
