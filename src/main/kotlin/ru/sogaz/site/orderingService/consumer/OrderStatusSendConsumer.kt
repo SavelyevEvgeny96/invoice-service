@@ -22,7 +22,7 @@ class OrderStatusSendConsumer(
     private val orderStatusEventProducer: OrderPaymentStatusEventProducer,
     private val invoiceStatusEventProducer: OrderPaymentStatusEventProducer,
     private val invoiceStatusEventRegProducer: InvoicePaymentStatusRegEventProducer,
-    private val invoicePaymentStatusReversalEventProducer: InvoicePaymentStatusReversalEventProducer
+    private val invoicePaymentStatusReversalEventProducer: InvoicePaymentStatusReversalEventProducer,
 ) {
     private val logger = loggerFor(javaClass)
 

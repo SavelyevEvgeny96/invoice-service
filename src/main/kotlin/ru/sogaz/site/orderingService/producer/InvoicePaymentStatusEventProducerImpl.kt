@@ -1,11 +1,8 @@
 package ru.sogaz.site.orderingService.producer
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Component
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
-import ru.sogaz.site.orderingService.dto.response.InvoiceStatusEvent
 import ru.sogaz.site.orderingService.entity.OrderEntity
-import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusMapper
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusRegMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps

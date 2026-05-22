@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
 import ru.sogaz.site.orderingService.entity.OrderEntity
-import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer

@@ -8,5 +8,4 @@ interface InvoicePaymentStatusReversalEventProducer {
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     )
-
 }
