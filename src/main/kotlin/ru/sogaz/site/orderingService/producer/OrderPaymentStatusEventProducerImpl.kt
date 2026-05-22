@@ -28,17 +28,8 @@ class OrderPaymentStatusEventProducerImpl(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ) {
-        val rk =
-            if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
-                invoicePaymentStatusRegEventProducer.buildRoutingKey(
-                    order,
-                    completedPaymentData,
-                )
-            } else {
-                order.queueStatusResultName
-            }
         sendMessageProducer.sendMessage(
-            rk,
+            order.queueStatusResultName,
             paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData),
             rabbitProps.ordersExchange,
             order.orderId,

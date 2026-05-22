@@ -13,13 +13,11 @@ import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 
 @Component("invoiceStatusEventProducer")
 class InvoicePaymentStatusEventProducerImpl(
-    rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
     private val eventMapper: InvoiceStatusMapper,
     private val invoiceStatusRegMapper: InvoiceStatusRegMapper,
     private val sendMessageProducer: SendMessageProducer,
-) : RabbitProducer<InvoiceStatusEvent>(rabbitTemplate),
-    OrderPaymentStatusEventProducer,
+) : OrderPaymentStatusEventProducer,
     InvoicePaymentStatusRegEventProducer {
     companion object {
         private val NON_ALPHANUMERIC_REGEX = Regex("[^A-Za-zА-Яа-яЁё0-9]")
@@ -31,16 +29,6 @@ class InvoicePaymentStatusEventProducerImpl(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ) {
-        if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
-            sendMessageProducer.sendMessage(
-                buildRoutingKey(order, completedPaymentData),
-                eventMapper.toInvoiceReversalStatusEvent(completedPaymentData),
-                rabbitProps.ordersExchange,
-                order.orderId,
-            )
-            return
-        }
-
         sendMessageProducer.sendMessage(
             buildRoutingKey(order, completedPaymentData),
             eventMapper.toInvoiceStatusEvent(order, completedPaymentData),

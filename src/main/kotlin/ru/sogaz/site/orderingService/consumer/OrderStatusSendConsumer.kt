@@ -8,9 +8,11 @@ import org.springframework.transaction.annotation.Transactional
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
+import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.exceptions.OrderNotFoundException
 import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.producer.InvoicePaymentStatusRegEventProducer
+import ru.sogaz.site.orderingService.producer.InvoicePaymentStatusReversalEventProducer
 import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducer
 
 @Component
@@ -20,6 +22,7 @@ class OrderStatusSendConsumer(
     private val orderStatusEventProducer: OrderPaymentStatusEventProducer,
     private val invoiceStatusEventProducer: OrderPaymentStatusEventProducer,
     private val invoiceStatusEventRegProducer: InvoicePaymentStatusRegEventProducer,
+    private val invoicePaymentStatusReversalEventProducer: InvoicePaymentStatusReversalEventProducer
 ) {
     private val logger = loggerFor(javaClass)
 
@@ -36,6 +39,8 @@ class OrderStatusSendConsumer(
                 )
             if (order.regCard) {
                 invoiceStatusEventRegProducer.sendPaymentStatusRegEvent(order, completedPaymentData)
+            } else if (completedPaymentData.operationType == OperationTypeEnum.REVERSAL) {
+                invoicePaymentStatusReversalEventProducer.sendPaymentStatusReversalEvent(order, completedPaymentData)
             } else {
                 when (order.versionApi) {
                     ApiVersionEnum.V2 -> invoiceStatusEventProducer.sendPaymentOrderEvent(order, completedPaymentData)
