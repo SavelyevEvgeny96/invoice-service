@@ -55,9 +55,8 @@ app:
     receipt-exchange: ${RECEIPT_EXCHANGE:receipt.exchange}
     payments-exchange: ${PAYMENT_EXCHANGE:payment.exchange}
     queue-order: ${ORDER_CREATED_QUEUE:order.created.queue}
-    queue-order-refund: ${ORDER_CREATED_REFUND_QUEUE:order.refund.queue}
-    queue-payment-status-refund: ${PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.queue}
-    queue-order-dlq: ${ORDER_CREATED_QUEUE_DLQ:order.created.queue.dlq} #DLQ
+    queue-invoice-reversal: ${INVOICE_CREATED_REVERSAL_QUEUE:invoice.reversal.queue}
+    queue-invoice-reversal-dlq: ${INVOICE_CREATED_REVERSAL_QUEUE_DLQ:invoice.reversal.queue.dlq} #DLQ
     queue-payment: ${PAYMENT_CREATED_QUEUE:payment.created.queue}
     queue-change-status-order: ${ORDER_STATUS_CHANGE_QUEUE:order.status.change.queue}
     queue-send-status-order: ${ORDER_STATUS_SEND_QUEUE:order.status.send.queue}
@@ -67,10 +66,10 @@ app:
     queue-fill-history-receipts: ${RECEIPT_SENT_QUEUE:receipt.sent.queue}
     routing-key-order: ${ROUTING_KEY_ORDER_CREATED:order.created}
     routing-key-order-dlq: ${ROUTING_KEY_ORDER_CREATED_DLQ:order.created.dlq}
-    routing-key-order-refund: ${ROUTING_KEY_ORDER_CREATED:order.refund.created}
+    routing-key-invoice-reversal: ${ROUTING_KEY_ORDER_CREATED:invoice.reversal.created}
     routing-key-payment: ${ROUTING_KEY_PAYMENT_CREATED:payment.created}
     routing-key-receipt: ${ROUTING_KEY_RECEIPT_REQUESTED:receipt.requested}
-    routing-key-refund-payment: ${ROUTING_KEY_REFUND_PAYMENT_CREATED:payment.refund.created}
+    routing-key-reversal-payment: ${ROUTING_KEY_REVERSAL_PAYMENT_CREATED:payment.reversal.created}
     routing-key-payment-status-refund: ${ROUTING_KEY_PAYMENT_STATUS_REFUND_QUEUE:payment.status.refund.created}
     routing-key-payment-receipt-create-check: ${ROUTING_KEY_PAYMENT_RECEIPT_CHECK_QUEUE:receipt.created}
     listener:
@@ -78,6 +77,9 @@ app:
       prefetch: 50
       concurrency: 1
       max-concurrency: 1
+      consumers: ${RABBIT_CONCURRENCY_CONSUMERS:2}
+      maxConsumers: ${RABBIT_CONCURRENCY_MAX_CONSUMERS:5}
+      stopConsumerMinIntervalMs: ${RABBIT_CONCURRENCY_STOP_CONSUMERS_MIN_INTERVALS_MS:10000}
   client:
     payment:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
@@ -98,6 +100,7 @@ api:
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
     pagepayinfoHost: ${PAGEPAYINFO_HOST:https://test-pay.sogaz.ru}
     pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/p/}
+    sogazUrlPattern: ${SOGAZ_URL_PATTERN:^.*.sogaz.ru$|^lk.health-and-care.ru$}
 
 resilience4j:
   retry:
@@ -134,11 +137,11 @@ management:
       enable: true
 
 logging:
-#  level:
-#    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
-#    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
-##    org.springframework.amqp.rabbit.*: DEBUG
-#    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
+  level:
+    org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
+    org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
+#    org.springframework.amqp.rabbit.*: DEBUG
+    logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
 
   rabbit:
     enabled: ${LOGGING_RABBIT_ENABLED:true}
@@ -147,7 +150,7 @@ logging:
     returns-enabled: ${LOGGING_RABBIT_RETURNS_ENABLED:false}
 crons:
   overdue:
-    cron: ${CRON_JOB_STATUS_ORDERS:0 0 * * * *}
+    cron: ${CRON_JOB_STATUS_ORDERS:0 * * * * *}
 
 logstash:
   host: ${LOG_SERVER_HOST:localhost}

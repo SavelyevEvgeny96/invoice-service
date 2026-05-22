@@ -4,9 +4,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "app.rabbit.listener")
 data class RabbitListenerProps(
+    val consumers: Int,
     var batchSize: Int?,
     var prefetch: Int?,
+    val maxConsumers: Int,
     var concurrency: Int?,
     var maxConcurrency: Int?,
-    var batchReceiveTimeout: Long?,
+    val stopConsumerMinIntervalMs: Long,
 )

@@ -5,18 +5,18 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springdoc.core.annotations.ParameterObject
 
 @ParameterObject
-data class PayQueryParams(
+open class PayQueryParams(
     @field:Parameter(description = "Ссылка для возврата", example = "http://www.sogaz.ru")
-    val urlToReturn: String? = null,
+    open val urlToReturn: String? = null,
     @field:Parameter(description = "Ссылка для редиректа после успешной оплаты")
-    val urlToReturnS: String? = null,
+    open val urlToReturnS: String? = null,
     @field:Parameter(description = "Ссылка для редиректа после неуспешной оплаты")
-    val urlToReturnF: String? = null,
+    open val urlToReturnF: String? = null,
     @field:Parameter(description = "Флаг необходимости анонимизированной оплаты")
     @field:Schema(defaultValue = "false")
-    val depersonalization: Boolean = false,
+    open val depersonalization: Boolean = false,
     @field:Parameter(description = "Канал продажи")
     val channelSale: String? = null,
     @field:Parameter(description = "IP пользователя, который совершает оплату")
-    val payerIP: String? = null,
+    open val payerIP: String? = null,
 )

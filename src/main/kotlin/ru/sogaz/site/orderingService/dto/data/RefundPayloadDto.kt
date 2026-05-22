@@ -1,14 +1,10 @@
 package ru.sogaz.site.orderingService.dto.data
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import java.math.BigDecimal
 import java.util.UUID
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+/**
+ * Входящее сообщение для запуска сценария возврата.
+ */
 data class RefundPayloadDto(
-    val metaInfo: List<MetaInfoOrder>,
-    val orderId: UUID?,
-    val routingKeyStatus: String? = null,
-    val amount: BigDecimal?,
-    val description: String?,
+    val invoiceId: UUID? = null,
 )

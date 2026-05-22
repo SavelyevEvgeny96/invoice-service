@@ -146,7 +146,7 @@ class PaymentOperationsServiceTest {
                 refundDate = null,
                 recipientPhone = null,
                 recipientUserId = null,
-                queueStatusResultName = null,
+                queueStatusResultName = "",
                 depersonalization = false,
                 createDate = null,
                 updateDate = null,

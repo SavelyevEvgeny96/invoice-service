@@ -8,13 +8,10 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import org.springframework.amqp.core.Message
@@ -24,7 +21,6 @@ import org.springframework.amqp.rabbit.connection.CorrelationData
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import ru.sogaz.site.loggingStarter.rabbitLogging.RabbitLogConst
 import ru.sogaz.site.orderingService.dto.data.ParsedResult
-import ru.sogaz.site.orderingService.dto.data.RefundPreparationResult
 import ru.sogaz.site.orderingService.mappers.RefundErrorMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.QueueStatusResultNameNormalizeService
@@ -59,23 +55,6 @@ class SendMessageProducerImplTest {
     lateinit var producer: SendMessageProducerImpl
 
     @Test
-    fun `когда все группы пустые - ничего не отправляем и не подтверждаем`() {
-        val result =
-            RefundPreparationResult(
-                found = emptyList(),
-                missing = emptyList(),
-                noAccess = emptyList(),
-                notForPaid = emptyList(),
-            )
-
-        producer.sendMessageRefund(result)
-
-        verifyNoInteractions(rabbitTemplate)
-        verifyNoInteractions(refundErrorMapper)
-        verify(channel, never()).basicAck(any(), any())
-    }
-
-    @Test
     fun `sendMessage проставляет заголовки и correlation data`() {
         val orderId = UUID.randomUUID()
         val payload = Any()
@@ -104,7 +83,7 @@ class SendMessageProducerImplTest {
         val processed = mppCaptor.firstValue.postProcessMessage(message)
         val headers = processed.messageProperties.headers
 
-        assertEquals("payService", headers["author"])
+        assertEquals("invoiceService", headers["author"])
         assertEquals("ResultPay", headers["flowCode"])
 
         val ts = headers["timestamp"] as String?

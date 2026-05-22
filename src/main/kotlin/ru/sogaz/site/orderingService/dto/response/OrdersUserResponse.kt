@@ -24,7 +24,7 @@ data class OrderItem(
  * Под карточки заказа
  */
 data class SubOrderItem(
-    val policyId: String,
+    val policyId: String?,
     val policyNumber: String,
     val typeInsurance: String?,
     val premiumAmount: BigDecimal?,

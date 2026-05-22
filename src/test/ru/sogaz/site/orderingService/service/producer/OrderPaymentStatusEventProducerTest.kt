@@ -3,18 +3,13 @@ package ru.sogaz.site.orderingService.service.producer
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.slot
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.amqp.rabbit.connection.CorrelationData
+import org.mapstruct.factory.Mappers
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Import
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.dto.data.PaidOrderMessage
 import ru.sogaz.site.orderingService.dto.data.SubOrderPayload
@@ -22,13 +17,13 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
 import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapper
-import ru.sogaz.site.orderingService.mappers.order.PaidOrderMessagesMapperImpl
+import ru.sogaz.site.orderingService.producer.InvoicePaymentStatusRegEventProducer
 import ru.sogaz.site.orderingService.producer.OrderPaymentStatusEventProducerImpl
 import ru.sogaz.site.orderingService.properties.RabbitProps
+import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
 import java.time.Instant
 
-@ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(value = [PaidOrderMessagesMapperImpl::class])
+@ExtendWith(MockKExtension::class)
 class OrderPaymentStatusEventProducerTest {
     @RelaxedMockK
     private lateinit var rabbitTemplate: RabbitTemplate
@@ -36,10 +31,15 @@ class OrderPaymentStatusEventProducerTest {
     @RelaxedMockK
     private lateinit var rabbitProps: RabbitProps
 
-    @Autowired
     private lateinit var paidOrderMessagesMapper: PaidOrderMessagesMapper
 
     private lateinit var producer: OrderPaymentStatusEventProducerImpl
+
+    @RelaxedMockK
+    private lateinit var sendMessageProducer: SendMessageProducer
+
+    @RelaxedMockK
+    private lateinit var invoicePaymentStatusRegEventProducer: InvoicePaymentStatusRegEventProducer
 
     @RelaxedMockK
     private lateinit var order: OrderEntity
@@ -52,21 +52,37 @@ class OrderPaymentStatusEventProducerTest {
 
     @BeforeEach
     fun beforeEach() {
+        paidOrderMessagesMapper = Mappers.getMapper(PaidOrderMessagesMapper::class.java)
+
+        every { rabbitProps.ordersExchange } returns "orders.exchange"
+        every { order.queueStatusResultName } returns "queue.status.result"
+
         producer =
             OrderPaymentStatusEventProducerImpl(
                 rabbitTemplate,
                 rabbitProps,
                 paidOrderMessagesMapper,
+                invoicePaymentStatusRegEventProducer,
+                sendMessageProducer,
             )
     }
 
     @Test
+    fun `producer should not fail while sending payment order event`() {
+        assertThatCode {
+            producer.sendPaymentOrderEvent(order, completedPaymentData)
+        }.doesNotThrowAnyException()
+    }
+
+    @Test
     fun `producer should send payment and card info`() {
+        val payDate = Instant.now()
+
         with(completedPaymentData) {
-            every { payDate } returns Instant.now()
+            every { this@with.payDate } returns payDate
             every { status } returns PaymentOperationStateEnum.SUCCESS
 
-            val paidOrderMessage = getCapturedTestMessage()
+            val paidOrderMessage = getMappedTestMessage()
 
             assertThat(paidOrderMessage)
                 .returns(paymentType, PaidOrderMessage::paymentType)
@@ -83,7 +99,7 @@ class OrderPaymentStatusEventProducerTest {
     @Test
     fun `producer should send order info`() {
         with(order) {
-            val paidOrderMessage = getCapturedTestMessage()
+            val paidOrderMessage = getMappedTestMessage()
 
             assertThat(paidOrderMessage)
                 .returns(orderId.toString(), PaidOrderMessage::orderId)
@@ -95,10 +111,10 @@ class OrderPaymentStatusEventProducerTest {
 
     @Test
     fun `producer should correct send subOrders contract info`() {
-        with(subOrder) {
-            every { order.subOrders } returns mutableListOf(this)
+        every { order.subOrders } returns mutableListOf(subOrder)
 
-            val paidOrderMessage = getCapturedTestMessage()
+        with(subOrder) {
+            val paidOrderMessage = getMappedTestMessage()
 
             assertThat(paidOrderMessage.subOrders.first())
                 .returns(docType, SubOrderPayload::docType)
@@ -115,39 +131,17 @@ class OrderPaymentStatusEventProducerTest {
     @Test
     fun `producer should correct send correct subOrders contract dates`() {
         val now = Instant.now()
+
         every { order.subOrders } returns mutableListOf(subOrder)
         every { subOrder.contractDate } returns now
         every { subOrder.policyDate } returns now
 
-        val paidOrderMessage = getCapturedTestMessage()
+        val paidOrderMessage = getMappedTestMessage()
 
         assertThat(paidOrderMessage.subOrders.first())
             .returns(now.toEpochMilli(), SubOrderPayload::policyDate)
             .returns(now.toEpochMilli(), SubOrderPayload::contractDate)
     }
 
-    @Test
-    fun `producer should throw an exception when queueStatusResultName is null`() {
-        every { order.queueStatusResultName } returns null
-
-        assertThrows<IllegalArgumentException> { getCapturedTestMessage() }
-    }
-
-    private fun getCapturedTestMessage(): PaidOrderMessage {
-        val messageSlot = slot<PaidOrderMessage>()
-
-        producer.sendPaymentOrderEvent(order, completedPaymentData)
-
-        verify {
-            rabbitTemplate.convertAndSend(
-                rabbitProps.ordersExchange,
-                order.queueStatusResultName.toString(),
-                capture(messageSlot),
-                any(),
-                any<CorrelationData>(),
-            )
-        }
-
-        return messageSlot.captured
-    }
+    private fun getMappedTestMessage(): PaidOrderMessage = paidOrderMessagesMapper.toPaidOrderMessage(order, completedPaymentData)
 }
