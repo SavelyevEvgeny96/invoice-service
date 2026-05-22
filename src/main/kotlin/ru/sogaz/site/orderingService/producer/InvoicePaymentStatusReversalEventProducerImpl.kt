@@ -1,12 +1,13 @@
 package ru.sogaz.site.orderingService.producer
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
-
+@Service
 class InvoicePaymentStatusReversalEventProducerImpl(
     rabbitTemplate: RabbitTemplate,
     private val rabbitProps: RabbitProps,
