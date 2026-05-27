@@ -82,7 +82,7 @@ app:
       stopConsumerMinIntervalMs: ${RABBIT_CONCURRENCY_STOP_CONSUMERS_MIN_INTERVALS_MS:10000}
   client:
     payment:
-      basePath: ${PAYMENT_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/payment-service/}
+      basePath: ${PAYMENT_SERVICE_BASE_PATH:http://localhost:8085}
     qr:
       basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
     shortLink:
@@ -137,6 +137,8 @@ management:
       enable: true
 
 logging:
+  proxy:
+    log-headers: ${LOGGING_PROXY_LOG_HEADERS:TRUE}
   level:
     org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
     org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
