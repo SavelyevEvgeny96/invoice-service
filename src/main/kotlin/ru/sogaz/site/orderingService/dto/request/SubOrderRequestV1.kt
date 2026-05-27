@@ -1,9 +1,14 @@
 package ru.sogaz.site.orderingService.dto.request
 
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
+import ru.sogaz.site.orderingService.validation.constraint.StrictPremiumBigDecimalDeserializer
+import ru.sogaz.site.orderingService.validation.constraint.ValidPremiumAmount
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -11,8 +16,9 @@ import java.time.Instant
  * DTO для запроса на создание заказа.
  */
 data class SubOrderRequestV1(
-    @field:NotNull(message = "{validation.orderRequest.premiumAmount.notNull}")
-    @field:Positive(message = "{validation.orderRequest.premiumAmount.positive}")
+    @field:JsonSetter(nulls = Nulls.FAIL)
+    @field:JsonDeserialize(using = StrictPremiumBigDecimalDeserializer::class)
+    @field:ValidPremiumAmount
     val premiumAmount: BigDecimal = BigDecimal.ZERO,
     val policyId: String = "",
     val policyNumber: String = "",
