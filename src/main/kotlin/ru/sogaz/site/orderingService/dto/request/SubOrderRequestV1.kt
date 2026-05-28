@@ -21,7 +21,7 @@ data class SubOrderRequestV1(
     val premiumAmount: BigDecimal = BigDecimal.ZERO,
     val policyId: String = "",
     val policyNumber: String = "",
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
+    @field:NotNull(message = "{validation.orderRequest.notBlank}")
     val typeInsurance: String? = null,
     val insuranceProgram: String? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")

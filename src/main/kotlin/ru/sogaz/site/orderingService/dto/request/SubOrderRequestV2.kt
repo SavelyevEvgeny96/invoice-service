@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
 import ru.sogaz.site.orderingService.validation.constraint.StrictPremiumBigDecimalDeserializer
+import ru.sogaz.site.orderingService.validation.constraint.ValidEnum
 import ru.sogaz.site.orderingService.validation.constraint.ValidPremiumAmount
 import java.math.BigDecimal
 import java.time.Instant
@@ -32,7 +34,10 @@ data class SubOrderRequestV2(
     val insuranceKind: String? = null,
     val program: String? = null,
     val channel: String? = null,
-    @field:NotBlank(message = "{validation.orderRequest.notBlank}")
+    @field:ValidEnum(
+        enumClass = TypeOperationRequestEnum::class,
+        message = "{validation.orderRequest.typeOperation}",
+    )
     var typeOperation: String = "",
     @field:Email(message = "{validation.orderRequest.recipientEmail.email}")
     val managerEmail: String = "",
