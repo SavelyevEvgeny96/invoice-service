@@ -45,8 +45,8 @@ data class OrderRequestV1(
     @param:Parameter(name = "urlToDecline", description = "URL для перехода после неуспешной оплаты ")
     @field:SogazDomain
     var urlToDecline: String? = null,
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
-    var saveCard: Boolean = false,
+    @field:NotNull(message = "{validation.orderRequest.notBlank}")
+    var saveCard: Boolean? = null,
     var subscriptionId: String = "",
     var clientId: String? = null,
     var channelSale: String? = null,
