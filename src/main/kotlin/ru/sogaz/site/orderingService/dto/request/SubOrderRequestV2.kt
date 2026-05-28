@@ -30,7 +30,7 @@ data class SubOrderRequestV2(
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     val agreementId: String? = null,
     val agreementDate: Instant? = null,
-    @field:NotNull(message = "{validation.orderRequest.date.notNull}")
+    @field:NotNull(message = "{validation.orderRequest.notBlank}")
     val insuranceKind: String? = null,
     val program: String? = null,
     val channel: String? = null,
