@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.dto.request
 
+import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Future
@@ -9,6 +10,7 @@ import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.RussianNameValid
 import ru.sogaz.site.orderingService.validation.constraint.SameChannelInOrders
+import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
 import ru.sogaz.site.orderingService.validation.constraint.UniqueMainContract
 import java.time.Instant
 import java.util.UUID
@@ -37,7 +39,11 @@ data class OrderRequestV1(
     var unifiedId: String? = null,
     @field:Phone(message = "{validation.ordersUserRequest.phone.invalid}")
     var recipientPhone: String? = null,
+    @param:Parameter(name = "urlToReturnS", description = "URL для перехода после успешной оплаты")
+    @field:SogazDomain
     var urlToReturn: String? = null,
+    @param:Parameter(name = "urlToDecline", description = "URL для перехода после неуспешной оплаты ")
+    @field:SogazDomain
     var urlToDecline: String? = null,
     @field:NotNull(message = "{validation.orderRequest.date.notNull}")
     var saveCard: Boolean = false,

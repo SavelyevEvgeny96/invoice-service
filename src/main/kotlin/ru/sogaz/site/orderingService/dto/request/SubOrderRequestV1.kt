@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Positive
 import ru.sogaz.site.orderingService.validation.constraint.StrictPremiumBigDecimalDeserializer
 import ru.sogaz.site.orderingService.validation.constraint.ValidPremiumAmount
 import java.math.BigDecimal
