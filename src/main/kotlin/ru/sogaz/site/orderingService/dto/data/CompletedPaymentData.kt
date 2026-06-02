@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.dto.data
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import ru.sogaz.site.orderingService.enums.OperationTypeEnum
 import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
@@ -20,6 +21,8 @@ data class CompletedPaymentData(
     val payerIp: String?,
     val paymentType: String,
     val operationType: OperationTypeEnum,
+    @field:JsonFormat(shape = JsonFormat.Shape.STRING)
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING)
     val payDate: Instant,
     val externalErrorCode: String?,
     val errorText: String?,
