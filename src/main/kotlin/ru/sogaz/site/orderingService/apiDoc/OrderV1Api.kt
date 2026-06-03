@@ -70,9 +70,8 @@ interface OrderV1Api {
                             value =
                                 "{\n" +
                                     "    \"orders\":[{               \n" +
-                                    "            \"premiumAmount\": \"1.12\",\n" +
+                                    "            \"premiumAmount\": 1.12,\n" +
                                     "            \"mainContractCheck\": true, \n" +
-                                    "            \"operationId\": \"294c86cb-faf1-16ed-8e88-0894ef6d43f1\",\n" +
                                     "            \"policyId\": \"294c86cb-faf1-16ed-8e88-0894ef6d43f1\",\n" +
                                     "            \"policyNumber\": \"SGZF-0000119500\",\n" +
                                     "            \"contractId\": \"SGZF-0000119500\", \n" +
@@ -85,8 +84,7 @@ interface OrderV1Api {
                                     "            \"channel\": \"Адакта\"                                  \n" +
                                     "        },\n" +
                                     "        {              \n" +
-                                    "            \"premiumAmount\": \"1.56\",\n" +
-                                    "            \"operationId\": \"294c86cb-faf1-16ed-8e88-0894ef6d43f1\",\n" +
+                                    "            \"premiumAmount\": 1.56,\n" +
                                     "            \"policyId\": \"294c86cb-faf1-16ed-8e88-0894ef6d43f1\",\n" +
                                     "            \"policyNumber\": \"SGZF-0000119500\",\n" +
                                     "            \"contractId\": \"SGZF-0000119500\", \n" +

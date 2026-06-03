@@ -7,6 +7,7 @@ import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
 import ru.sogaz.site.orderingService.service.rabbit.SendMessageProducer
+
 @Service
 class InvoicePaymentStatusReversalEventProducerImpl(
     rabbitTemplate: RabbitTemplate,

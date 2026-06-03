@@ -14,19 +14,40 @@ class PayController(
 ) : PayApi {
     override fun payCard(
         orderId: UUID,
+        originalForwardedFor: String?,
         payQueryParams: PayQueryParams,
     ): RedirectView =
         orderService
-            .payCard(orderId, payQueryParams)
-            .wrapToRedirectView()
+            .payCard(
+                orderId = orderId,
+                payQueryParams = payQueryParams.withPayerIpFromHeader(originalForwardedFor),
+            ).wrapToRedirectView()
 
     override fun paySbp(
         orderId: UUID,
+        originalForwardedFor: String?,
         payQueryParams: PayQueryParams,
     ): RedirectView =
         orderService
-            .paySbp(orderId, payQueryParams)
-            .wrapToRedirectView()
+            .paySbp(
+                orderId = orderId,
+                payQueryParams = payQueryParams.withPayerIpFromHeader(originalForwardedFor),
+            ).wrapToRedirectView()
+
+    private fun PayQueryParams.withPayerIpFromHeader(originalForwardedFor: String?): PayQueryParams =
+        PayQueryParams(
+            urlToReturn = urlToReturn,
+            urlToReturnS = urlToReturnS,
+            urlToReturnF = urlToReturnF,
+            depersonalization = depersonalization,
+            channelSale = channelSale,
+            payerIP = originalForwardedFor.normalizeHeaderValue() ?: payerIP,
+        )
+
+    private fun String?.normalizeHeaderValue(): String? =
+        this
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
 
     private fun PaymentPage.wrapToRedirectView() = uri.run(::RedirectView)
 }
