@@ -70,7 +70,8 @@ abstract class OrderMapper {
     @Named("mapBankBySubOrders")
     fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =
         when {
-            subOrders.orEmpty()
+            subOrders
+                .orEmpty()
                 .any { it.typeOperation == TypeOperationRequestEnum.PAYMENT_SUBSCRIPTION.name } -> BankEnum.GPB.name
 
             else -> null

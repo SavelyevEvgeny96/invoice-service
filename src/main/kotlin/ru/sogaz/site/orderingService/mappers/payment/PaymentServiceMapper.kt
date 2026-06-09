@@ -36,6 +36,7 @@ interface PaymentServiceMapper {
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
     @Mapping(target = "payerIp", source = "params.payerIP")
+    @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "params", source = "params")
     fun orderToSbpPayRequest(
         order: OrderEntity,
