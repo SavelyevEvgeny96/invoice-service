@@ -34,7 +34,10 @@ variables:
   # Исключить сервис из автоматического логирования
   EXCLUDE_FROM_LOGGING: 'false' # false/true
 
+    # online-pay
+  SERVICE_NAMESPACE: 'online-pay'
+
 include:
   - project: 'infrastructure/common/gitlab-ci'
     ref: master
-    file: '/java/k8s/v100_site/.gitlab-ci.yml'
+    file: '/java/k8s/v100_site_online_pay/.gitlab-ci.yml'
