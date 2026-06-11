@@ -19,38 +19,6 @@ interface CardRegistryApi {
         summary = "Редирект на страницу оплаты заказа по карте",
         description = "Регистрация банковской карты",
     )
-    @Parameters(
-        Parameter(name = "unifiedId", description = "Идентификатор единого профиля клиента", required = true),
-        Parameter(
-            name = "urlToReturn",
-            description = "Ссылка для редиректа после успешной оплаты",
-            example = "http://www.sogaz.ru",
-            required = true,
-        ),
-        Parameter(
-            name = "urlToReturnS",
-            description = "Ссылка для редиректа после успешной оплаты",
-            example = "http://www.sogaz.ru",
-            required = true,
-        ),
-        Parameter(
-            name = "urlToReturnF",
-            description = "Ссылка для редиректа после неуспешной оплаты",
-            example = "http://www.sogaz.ru",
-            required = true,
-        ),
-        Parameter(
-            name = "depersonalization",
-            description = "Флаг необходимости анонимизированной оплаты",
-            example = "true",
-        ),
-        Parameter(
-            name = "payerIP",
-            description = "IP пользователя, который совершает оплату",
-            example = "2256",
-            required = false,
-        ),
-    )
     @ApiResponse(responseCode = "200", description = "Редирект на страницу оплаты по карте")
     @GetMapping("/payment/users/{unifiedId}/card")
     fun cardRegistry(
