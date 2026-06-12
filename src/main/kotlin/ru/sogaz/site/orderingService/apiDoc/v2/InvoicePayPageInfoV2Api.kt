@@ -2,9 +2,11 @@ package ru.sogaz.site.orderingService.apiDoc.v2
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestHeader
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
 import ru.sogaz.site.orderingService.dto.response.InvoicePayPageInfo
@@ -12,6 +14,10 @@ import ru.sogaz.siter.models.resonses.Response
 import java.util.UUID
 
 interface InvoicePayPageInfoV2Api {
+    companion object {
+        const val X_REAL_IP = "x-real-ip"
+    }
+
     @Operation(
         summary = "Информация о способах оплаты счета",
         description = "Возвращает ссылку для оплаты картой и, если возможно оплатить по СБП, QR-code для оплаты по СБП",
@@ -25,6 +31,14 @@ interface InvoicePayPageInfoV2Api {
     @Parameter(name = "saveCard", schema = Schema(type = "boolean", defaultValue = "false"))
     @GetMapping("v2/invoice/pagepayinfo/{invoiceId}")
     fun getInvoicePayPage(
+        @RequestHeader(name = X_REAL_IP, required = false)
+        xRealIp: String?,
+        @Parameter(
+            name = X_REAL_IP,
+            description = "IP пользователя из заголовка",
+            `in` = ParameterIn.HEADER,
+            required = false,
+        )
         @PathVariable invoiceId: UUID,
         payQueryParams: PayQueryParams,
         saveCard: Boolean = false,

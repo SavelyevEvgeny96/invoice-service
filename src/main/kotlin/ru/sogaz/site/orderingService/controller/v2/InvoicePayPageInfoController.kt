@@ -21,19 +21,50 @@ class InvoicePayPageInfoController(
     }
 
     override fun getInvoicePayPage(
+        xRealIp: String?,
         invoiceId: UUID,
         payQueryParams: PayQueryParams,
         saveCard: Boolean,
         unifiedId: String?,
-    ): Response<InvoicePayPageInfo> =
-        orderPaymentPageService
-            .getInvoicePayPageInfo(invoiceId, payQueryParams)
+    ): Response<InvoicePayPageInfo> {
+        val updatedParams =
+            PayQueryParams(
+                urlToReturn = payQueryParams.urlToReturn,
+                urlToReturnS = payQueryParams.urlToReturnS,
+                urlToReturnF = payQueryParams.urlToReturnF,
+                depersonalization = payQueryParams.depersonalization,
+                channelSale = payQueryParams.channelSale,
+                payerIP = buildPayerIp(payQueryParams.payerIP, xRealIp),
+            )
+
+        return orderPaymentPageService
+            .getInvoicePayPageInfo(invoiceId, updatedParams)
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_PAY_INFO_PAGE)
+    }
 
     override fun getInvoiceMetaInfo(invoiceId: UUID): Response<InvoiceMetaInfo> =
         orderPaymentPageService
             .getMetaInfo(invoiceId)
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_INVOICE_META_INFO)
+
+    private fun buildPayerIp(
+        originalForwardedForIp: String?,
+        xRealIp: String?,
+    ): String? {
+        fun extractIps(raw: String?): List<String> =
+            raw
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
+
+        val forwardedIps = extractIps(originalForwardedForIp)
+        val realIps = extractIps(xRealIp)
+
+        val uniqueIps = (forwardedIps + realIps).distinct()
+
+        return uniqueIps.takeIf { it.isNotEmpty() }?.joinToString(",")
+    }
 
     private fun <T> T.wrapToSuccessResponse(statusCode: Int): Response<T> = getSuccessResponse(getTraceId(), statusCode, this)
 }
