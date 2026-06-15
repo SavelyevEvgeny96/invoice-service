@@ -74,10 +74,10 @@ class OrderBatchConsumerImpl(
      * @param messages Список сообщений RabbitMQ для обработки.
      * @param channel Канал RabbitMQ, используемый для ACK/Reject сообщений.
      */
-    @RabbitListener(
-        queues = ["\${app.rabbit.queue-order}"],
-        containerFactory = "batchContainerFactory",
-    )
+//    @RabbitListener(
+//        queues = ["\${app.rabbit.queue-order}"],
+//        containerFactory = "batchContainerFactory",
+//    )
     override fun handleBatchOrderCreated(
         messages: List<Message>,
         channel: Channel,
