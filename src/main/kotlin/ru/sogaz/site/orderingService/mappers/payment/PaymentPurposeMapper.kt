@@ -12,9 +12,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
 @Mapper
 abstract class PaymentPurposeMapper {
-
     companion object {
         private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s%s. Платежный сервис, дата операции %s"
         private const val PAY_SBP_ONE_CONTRACT_INFO = "Оплата по договору страхования %s"
@@ -32,9 +32,9 @@ abstract class PaymentPurposeMapper {
 
     fun mapRedirectParams(
         params: PayQueryParams,
-        order: OrderEntity
-    ): RedirectParams {
-        return RedirectParams().apply {
+        order: OrderEntity,
+    ): RedirectParams =
+        RedirectParams().apply {
             urlToReturn = params.urlToReturn.takeIf { !it.isNullOrBlank() }
                 ?: order.urlToReturn
 
@@ -44,7 +44,6 @@ abstract class PaymentPurposeMapper {
             urlToReturnF = params.urlToReturnF.takeIf { !it.isNullOrBlank() }
                 ?: order.urlToDecline
         }
-    }
 
     // ===================== EXISTING LOGIC =====================
 
@@ -74,8 +73,7 @@ abstract class PaymentPurposeMapper {
         runCatching { subOrders.findMainContract().makeSbpPayDescriptionForOneContract() }
             .getOrElse { EMPTY_SBP_PAY_INFO }
 
-    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(): String =
-        PAY_SBP_ONE_CONTRACT_INFO.format(contractNumber)
+    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(): String = PAY_SBP_ONE_CONTRACT_INFO.format(contractNumber)
 
     private fun List<SubOrderEntity>.findMainContract(): SubOrderEntity =
         when (size) {
@@ -85,9 +83,9 @@ abstract class PaymentPurposeMapper {
 
     private fun Instant.toContractDateFormat(): String =
         " от " +
-                atZone(DEFAULT_ZONE)
-                    .toLocalDate()
-                    .toContractDateFormat()
+            atZone(DEFAULT_ZONE)
+                .toLocalDate()
+                .toContractDateFormat()
 
     private fun LocalDate.toContractDateFormat(): String = format(DDMMYYYY)
 
@@ -102,6 +100,5 @@ abstract class PaymentPurposeMapper {
         subOrder: SubOrderEntity,
     ): Pair<String, String> = "${PARAM}${idx + 1}" to subOrder.toParamValue()
 
-    private fun SubOrderEntity.toParamValue(): String =
-        CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat() ?: "")
+    private fun SubOrderEntity.toParamValue(): String = CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat() ?: "")
 }
