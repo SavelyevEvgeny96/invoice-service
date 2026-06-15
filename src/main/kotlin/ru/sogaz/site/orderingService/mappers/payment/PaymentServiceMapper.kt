@@ -1,5 +1,6 @@
 package ru.sogaz.site.orderingService.mappers.payment
 
+import org.mapstruct.Context
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
@@ -15,15 +16,21 @@ import ru.sogaz.site.payment.client.model.SbpPayOperationRequest
 
 @Mapper(uses = [PaymentPurposeMapper::class])
 interface PaymentServiceMapper {
+
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapCardRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
     @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "payerIp", source = "params.payerIP")
     @Mapping(target = "params", source = "params")
+    @Mapping(
+        target = "params.redirectParams",
+        expression = "java(paymentPurposeMapper.mapRedirectParams(params, order))"
+    )
     fun orderToCardPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
+        @Context paymentPurposeMapper: PaymentPurposeMapper
     ): CardPayOperationRequest
 
     @Mapping(target = "amount", source = "premiumAmount")
@@ -38,9 +45,14 @@ interface PaymentServiceMapper {
     @Mapping(target = "payerIp", source = "params.payerIP")
     @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "params", source = "params")
+    @Mapping(
+        target = "params.redirectParams",
+        expression = "java(paymentPurposeMapper.mapRedirectParams(params, order))"
+    )
     fun orderToSbpPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
+        @Context paymentPurposeMapper: PaymentPurposeMapper
     ): SbpPayOperationRequest
 
     @Mapping(target = "uri", source = "paymentPageUrl")
@@ -49,6 +61,4 @@ interface PaymentServiceMapper {
     @Mapping(target = "urlPay", source = "paymentPageUrl")
     @Mapping(target = "fileQR", source = "qrImageData")
     fun dataQrPayToPaySbp(bankPaymentQrContent: BankPaymentQrContent?): PaySbp?
-
-    fun mapRedirectParams(params: PayQueryParams): RedirectParams
 }

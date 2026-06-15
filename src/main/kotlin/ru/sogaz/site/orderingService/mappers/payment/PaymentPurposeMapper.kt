@@ -4,14 +4,17 @@ import org.mapstruct.Mapper
 import org.mapstruct.Named
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
+import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.payment.client.model.RedirectParams
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
 @Mapper
 abstract class PaymentPurposeMapper {
+
     companion object {
         private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s%s. Платежный сервис, дата операции %s"
         private const val PAY_SBP_ONE_CONTRACT_INFO = "Оплата по договору страхования %s"
@@ -24,6 +27,26 @@ abstract class PaymentPurposeMapper {
         private val DEFAULT_ZONE: ZoneId = ZoneId.systemDefault()
         private val DDMMYYYY: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
+
+    // ===================== REDIRECT LOGIC =====================
+
+    fun mapRedirectParams(
+        params: PayQueryParams,
+        order: OrderEntity
+    ): RedirectParams {
+        return RedirectParams().apply {
+            urlToReturn = params.urlToReturn.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToReturn
+
+            urlToReturnS = params.urlToReturnS.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToReturn
+
+            urlToReturnF = params.urlToReturnF.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToDecline
+        }
+    }
+
+    // ===================== EXISTING LOGIC =====================
 
     @Named("mapCardRequestContractDescription")
     protected fun mapCardRequestContractDescription(subOrders: List<SubOrderEntity>): String {
@@ -51,7 +74,8 @@ abstract class PaymentPurposeMapper {
         runCatching { subOrders.findMainContract().makeSbpPayDescriptionForOneContract() }
             .getOrElse { EMPTY_SBP_PAY_INFO }
 
-    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(): String = PAY_SBP_ONE_CONTRACT_INFO.format(contractNumber)
+    private fun SubOrderEntity.makeSbpPayDescriptionForOneContract(): String =
+        PAY_SBP_ONE_CONTRACT_INFO.format(contractNumber)
 
     private fun List<SubOrderEntity>.findMainContract(): SubOrderEntity =
         when (size) {
@@ -61,9 +85,9 @@ abstract class PaymentPurposeMapper {
 
     private fun Instant.toContractDateFormat(): String =
         " от " +
-            atZone(DEFAULT_ZONE)
-                .toLocalDate()
-                .toContractDateFormat()
+                atZone(DEFAULT_ZONE)
+                    .toLocalDate()
+                    .toContractDateFormat()
 
     private fun LocalDate.toContractDateFormat(): String = format(DDMMYYYY)
 
@@ -78,5 +102,6 @@ abstract class PaymentPurposeMapper {
         subOrder: SubOrderEntity,
     ): Pair<String, String> = "${PARAM}${idx + 1}" to subOrder.toParamValue()
 
-    private fun SubOrderEntity.toParamValue(): String = CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat() ?: "")
+    private fun SubOrderEntity.toParamValue(): String =
+        CONTRACT_INFO.format(contractNumber, contractDate?.toContractDateFormat() ?: "")
 }
