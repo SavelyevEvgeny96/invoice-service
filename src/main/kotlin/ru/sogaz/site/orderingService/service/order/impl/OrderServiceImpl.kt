@@ -94,7 +94,7 @@ class OrderServiceImpl(
         payQueryParams: PayQueryParams,
     ): PaymentPage {
         val order = findOrderByIdOrThrow(orderId)
-        checkOrderStatus(order)
+//        checkOrderStatus(order)
         return paymentService.payCard(order, payQueryParams)
     }
 

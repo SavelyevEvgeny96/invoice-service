@@ -19,9 +19,8 @@ interface PaymentServiceMapper {
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
     @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "payerIp", source = "params.payerIP")
-    @Mapping(target = "params", source = "params")
     @Mapping(
-        target = "params.redirectParams",
+        target = "params",
         expression = "java(paymentPurposeMapper.mapRedirectParams(params, order))",
     )
     fun orderToCardPayRequest(
@@ -40,10 +39,9 @@ interface PaymentServiceMapper {
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
     @Mapping(target = "payerIp", source = "params.payerIP")
     @Mapping(target = "depersonalization", source = "params.depersonalization")
-    @Mapping(target = "params", source = "params")
     @Mapping(
-        target = "params.redirectParams",
-        expression = "java(paymentPurposeMapper.mapRedirectParams(params, order))",
+        target = "params",
+        expression = "java(paymentPurposeMapper.mapSbpRedirectParams(params, order))",
     )
     fun orderToSbpPayRequest(
         order: OrderEntity,

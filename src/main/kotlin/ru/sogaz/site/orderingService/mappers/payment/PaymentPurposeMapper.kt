@@ -8,6 +8,7 @@ import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.payment.client.model.RedirectParams
+import ru.sogaz.site.payment.client.model.StraightRedirectSchema
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -45,6 +46,15 @@ abstract class PaymentPurposeMapper {
                 ?: order.urlToDecline
         }
 
+    fun mapSbpRedirectParams(
+        params: PayQueryParams,
+        order: OrderEntity,
+    ): StraightRedirectSchema =
+        StraightRedirectSchema().apply {
+            urlToReturn =
+                params.urlToReturn.takeIf { !it.isNullOrBlank() }
+                    ?: order.urlToReturn
+        }
     // ===================== EXISTING LOGIC =====================
 
     @Named("mapCardRequestContractDescription")
