@@ -22,7 +22,7 @@ data class OrderPayloadDto(
     @field:EmailValid
     val recipientEmail: String?,
     @field:NotBlank
-    var bank: String, // оставляем как есть
+    var bank: String,
     @field:NotBlank
     val paymentType: String?,
     val recipientPhone: String?,
