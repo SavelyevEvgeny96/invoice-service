@@ -18,21 +18,24 @@ data class OrderPayloadDto(
     @field:NotNull
     val metaInfo: List<MetaInfoOrder>,
     @field:NotBlank
-    val subscriptionId: String, // id подписки
+    val subscriptionId: String,
     @field:EmailValid
-    val recipientEmail: String?, // email страхователя
-    @field:NotBlank
-    val bank: String,
+    val recipientEmail: String?,
+    @JsonProperty("bank")
+    private var _bank: String,
     @field:NotBlank
     val paymentType: String?,
-    val recipientPhone: String?, // телефон страхователя
-    val recipientUserId: String?, // ID личного кабинета
-    val keyCard: String?, // ключ карты (если recurrent=true)
-    val orderEndDate: Instant?, // срок актуальности заказа
-    val unifiedId: String? = null, // золотой ID
+    val recipientPhone: String?,
+    val recipientUserId: String?,
+    val keyCard: String?,
+    val orderEndDate: Instant?,
+    val unifiedId: String? = null,
     val policyholder: String? = null,
     @field:UniqueMainContract
-    val subOrders: List<SubOrderDto>, // список полисов внутри заказа
+    val subOrders: List<SubOrderDto>,
     @JsonProperty("order_id_recurrent")
-    val orderIdRecurrent: UUID? = null, // новое необязательное поле
-)
+    val orderIdRecurrent: UUID? = null,
+) {
+    val bank: String
+        get() = _bank.trim().uppercase()
+}
