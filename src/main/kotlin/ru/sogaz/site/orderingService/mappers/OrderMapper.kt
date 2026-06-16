@@ -14,6 +14,8 @@ import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -61,7 +63,18 @@ abstract class OrderMapper {
     @Mapping(target = "recipientPhone", defaultValue = "")
     @Mapping(target = "queueStatusResultName", source = ".", qualifiedByName = ["mapClientIdToQueueResultName"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["calculatePremiumAmount"])
+    @Mapping(target = "bank", source = "subOrders", qualifiedByName = ["mapBankBySubOrders"])
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
+
+    @Named("mapBankBySubOrders")
+    fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =
+        when {
+            subOrders
+                .orEmpty()
+                .any { it.typeOperation == TypeOperationRequestEnum.PAYMENT_SUBSCRIPTION.name } -> BankEnum.GPB.name
+
+            else -> null
+        }
 
     abstract fun fromCommand(command: CreateSubOrderCommand): SubOrderEntity
 

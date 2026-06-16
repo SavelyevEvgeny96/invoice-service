@@ -18,6 +18,7 @@ interface PayRegOperationMapper {
     @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "saveCard", constant = "true")
     @Mapping(target = "payItems", ignore = true)
+    @Mapping(target = "insuranceKind", ignore = true)
     @Mapping(target = "params", source = "params")
     @Mapping(target = "payerIP", source = "params.payerIP")
     fun mapToRequest(

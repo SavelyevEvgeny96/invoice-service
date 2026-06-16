@@ -4,7 +4,11 @@ import org.mapstruct.Mapper
 import org.mapstruct.Named
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
+import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.payment.client.model.RedirectParams
+import ru.sogaz.site.payment.client.model.StraightRedirectSchema
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -24,6 +28,34 @@ abstract class PaymentPurposeMapper {
         private val DEFAULT_ZONE: ZoneId = ZoneId.systemDefault()
         private val DDMMYYYY: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     }
+
+    // ===================== REDIRECT LOGIC =====================
+
+    fun mapRedirectParams(
+        params: PayQueryParams,
+        order: OrderEntity,
+    ): RedirectParams =
+        RedirectParams().apply {
+            urlToReturn = params.urlToReturn.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToReturn
+
+            urlToReturnS = params.urlToReturnS.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToReturn
+
+            urlToReturnF = params.urlToReturnF.takeIf { !it.isNullOrBlank() }
+                ?: order.urlToDecline
+        }
+
+    fun mapSbpRedirectParams(
+        params: PayQueryParams,
+        order: OrderEntity,
+    ): StraightRedirectSchema =
+        StraightRedirectSchema().apply {
+            urlToReturn =
+                params.urlToReturn.takeIf { !it.isNullOrBlank() }
+                    ?: order.urlToReturn
+        }
+    // ===================== EXISTING LOGIC =====================
 
     @Named("mapCardRequestContractDescription")
     protected fun mapCardRequestContractDescription(subOrders: List<SubOrderEntity>): String {

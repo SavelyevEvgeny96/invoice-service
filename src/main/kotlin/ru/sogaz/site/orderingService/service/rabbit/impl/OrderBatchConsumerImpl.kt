@@ -168,7 +168,7 @@ class OrderBatchConsumerImpl(
             // basicReject с multiple=true откатит их для повторной обработки
             val lastTag = successMessages.lastOrNull()?.tag
             lastTag?.let {
-                channel.basicReject(it, true)
+                channel.basicNack(it, true, false)
             }
         } finally {
             // Итоговый лог по batch

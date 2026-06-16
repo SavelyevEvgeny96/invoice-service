@@ -10,7 +10,6 @@ import ru.sogaz.site.payment.client.model.BankPaymentPageData
 import ru.sogaz.site.payment.client.model.BankPaymentQrContent
 import ru.sogaz.site.payment.client.model.CardPayOperationRequest
 import ru.sogaz.site.payment.client.model.CardRecurrentOperationRequest
-import ru.sogaz.site.payment.client.model.RedirectParams
 import ru.sogaz.site.payment.client.model.SbpPayOperationRequest
 
 @Mapper(uses = [PaymentPurposeMapper::class])
@@ -20,7 +19,10 @@ interface PaymentServiceMapper {
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
     @Mapping(target = "depersonalization", source = "params.depersonalization")
     @Mapping(target = "payerIp", source = "params.payerIP")
-    @Mapping(target = "params", source = "params")
+    @Mapping(
+        target = "params",
+        expression = "java(paymentPurposeMapper.mapRedirectParams(params, order))",
+    )
     fun orderToCardPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
@@ -36,7 +38,11 @@ interface PaymentServiceMapper {
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapSbpRequestContractDescription"])
     @Mapping(target = "payerIp", source = "params.payerIP")
-    @Mapping(target = "params", source = "params")
+    @Mapping(target = "depersonalization", source = "params.depersonalization")
+    @Mapping(
+        target = "params",
+        expression = "java(paymentPurposeMapper.mapSbpRedirectParams(params, order))",
+    )
     fun orderToSbpPayRequest(
         order: OrderEntity,
         params: PayQueryParams,
@@ -48,6 +54,4 @@ interface PaymentServiceMapper {
     @Mapping(target = "urlPay", source = "paymentPageUrl")
     @Mapping(target = "fileQR", source = "qrImageData")
     fun dataQrPayToPaySbp(bankPaymentQrContent: BankPaymentQrContent?): PaySbp?
-
-    fun mapRedirectParams(params: PayQueryParams): RedirectParams
 }

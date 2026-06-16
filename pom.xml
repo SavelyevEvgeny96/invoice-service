@@ -155,7 +155,7 @@
         <dependency>
             <groupId>ru.sogaz.site</groupId>
             <artifactId>payment-api-client</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.9</version>
         </dependency>
         <dependency>
             <groupId>ru.sogaz.site</groupId>

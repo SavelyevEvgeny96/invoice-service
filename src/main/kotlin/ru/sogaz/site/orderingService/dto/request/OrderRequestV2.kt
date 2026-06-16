@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
 import java.time.Instant
@@ -37,7 +36,6 @@ data class OrderRequestV2(
     @field:SogazDomain
     var urlToDecline: String? = null,
     var accountCrossId: String = "",
-    var bank: BankEnum? = null,
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     var typePaymentOperation: String = "",
     var clientId: String? = null,

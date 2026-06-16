@@ -15,39 +15,59 @@ class PayController(
     override fun payCard(
         orderId: UUID,
         originalForwardedFor: String?,
+        xRealIp: String?,
         payQueryParams: PayQueryParams,
     ): RedirectView =
         orderService
             .payCard(
                 orderId = orderId,
-                payQueryParams = payQueryParams.withPayerIpFromHeader(originalForwardedFor),
+                payQueryParams = enrichParams(payQueryParams, originalForwardedFor, xRealIp),
             ).wrapToRedirectView()
 
     override fun paySbp(
         orderId: UUID,
         originalForwardedFor: String?,
+        xRealIp: String?,
         payQueryParams: PayQueryParams,
     ): RedirectView =
         orderService
             .paySbp(
                 orderId = orderId,
-                payQueryParams = payQueryParams.withPayerIpFromHeader(originalForwardedFor),
+                payQueryParams = enrichParams(payQueryParams, originalForwardedFor, xRealIp),
             ).wrapToRedirectView()
 
-    private fun PayQueryParams.withPayerIpFromHeader(originalForwardedFor: String?): PayQueryParams =
-        PayQueryParams(
-            urlToReturn = urlToReturn,
-            urlToReturnS = urlToReturnS,
-            urlToReturnF = urlToReturnF,
-            depersonalization = depersonalization,
-            channelSale = channelSale,
-            payerIP = originalForwardedFor.normalizeHeaderValue() ?: payerIP,
-        )
+    private fun buildPayerIp(
+        originalForwardedForIp: String?,
+        xRealIp: String?,
+    ): String? {
+        fun extractIps(raw: String?): List<String> =
+            raw
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
 
-    private fun String?.normalizeHeaderValue(): String? =
-        this
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
+        val forwardedIps = extractIps(originalForwardedForIp)
+        val realIps = extractIps(xRealIp)
+
+        val uniqueIps = (forwardedIps + realIps).distinct()
+
+        return uniqueIps.takeIf { it.isNotEmpty() }?.joinToString(",")
+    }
+
+    private fun enrichParams(
+        params: PayQueryParams,
+        originalForwardedFor: String?,
+        xRealIp: String?,
+    ): PayQueryParams =
+        PayQueryParams(
+            urlToReturn = params.urlToReturn,
+            urlToReturnS = params.urlToReturnS,
+            urlToReturnF = params.urlToReturnF,
+            depersonalization = params.depersonalization,
+            channelSale = params.channelSale,
+            payerIP = buildPayerIp(params.payerIP, "$xRealIp,$originalForwardedFor"),
+        )
 
     private fun PaymentPage.wrapToRedirectView() = uri.run(::RedirectView)
 }
