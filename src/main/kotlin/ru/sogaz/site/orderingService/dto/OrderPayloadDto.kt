@@ -21,8 +21,8 @@ data class OrderPayloadDto(
     val subscriptionId: String,
     @field:EmailValid
     val recipientEmail: String?,
-    @JsonProperty("bank")
-    private var _bank: String,
+    @field:NotBlank
+    var bank: String, // оставляем как есть
     @field:NotBlank
     val paymentType: String?,
     val recipientPhone: String?,
@@ -36,6 +36,7 @@ data class OrderPayloadDto(
     @JsonProperty("order_id_recurrent")
     val orderIdRecurrent: UUID? = null,
 ) {
-    val bank: String
-        get() = _bank.trim().uppercase()
+    init {
+        bank = bank.trim().uppercase()
+    }
 }
