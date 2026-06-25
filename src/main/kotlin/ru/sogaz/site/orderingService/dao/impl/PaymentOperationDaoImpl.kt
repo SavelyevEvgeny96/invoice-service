@@ -14,5 +14,11 @@ class PaymentOperationDaoImpl(
     override fun save(paymentOperation: PaymentOperationEntity): PaymentOperationEntity = paymentOperationRepository.save(paymentOperation)
 
     override fun findSuccessPaymentByOrderId(orderId: UUID): PaymentOperationEntity? =
-        paymentOperationRepository.findFirstByOrderEntityOrderIdAndState(orderId, PaymentOperationStateEnum.SUCCESS)
+        paymentOperationRepository.findFirstByOrderEntityOrderIdAndState(
+            orderId,
+            PaymentOperationStateEnum.SUCCESS,
+        )
+
+    override fun findLastByOrderId(orderId: UUID): PaymentOperationEntity? =
+        paymentOperationRepository.findFirstByOrderEntityOrderIdOrderByPayDateDesc(orderId)
 }

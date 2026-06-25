@@ -8,6 +8,7 @@ import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingService
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_SUCCESS
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomPaymentErrors.Companion.CODE_ERROR_ORDER_NOT_FOUND_INFO
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.PaymentOperationDao
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
@@ -31,6 +32,7 @@ class OrderPaymentPageServiceImpl(
     private val payInfoService: PayInfoService,
     private val paymentMethodsMapper: PaymentMethodsMapper,
     private val invoiceMetaInfoMapper: InvoiceMetaInfoMapper,
+    private val paymentOperationDao: PaymentOperationDao,
 ) : OrderPaymentPageService {
     override fun getInvoicePayPageInfo(
         orderId: UUID,
@@ -52,9 +54,27 @@ class OrderPaymentPageServiceImpl(
         return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp)
     }
 
-    override fun getMetaInfo(orderId: UUID): InvoiceMetaInfo {
-        val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        return invoiceMetaInfoMapper.toInvoiceMetaInfo(order)
+    override fun getMetaInfo(
+        orderId: UUID,
+        payment: Boolean,
+    ): InvoiceMetaInfo {
+        val order =
+            orderDao.findById(orderId)
+                ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
+
+        val metaInfo = invoiceMetaInfoMapper.toInvoiceMetaInfo(order)
+
+        if (!payment) {
+            return metaInfo
+        }
+
+        val lastPaymentOperation =
+            paymentOperationDao.findLastByOrderId(orderId)
+                ?: return metaInfo
+
+        return metaInfo.copy(
+            payment = invoiceMetaInfoMapper.toInvoiceMetaPayment(lastPaymentOperation),
+        )
     }
 
     private fun OrderEntity.checkStatus() {
