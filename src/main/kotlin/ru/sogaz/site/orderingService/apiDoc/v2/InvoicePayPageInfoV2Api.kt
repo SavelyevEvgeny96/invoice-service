@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestParam
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
 import ru.sogaz.site.orderingService.dto.response.InvoicePayPageInfo
@@ -55,5 +56,6 @@ interface InvoicePayPageInfoV2Api {
     @GetMapping("v2/invoice/metainfo/{invoiceId}")
     fun getInvoiceMetaInfo(
         @PathVariable invoiceId: UUID,
+        @RequestParam payment: Boolean = false,
     ): Response<InvoiceMetaInfo>
 }

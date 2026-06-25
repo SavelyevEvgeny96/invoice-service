@@ -7,4 +7,6 @@ interface PaymentOperationDao {
     fun save(paymentOperation: PaymentOperationEntity): PaymentOperationEntity
 
     fun findSuccessPaymentByOrderId(orderId: UUID): PaymentOperationEntity?
+
+    fun findLastByOrderId(orderId: UUID): PaymentOperationEntity?
 }

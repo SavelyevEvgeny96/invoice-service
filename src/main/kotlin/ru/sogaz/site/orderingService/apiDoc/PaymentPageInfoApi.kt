@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
@@ -16,7 +17,12 @@ interface PaymentPageInfoApi {
         summary = "Информация о способах оплаты заказа",
         description = "Возвращает ссылку для оплаты картой и, если возможно оплатить по СБП, QR-code для оплаты по СБП",
     )
-    @Parameter(name = "orderId", description = "UUID заказа для оплаты", required = true, schema = Schema(type = "string", format = "uuid"))
+    @Parameter(
+        name = "orderId",
+        description = "UUID заказа для оплаты",
+        required = true,
+        schema = Schema(type = "string", format = "uuid"),
+    )
     @Parameter(name = "saveCard", schema = Schema(type = "boolean", defaultValue = "false"))
     @GetMapping("v1/order/pagepayinfo/{orderId}")
     fun getInfoPage(
@@ -36,5 +42,6 @@ interface PaymentPageInfoApi {
     @GetMapping("v1/invoice/metainfo/{invoiceId}")
     fun getMetaInfo(
         @PathVariable invoiceId: UUID,
+        @RequestParam payment: Boolean = false,
     ): Response<InvoiceMetaInfo>
 }
