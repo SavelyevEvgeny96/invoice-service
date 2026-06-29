@@ -56,6 +56,12 @@ interface InvoicePayPageInfoV2Api {
     @GetMapping("v2/invoice/metainfo/{invoiceId}")
     fun getInvoiceMetaInfo(
         @PathVariable invoiceId: UUID,
-        @RequestParam payment: Boolean = false,
+        @Parameter(
+            name = "payment",
+            description = "Признак необходимости вернуть информацию с учетом оплаты. По умолчанию false",
+            required = false,
+            `in` = ParameterIn.QUERY,
+        schema = Schema(type = "boolean", defaultValue = "false"),
+    ) payment: Boolean,
     ): Response<InvoiceMetaInfo>
 }
