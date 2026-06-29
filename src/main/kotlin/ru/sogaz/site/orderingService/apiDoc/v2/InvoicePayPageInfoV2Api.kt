@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestHeader
@@ -23,26 +24,47 @@ interface InvoicePayPageInfoV2Api {
         summary = "Информация о способах оплаты счета",
         description = "Возвращает ссылку для оплаты картой и, если возможно оплатить по СБП, QR-code для оплаты по СБП",
     )
-    @Parameter(
-        name = "invoiceId",
-        description = "UUID счета для оплаты",
-        required = true,
-        schema = Schema(type = "string", format = "uuid"),
-    )
-    @Parameter(name = "saveCard", schema = Schema(type = "boolean", defaultValue = "false"))
-    @GetMapping("v2/invoice/pagepayinfo/{invoiceId}")
+    @GetMapping("/v2/invoice/pagepayinfo/{invoiceId}")
     fun getInvoicePayPage(
-        @RequestHeader(name = X_REAL_IP, required = false)
-        xRealIp: String?,
         @Parameter(
             name = X_REAL_IP,
             description = "IP пользователя из заголовка",
             `in` = ParameterIn.HEADER,
             required = false,
+            schema = Schema(type = "string"),
         )
-        @PathVariable invoiceId: UUID,
+        @RequestHeader(name = X_REAL_IP, required = false)
+        xRealIp: String?,
+
+        @Parameter(
+            name = "invoiceId",
+            description = "UUID счета для оплаты",
+            required = true,
+            `in` = ParameterIn.PATH,
+            schema = Schema(type = "string", format = "uuid"),
+        )
+        @PathVariable("invoiceId")
+        invoiceId: UUID,
+
+        @ParameterObject
         payQueryParams: PayQueryParams,
-        saveCard: Boolean = false,
+
+        @Parameter(
+            name = "saveCard",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            schema = Schema(type = "boolean", defaultValue = "false"),
+        )
+        @RequestParam(required = false, defaultValue = "false")
+        saveCard: Boolean,
+
+        @Parameter(
+            name = "unifiedId",
+            required = false,
+            `in` = ParameterIn.QUERY,
+            schema = Schema(type = "string"),
+        )
+        @RequestParam(required = false)
         unifiedId: String?,
     ): Response<InvoicePayPageInfo>
 
@@ -61,7 +83,7 @@ interface InvoicePayPageInfoV2Api {
             description = "Признак необходимости вернуть информацию с учетом оплаты. По умолчанию false",
             required = false,
             `in` = ParameterIn.QUERY,
-        schema = Schema(type = "boolean", defaultValue = "false"),
-    ) payment: Boolean,
+            schema = Schema(type = "boolean", defaultValue = "false"),
+        ) payment: Boolean,
     ): Response<InvoiceMetaInfo>
 }
