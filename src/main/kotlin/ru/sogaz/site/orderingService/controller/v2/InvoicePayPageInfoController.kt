@@ -42,9 +42,12 @@ class InvoicePayPageInfoController(
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_PAY_INFO_PAGE)
     }
 
-    override fun getInvoiceMetaInfo(invoiceId: UUID): Response<InvoiceMetaInfo> =
+    override fun getInvoiceMetaInfo(
+        invoiceId: UUID,
+        payment: Boolean,
+    ): Response<InvoiceMetaInfo> =
         orderPaymentPageService
-            .getMetaInfo(invoiceId)
+            .getMetaInfo(invoiceId, payment)
             .wrapToSuccessResponse(SUCCESS_STATUS_CODE_INVOICE_META_INFO)
 
     private fun buildPayerIp(
