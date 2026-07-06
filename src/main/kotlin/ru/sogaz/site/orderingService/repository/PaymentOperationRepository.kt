@@ -12,6 +12,5 @@ interface PaymentOperationRepository : JpaRepository<PaymentOperationEntity, UUI
         orderId: UUID,
         state: PaymentOperationStateEnum,
     ): PaymentOperationEntity?
-
-    fun findFirstByOrderEntityOrderIdOrderByPayDateDesc(orderId: UUID): PaymentOperationEntity?
+    fun findFirstByOrderEntityOrderIdOrderByPayDateAsc(orderId: UUID): PaymentOperationEntity?
 }
