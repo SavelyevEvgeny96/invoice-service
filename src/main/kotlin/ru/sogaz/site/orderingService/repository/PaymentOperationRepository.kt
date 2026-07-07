@@ -19,7 +19,7 @@ interface PaymentOperationRepository : JpaRepository<PaymentOperationEntity, UUI
         select *
         from payment_operations
         where order_id = :orderId
-        order by pay_date asc
+        order by pay_date desc
         limit 1
     """,
         nativeQuery = true
