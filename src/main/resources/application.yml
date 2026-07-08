@@ -5,6 +5,8 @@ spring:
   profiles:
     active: ${ENVIRONMENT:local}
   datasource:
+    hikari:
+      connection-init-sql: SET TIME ZONE 'Europe/Moscow'
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL:jdbc:postgresql://localhost:5432/ordering}
     username: ${DB_USERNAME:postgres}

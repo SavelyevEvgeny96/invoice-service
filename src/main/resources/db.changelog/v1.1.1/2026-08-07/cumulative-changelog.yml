@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-008-refactor_time_zone
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-008-refactor_time_zone
+  - include:
+      file: db.changelog\v1.1.1\2026-08-07\DATA\refactor_time_zone.sql
+
