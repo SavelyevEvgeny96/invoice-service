@@ -19,6 +19,5 @@ class PaymentOperationDaoImpl(
             PaymentOperationStateEnum.SUCCESS,
         )
 
-    override fun findLastByOrderId(orderId: UUID): PaymentOperationEntity? =
-        paymentOperationRepository.findOldestByOrderId(orderId)
+    override fun findLastByOrderId(orderId: UUID): PaymentOperationEntity? = paymentOperationRepository.findOldestByOrderId(orderId)
 }

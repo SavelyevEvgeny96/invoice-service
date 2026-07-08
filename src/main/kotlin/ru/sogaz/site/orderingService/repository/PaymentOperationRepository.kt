@@ -14,6 +14,7 @@ interface PaymentOperationRepository : JpaRepository<PaymentOperationEntity, UUI
         orderId: UUID,
         state: PaymentOperationStateEnum,
     ): PaymentOperationEntity?
+
     @Query(
         value = """
         select *
@@ -22,10 +23,11 @@ interface PaymentOperationRepository : JpaRepository<PaymentOperationEntity, UUI
         order by pay_date desc
         limit 1
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findOldestByOrderId(
-        @Param("orderId") orderId: UUID
+        @Param("orderId") orderId: UUID,
     ): PaymentOperationEntity?
+
     fun findFirstByOrderEntityOrderIdOrderByPayDateAsc(orderId: UUID): PaymentOperationEntity?
 }

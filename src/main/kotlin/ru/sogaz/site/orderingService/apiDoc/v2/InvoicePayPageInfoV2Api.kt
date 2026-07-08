@@ -35,7 +35,6 @@ interface InvoicePayPageInfoV2Api {
         )
         @RequestHeader(name = X_REAL_IP, required = false)
         xRealIp: String?,
-
         @Parameter(
             name = "invoiceId",
             description = "UUID счета для оплаты",
@@ -45,10 +44,8 @@ interface InvoicePayPageInfoV2Api {
         )
         @PathVariable("invoiceId")
         invoiceId: UUID,
-
         @ParameterObject
         payQueryParams: PayQueryParams,
-
         @Parameter(
             name = "saveCard",
             required = false,
@@ -57,7 +54,6 @@ interface InvoicePayPageInfoV2Api {
         )
         @RequestParam(required = false, defaultValue = "false")
         saveCard: Boolean,
-
         @Parameter(
             name = "unifiedId",
             required = false,
