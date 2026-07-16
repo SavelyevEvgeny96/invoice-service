@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-002-insert-client-system-table
+      author: Savelyev Evgeny
+      changes:
+        - tagDatabase:
+            tag: backend-007-insert-client-system-table
+  - include:
+      file: db.changelog\v1.1.2\2026-07-16\DATA\add_system_SG.sql
