@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: backend-create-company-details-qr
+      author: OpenAI
+      changes:
+        - sqlFile:
+            path: DATA/create_company_details_qr.sql
+            relativeToChangelogFile: true
