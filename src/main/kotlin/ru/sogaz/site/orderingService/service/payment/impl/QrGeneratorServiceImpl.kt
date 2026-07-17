@@ -20,6 +20,11 @@ class QrGeneratorServiceImpl(
 
     private val logger = loggerFor(javaClass)
 
+    override fun generateFileQR(text: String): FileQR? =
+        QRCodeRequest()
+            .apply { this.text = text }
+            .run(::generateFileQR)
+
     override fun generateFileQR(
         uri: URI,
         size: Int,

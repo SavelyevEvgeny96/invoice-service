@@ -4,6 +4,8 @@ import ru.sogaz.site.orderingService.dto.response.FileQR
 import java.net.URI
 
 interface QrGeneratorService {
+    fun generateFileQR(text: String): FileQR?
+
     fun generateFileQR(
         uri: URI,
         size: Int,
