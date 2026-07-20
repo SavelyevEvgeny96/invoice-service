@@ -127,7 +127,7 @@ class OrderServiceImpl(
                     ORDER_STATUS_PATTERN,
                     clientId,
                 ),
-            bank = BankEnum.GPB.code,
+            bank = BankEnum.GPB.name,
             clientId = clientId,
             recipientEmail = "",
             recipientPhone = "",

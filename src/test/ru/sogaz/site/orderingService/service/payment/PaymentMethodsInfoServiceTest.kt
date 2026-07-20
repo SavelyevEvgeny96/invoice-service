@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
 import ru.sogaz.site.orderingService.dao.OrderDao
+import ru.sogaz.site.orderingService.dao.PaymentOperationDao
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.FileQR
@@ -85,6 +86,9 @@ class PaymentMethodsInfoServiceTest {
 
     @RelaxedMockK
     private lateinit var paymentApiProperties: PaymentApiProperties
+
+    @MockK
+    private lateinit var paymentOperationDao: PaymentOperationDao
 
     private lateinit var payInfoService: PayInfoService
     private lateinit var orderPaymentPageService: OrderPaymentPageServiceImpl
@@ -218,6 +222,7 @@ class PaymentMethodsInfoServiceTest {
             payInfoService = payInfoService,
             paymentMethodsMapper = paymentMethodsMapper,
             invoiceMetaInfoMapper = invoiceMetaInfoMapper,
+            paymentOperationDao = paymentOperationDao,
         )
 
     private fun initPaymentApiConfig() {

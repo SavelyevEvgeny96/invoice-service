@@ -17,5 +17,8 @@ interface OrderPaymentPageService {
         payQueryParams: PayQueryParams,
     ): DataOrderPaymentPageInfo
 
-    fun getMetaInfo(orderId: UUID): InvoiceMetaInfo
+    fun getMetaInfo(
+        orderId: UUID,
+        payment: Boolean,
+    ): InvoiceMetaInfo
 }
