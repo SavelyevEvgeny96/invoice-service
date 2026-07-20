@@ -1,3 +1,4 @@
+
 package ru.sogaz.site.orderingService.mappers.order
 
 import org.mapstruct.Mapper
@@ -22,6 +23,12 @@ interface OrderRequestCommandMapper {
     @Mapping(source = "phoneNumber", target = "recipientPhone")
     @Mapping(source = "invoiceEndDate", target = "orderEndDate")
     @Mapping(constant = "V2", target = "versionApi")
+    @Mapping(
+        target = "paymentMethodList",
+        expression =
+            "java(request.getPaymentMethodList() == null ? java.util.List.of" +
+                "(ru.sogaz.site.orderingService.enums.PaymentMethod.CARD) : request.getPaymentMethodList())",
+    )
     fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
     @Mapping(constant = "false", target = "mainContractCheck")

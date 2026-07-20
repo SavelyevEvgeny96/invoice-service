@@ -16,6 +16,7 @@ import ru.sogaz.site.orderingService.service.payment.impl.InvoicePaymentQrServic
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
+
 class InvoicePaymentQrServiceTest {
     private val orderDao = mockk<OrderDao>()
     private val companyDetailsQrDao = mockk<CompanyDetailsQrDao>()
@@ -50,9 +51,9 @@ class InvoicePaymentQrServiceTest {
             qrGeneratorService.generateFileQR(
                 match {
                     it.startsWith("ST00012|Name=Компания|PersonalAcc=40701") &&
-                            it.contains("|Sum=15452|PayeeINN=7729503816|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
-                            it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
-                            !it.contains("SECOND")
+                        it.contains("|Sum=15452|PayeeINN=7729503816|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
+                        it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
+                        !it.contains("SECOND")
                 },
             )
         }

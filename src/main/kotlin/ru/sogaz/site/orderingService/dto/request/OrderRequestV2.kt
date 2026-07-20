@@ -1,18 +1,24 @@
+
 package ru.sogaz.site.orderingService.dto.request
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
+import ru.sogaz.site.orderingService.validation.constraint.ValidOrderRequestV2
 import java.time.Instant
 
 /**
  * DTO для запроса на создание заказа v2.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ValidOrderRequestV2
 data class OrderRequestV2(
     @field:Valid
     var invoices: MutableList<SubOrderRequestV2> = mutableListOf(),
@@ -39,4 +45,19 @@ data class OrderRequestV2(
     @field:NotBlank(message = "{validation.orderRequest.notBlank}")
     var typePaymentOperation: String = "",
     var clientId: String? = null,
+    var paymentMethodList: List<PaymentMethod>? = null,
+    @field:Valid
+    var payerFio: PayerFio? = null,
+    var checkUrlReturn: Boolean? = null,
 )
+
+data class PayerFio(
+    val lastName: String? = null,
+    val firstName: String? = null,
+    val middleName: String? = null,
+) {
+    fun isFilled(): Boolean =
+        !lastName.isNullOrBlank() &&
+            !firstName.isNullOrBlank() &&
+            !middleName.isNullOrBlank()
+}
