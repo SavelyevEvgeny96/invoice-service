@@ -22,7 +22,7 @@ open class OrderDaoImpl(
     companion object {
         private const val LOG_ERROR_ORDER_SAVE = "Не удалось сохранить данные по заказу"
     }
-
+    override fun findByIdWithoutLock(orderId: UUID): OrderEntity? = orderRepository.findByIdWithoutLock(orderId)
     override fun findByIds(ids: List<UUID?>): List<OrderEntity> = orderRepository.findAllById(ids).toList()
 
     override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()

@@ -86,7 +86,7 @@ app:
     payment:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:http://localhost:8085}
     qr:
-      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
+      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://gateway-site-dmz.sogaz.ru/qr-generator}
     shortLink:
       basePath: ${SHORT_LINK_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/short-links-service}
 
