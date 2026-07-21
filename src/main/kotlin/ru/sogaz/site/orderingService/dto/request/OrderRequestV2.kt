@@ -2,6 +2,7 @@
 package ru.sogaz.site.orderingService.dto.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
@@ -49,6 +50,9 @@ data class OrderRequestV2(
     @field:Valid
     var payerFio: PayerFio? = null,
     var checkUrlReturn: Boolean? = null,
+    @param:Parameter(name = "bankQR", description = "Банк для оплаты по реквизитам")
+    @field:JsonProperty("bankQR")
+    var bankQr: String? = null,
 )
 
 data class PayerFio(

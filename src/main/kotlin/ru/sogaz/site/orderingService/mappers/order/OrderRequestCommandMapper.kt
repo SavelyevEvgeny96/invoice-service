@@ -29,6 +29,7 @@ interface OrderRequestCommandMapper {
             "java(request.getPaymentMethodList() == null ? java.util.List.of" +
                 "(ru.sogaz.site.orderingService.enums.PaymentMethod.CARD) : request.getPaymentMethodList())",
     )
+    @Mapping(source = "bankQr", target = "bankQr")
     fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
     @Mapping(constant = "false", target = "mainContractCheck")

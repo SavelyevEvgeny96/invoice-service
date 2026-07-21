@@ -8,6 +8,7 @@ import org.mapstruct.Named
 import org.mapstruct.NullValuePropertyMappingStrategy
 import org.mapstruct.ReportingPolicy
 import ru.sogaz.site.orderingService.dto.OrderPayloadDto
+import ru.sogaz.site.orderingService.dto.data.MetaInfoOrder
 import ru.sogaz.site.orderingService.dto.request.CreateOrderCommand
 import ru.sogaz.site.orderingService.dto.request.CreateSubOrderCommand
 import ru.sogaz.site.orderingService.dto.request.SubOrderDto
@@ -16,6 +17,8 @@ import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 
 @Mapper(
@@ -62,11 +65,12 @@ abstract class OrderMapper {
     @Mapping(target = "recipientPhone", defaultValue = "")
     @Mapping(target = "queueStatusResultName", source = ".", qualifiedByName = ["mapClientIdToQueueResultName"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["calculatePremiumAmount"])
-    @Mapping(target = "bank", ignore = true)
+    @Mapping(target = "bank", source = "subOrders", qualifiedByName = ["mapBankBySubOrders"])
     @Mapping(target = "paymentMethodList", source = "paymentMethodList", qualifiedByName = ["mapPaymentMethodList"])
     @Mapping(target = "payerLastName", source = "payerFio.lastName")
     @Mapping(target = "payerFirstName", source = "payerFio.firstName")
     @Mapping(target = "payerMiddleName", source = "payerFio.middleName")
+    @Mapping(target = "bankQr", source = "bankQr")
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
 
     @Named("mapPaymentMethodList")
@@ -98,4 +102,36 @@ abstract class OrderMapper {
     // ---------- Helpers ----------
     @Named("nullToEmpty")
     fun nullToEmpty(value: String?): String = value ?: ""
+
+    @Named("mapClientId")
+    fun mapClientId(metaInfo: List<MetaInfoOrder>): String? = metaInfo.firstOrNull()?.author
+
+    @Named("mapPremium")
+    fun mapPremium(subOrders: List<SubOrderDto>?): BigDecimal? =
+        subOrders
+            ?.map { it.premiumAmountDto }
+            ?.fold(BigDecimal.ZERO, BigDecimal::add)
+            ?.takeIf { it > BigDecimal.ZERO }
+
+    @Named("calculatePremiumAmount")
+    fun calculatePremiumAmount(subOrders: List<CreateSubOrderCommand>): BigDecimal =
+        subOrders
+            .sumOf { it.premiumAmount }
+            .setScale(2, RoundingMode.HALF_UP)
+
+    @Named("mapQueueResultName")
+    protected fun buildQueueStatusResultName(metaInfo: List<MetaInfoOrder>): String? =
+        metaInfo
+            .firstOrNull()
+            ?.author
+            ?.takeIf { it.isNotBlank() }
+            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
+            ?.let { "payment.status.$it.created" }
+
+    @Named("mapClientIdToQueueResultName")
+    protected fun mapClientIdToQueueResultName(command: CreateOrderCommand): String? =
+        command.clientId
+            ?.takeIf { it.isNotBlank() }
+            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
+            ?.let { "payment.status.$it.created" }
 }

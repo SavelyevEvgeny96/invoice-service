@@ -98,6 +98,8 @@ class OrderEntity(
     var payerMiddleName: String? = null,
     @Column(name = "check_url_return")
     var checkUrlReturn: Boolean? = null,
+    @Column(name = "bank_qr")
+    var bankQr: String? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,

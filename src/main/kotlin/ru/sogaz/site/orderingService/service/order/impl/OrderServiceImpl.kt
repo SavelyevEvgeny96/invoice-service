@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.service.order.impl
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.util.UriComponentsBuilder
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.BusinessException
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_ALREADY_PAID
 import ru.sogaz.site.exceptionStarter.starter.service.impl.CustomOrderingServiceErrors.Companion.ERROR_CODE_ORDER_CLOSED
@@ -153,8 +154,7 @@ class OrderServiceImpl(
     }
 
     private fun enrichWithShortLink(order: OrderEntity) {
-        val longUrl =
-            "${paymentApiProperties.pagepayinfoHost}${paymentApiProperties.pagepayinfoUrlSuffix}${order.orderId}"
+        val longUrl = buildPaymentPageUrl(order)
 
         val expireDays = calculateExpireDays(order.paymentEndDate)
 
@@ -167,5 +167,21 @@ class OrderServiceImpl(
 
         val shortLink = shortLinksIntegration.createShortLink(request)
         order.urlPayPageShort = shortLink?.data?.shortLink
+    }
+
+    private fun buildPaymentPageUrl(order: OrderEntity): String {
+        val paymentPageUrl =
+            "${paymentApiProperties.pagepayinfoHost}${paymentApiProperties.pagepayinfoUrlSuffix}${order.orderId}"
+
+        if (order.checkUrlReturn != true) return paymentPageUrl
+
+        val builder = UriComponentsBuilder.fromUriString(paymentPageUrl)
+        order.urlToReturn?.takeIf { it.isNotBlank() }?.let { builder.queryParam("urlToReturn", it) }
+        order.urlToDecline?.takeIf { it.isNotBlank() }?.let { builder.queryParam("urlToDecline", it) }
+
+        return builder
+            .build()
+            .encode()
+            .toUriString()
     }
 }
