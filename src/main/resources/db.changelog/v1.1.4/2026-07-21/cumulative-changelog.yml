@@ -4,6 +4,6 @@ databaseChangeLog:
       author: gpt
       changes:
         - sqlFile:
-            path: db.changelog/v1.1.4/2026-07-20/DATA/alter_orders_payment_methods.sql
+            path: db.changelog/v1.1.4/2026-07-21/DATA/alter_orders_payment_methods.sql
             splitStatements: true
             stripComments: true
