@@ -17,6 +17,8 @@ import org.hibernate.type.SqlTypes
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
 import ru.sogaz.site.orderingService.enums.ReceiptState
+import ru.sogaz.site.orderingService.enums.PaymentMethod
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -88,6 +90,12 @@ class OrderEntity(
     var receiptState: ReceiptState = ReceiptState.NONE,
     @Column(name = "depersonalization")
     var depersonalization: Boolean? = null,
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payment_method_list", columnDefinition = "jsonb")
+    var paymentMethodList: Set<PaymentMethod>? = null,
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "bank_qr", columnDefinition = "jsonb")
+    var bankQr: Set<PaymentQrBank>? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,
