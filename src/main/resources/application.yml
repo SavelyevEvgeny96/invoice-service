@@ -86,7 +86,7 @@ app:
     payment:
       basePath: ${PAYMENT_SERVICE_BASE_PATH:http://localhost:8085}
     qr:
-      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://gateway-site-dmz.sogaz.ru/qr-generator}
+      basePath: ${QR_GENERATOR_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/qr-generator-service}
     shortLink:
       basePath: ${SHORT_LINK_SERVICE_BASE_PATH:https://s00-0000-k835.sogaz.ru/test/short-links-service}
 
@@ -98,7 +98,7 @@ api:
     paymentSbpUrlSuffix: ${PAYMENT_SBP_URL_SUFFIX:/invoice/paySbp/}
     isSbpActive: ${PAYMENT_SBP_ACTIVE:true}
     isQrGeneratorActive: ${QR_GENERATOR_ACTIVE:false}
-    qrCodeSize: ${QR_GENERATOR_CODE_SIZE:512}
+    qrCodeSize: ${QR_GENERATOR_CODE_SIZE:300}
     hostNameApp: ${HOSTNAME_APP:https://test-gateway-site-kis.sogaz.ru/}
     pagepayinfoHost: ${PAGEPAYINFO_HOST:https://test-pay.sogaz.ru}
     pagepayinfoUrlSuffix: ${PAGEPAYINFO_URL_SUFFIX:/payment/p/}
@@ -144,7 +144,7 @@ logging:
   level:
     org.springframework.jdbc: ${LOG_JDBC_LEVEL:INFO}
     org.springframework.transaction: ${LOG_TRANSACTION_LEVEL:INFO}
-#    org.springframework.amqp.rabbit.*: DEBUG
+    #    org.springframework.amqp.rabbit.*: DEBUG
     logging.level.org.hibernate.engine.jdbc.batch.internal: ${LOG_JDBC_BATCH:INFO}
 
   rabbit:

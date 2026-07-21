@@ -16,6 +16,8 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.type.SqlTypes
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.enums.PaymentMethod
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
 import java.time.Instant
@@ -88,8 +90,12 @@ class OrderEntity(
     var receiptState: ReceiptState = ReceiptState.NONE,
     @Column(name = "depersonalization")
     var depersonalization: Boolean? = null,
-    @Column(name = "payment_method_list")
-    var paymentMethodList: String? = null,
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payment_method_list", columnDefinition = "jsonb")
+    var paymentMethodList: Set<PaymentMethod>? = null,
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "bank_qr", columnDefinition = "jsonb")
+    var bankQr: Set<PaymentQrBank>? = null,
     @Column(name = "payer_last_name")
     var payerLastName: String? = null,
     @Column(name = "payer_first_name")
@@ -98,8 +104,6 @@ class OrderEntity(
     var payerMiddleName: String? = null,
     @Column(name = "check_url_return")
     var checkUrlReturn: Boolean? = null,
-    @Column(name = "bank_qr")
-    var bankQr: String? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,
