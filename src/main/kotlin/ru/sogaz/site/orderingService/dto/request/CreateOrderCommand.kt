@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.dto.request
 
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.PaymentMethod
 import java.time.Instant
 import java.util.UUID
 
@@ -19,6 +20,10 @@ data class CreateOrderCommand(
     var clientId: String? = null,
     var policyholder: String? = null,
     var bank: BankEnum? = null,
+    var paymentMethodList: List<PaymentMethod> = listOf(PaymentMethod.CARD),
+    var payerFio: PayerFio? = null,
+    var checkUrlReturn: Boolean? = null,
+    var bankQr: String? = null,
     var orderIdRecurrent: UUID? = null,
     var typePaymentOperation: String? = "",
     var externalId: String? = null,
