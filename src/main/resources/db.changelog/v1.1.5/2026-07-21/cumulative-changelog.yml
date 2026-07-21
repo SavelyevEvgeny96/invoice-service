@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-bank-qr-to-orders
+      author: codex
+      changes:
+        - sqlFile:
+            path: db.changelog/v1.1.5/2026-07-21/DATA/add_bank_qr_to_orders.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: true

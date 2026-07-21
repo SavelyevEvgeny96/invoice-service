@@ -9,6 +9,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.web.util.UriComponentsBuilder
 import ru.sogaz.site.orderingService.dao.ClientSystemDao
 import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dao.SubOrderDao
@@ -123,6 +124,9 @@ class OrderServiceImplTest {
         whenever(savedOrder.paymentEndDate).thenReturn(
             Instant.now().plusSeconds(5 * 24 * 60 * 60L),
         )
+        whenever(savedOrder.checkUrlReturn).thenReturn(true)
+        whenever(savedOrder.urlToReturn).thenReturn("https://www.sogaz.ru/payment/success")
+        whenever(savedOrder.urlToDecline).thenReturn("https://www.sogaz.ru/payment/decline")
         whenever(orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)).thenReturn(emptyList())
 
         val result = service.createOrderInternal(command)
@@ -136,7 +140,41 @@ class OrderServiceImplTest {
         val requestToShortLink = captor.firstValue
         assertNotNull(requestToShortLink)
         assertEquals(100, requestToShortLink.maxVisits)
+        val queryParams =
+            UriComponentsBuilder.fromUriString(requestToShortLink.longUrl)
+                .build()
+                .queryParams
+        assertEquals("https://www.sogaz.ru/payment/success", queryParams.getFirst("urlToReturn"))
+        assertEquals("https://www.sogaz.ru/payment/decline", queryParams.getFirst("urlToDecline"))
         verify(orderDao).save(orderEntity)
         verify(orderDao).save(savedOrder)
+    }
+
+    @Test
+    fun `createOrderInternal for V2 does not send redirect urls to short links service when checkUrlReturn is false`() {
+        val orderId = UUID.randomUUID()
+        val orderEntity = mock<OrderEntity>()
+        val savedOrder = mock<OrderEntity>()
+
+        whenever(command.versionApi).thenReturn(ApiVersionEnum.V2)
+        whenever(orderManualMapper.toOrderEntity(command, false)).thenReturn(orderEntity)
+        whenever(orderDao.save(any())).thenReturn(savedOrder)
+        whenever(savedOrder.orderId).thenReturn(orderId)
+        whenever(savedOrder.paymentEndDate).thenReturn(Instant.now().plusSeconds(5 * 24 * 60 * 60L))
+        whenever(savedOrder.checkUrlReturn).thenReturn(false)
+        whenever(savedOrder.urlToReturn).thenReturn("https://www.sogaz.ru/payment/success")
+        whenever(savedOrder.urlToDecline).thenReturn("https://www.sogaz.ru/payment/decline")
+        whenever(orderManualMapper.toSubOrderEntities(savedOrder, command.subOrders)).thenReturn(emptyList())
+
+        service.createOrderInternal(command)
+
+        val captor = argumentCaptor<ShortLinkRequest>()
+        verify(shortLinksIntegration).createShortLink(captor.capture())
+        val queryParams =
+            UriComponentsBuilder.fromUriString(captor.firstValue.longUrl)
+                .build()
+                .queryParams
+        assertEquals(null, queryParams.getFirst("urlToReturn"))
+        assertEquals(null, queryParams.getFirst("urlToDecline"))
     }
 }

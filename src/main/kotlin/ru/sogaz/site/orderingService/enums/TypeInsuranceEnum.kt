@@ -8,4 +8,5 @@ enum class TypeInsuranceEnum {
     VPMG,
     IFL,
     MORTGAGE,
+    LIFE,
 }
