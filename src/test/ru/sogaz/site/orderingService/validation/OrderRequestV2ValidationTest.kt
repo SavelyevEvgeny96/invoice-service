@@ -3,6 +3,8 @@ package ru.sogaz.site.orderingService.validation
 import jakarta.validation.Validation
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory
 import ru.sogaz.site.orderingService.dto.request.OrderRequestV2
 import ru.sogaz.site.orderingService.dto.request.PayerFio
 import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
@@ -12,7 +14,18 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class OrderRequestV2ValidationTest {
-    private val validator = Validation.buildDefaultValidatorFactory().validator
+    private val validator =
+        Validation
+            .byDefaultProvider()
+            .configure()
+            .constraintValidatorFactory(
+                SpringConstraintValidatorFactory(
+                    DefaultListableBeanFactory().apply {
+                        registerSingleton("phoneRegex", Regex("^\\+?[0-9]{10,15}$"))
+                    },
+                ),
+            ).buildValidatorFactory()
+            .validator
 
     @Test
     fun `should accept payment method list`() {
