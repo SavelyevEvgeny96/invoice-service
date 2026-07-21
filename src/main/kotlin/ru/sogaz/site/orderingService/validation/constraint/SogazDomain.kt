@@ -1,10 +1,11 @@
+
+
 package ru.sogaz.site.orderingService.validation.constraint
 
 import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
-import org.springframework.beans.factory.annotation.Qualifier
 import java.net.URI
 import kotlin.reflect.KClass
 
@@ -21,20 +22,25 @@ annotation class SogazDomain(
     val payload: Array<KClass<out Payload>> = [],
 )
 
-class SogazDomainValidator(
-    @Qualifier("urlDomainRegex") private val regex: Regex,
-) : ConstraintValidator<SogazDomain, Any> {
+class SogazDomainValidator : ConstraintValidator<SogazDomain, Any> {
+    private val allowedHosts = setOf("sogaz.ru", "sogaz-life.ru", "health-and-care.ru")
+
     override fun isValid(
         url: Any?,
         context: ConstraintValidatorContext?,
     ): Boolean {
-        if (url == null) {
-            return true
-        }
-        return when (url) {
-            is String -> regex.matches(url)
-            is URI -> regex.matches(url.host)
-            else -> true
-        }
+        if (url == null) return true
+
+        val uri =
+            when (url) {
+                is String -> runCatching { URI(url) }.getOrNull()
+                is URI -> url
+                else -> return true
+            } ?: return false
+
+        val scheme = uri.scheme?.lowercase()
+        val host = uri.host?.lowercase() ?: return false
+
+        return scheme in setOf("http", "https") && allowedHosts.any { host == it || host.endsWith(".$it") }
     }
 }

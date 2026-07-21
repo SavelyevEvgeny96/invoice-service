@@ -15,6 +15,7 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -65,7 +66,16 @@ abstract class OrderMapper {
     @Mapping(target = "queueStatusResultName", source = ".", qualifiedByName = ["mapClientIdToQueueResultName"])
     @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["calculatePremiumAmount"])
     @Mapping(target = "bank", source = "subOrders", qualifiedByName = ["mapBankBySubOrders"])
+    @Mapping(target = "paymentMethodList", source = "paymentMethodList", qualifiedByName = ["mapPaymentMethodList"])
+    @Mapping(target = "payerLastName", source = "payerFio.lastName")
+    @Mapping(target = "payerFirstName", source = "payerFio.firstName")
+    @Mapping(target = "payerMiddleName", source = "payerFio.middleName")
+    @Mapping(target = "bankQr", source = "bankQr")
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
+
+    @Named("mapPaymentMethodList")
+    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): String =
+        paymentMethods.orEmpty().ifEmpty { listOf(PaymentMethod.CARD) }.joinToString(",") { it.name }
 
     @Named("mapBankBySubOrders")
     fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =

@@ -15,6 +15,7 @@ import ru.sogaz.site.orderingService.mappers.payment.PaymentQrMapper
 import ru.sogaz.site.orderingService.service.payment.InvoicePaymentQrService
 import ru.sogaz.site.orderingService.service.payment.QrGeneratorService
 import java.util.UUID
+
 @Service
 @Transactional(readOnly = true)
 class InvoicePaymentQrServiceImpl(
@@ -44,7 +45,11 @@ class InvoicePaymentQrServiceImpl(
 
     private fun PaymentQrData.toGostString(): String =
         "ST00012|Name=$name|PersonalAcc=$personalAcc|BankName=$bankName|BIC=$bic|CorrespAcc=$correspAcc" +
-                "|Sum=$sum|PayeeINN=$payeeInn|LastName=$lastName|FirstName=$firstName|MiddleName=$middleName" +
-                "|Purpose=СТРАХОВОЙ ВЗНОС ПО ДОГОВОРУ СТРАХОВАНИЯ $contractNumber от $contractDate " +
-                "СТРАХОВАТЕЛЬ ${listOf(lastName, firstName, middleName).filter(String::isNotBlank).joinToString(" ")}. НДС НЕ ОБЛАГАЕТСЯ. QR"
+            "|Sum=$sum|PayeeINN=$payeeInn|LastName=$lastName|FirstName=$firstName|MiddleName=$middleName" +
+            "|Purpose=СТРАХОВОЙ ВЗНОС ПО ДОГОВОРУ СТРАХОВАНИЯ $contractNumber от $contractDate " +
+            "СТРАХОВАТЕЛЬ ${listOf(
+                lastName,
+                firstName,
+                middleName,
+            ).filter(String::isNotBlank).joinToString(" ")}. НДС НЕ ОБЛАГАЕТСЯ. QR"
 }

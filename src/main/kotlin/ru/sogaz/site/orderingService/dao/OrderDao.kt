@@ -5,7 +5,9 @@ import java.util.UUID
 
 interface OrderDao {
     fun findById(orderId: UUID): OrderEntity?
+
     fun findByIdWithoutLock(orderId: UUID): OrderEntity?
+
     fun findByRecipientUserId(userId: String): List<OrderEntity?>
 
     fun findByUnifiedId(unifiedId: String): List<OrderEntity?>
