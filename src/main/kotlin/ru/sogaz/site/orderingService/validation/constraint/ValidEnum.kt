@@ -38,6 +38,6 @@ class EnumValueValidator : ConstraintValidator<ValidEnum, String?> {
             return true
         }
 
-        return allowedValues.contains(value)
+        return allowedValues.contains(value.uppercase())
     }
 }
