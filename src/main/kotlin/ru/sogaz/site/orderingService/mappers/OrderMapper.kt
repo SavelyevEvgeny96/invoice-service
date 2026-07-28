@@ -69,10 +69,14 @@ abstract class OrderMapper {
     @Mapping(target = "bank", expression = "java(mapBankBySubOrders(command.getSubOrders()))")
     @Mapping(target = "paymentMethodList", expression = "java(mapPaymentMethodList(command.getPaymentMethodList()))")
     @Mapping(target = "bankQr", expression = "java(mapBankQr(command.getBankQr()))")
+    @Mapping(target = "payerLastName", source = "payerFio.lastName")
+    @Mapping(target = "payerFirstName", source = "payerFio.firstName")
+    @Mapping(target = "payerMiddleName", source = "payerFio.middleName")
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
 
     @Named("mapPaymentMethodList")
-    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): Set<PaymentMethod>? = paymentMethods?.toSet()
+    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): Set<PaymentMethod>? =
+        paymentMethods?.toSet()
 
     @Named("mapBankQr")
     fun mapBankQr(banks: List<PaymentQrBank>?): Set<PaymentQrBank>? = banks?.toSet()
@@ -89,7 +93,8 @@ abstract class OrderMapper {
                 value.trim().trim('"').uppercase().let { normalized ->
                     PaymentQrBank.entries.firstOrNull { it.name == normalized }
                 }
-            }?.toSet()
+            }
+            ?.toSet()
 
     @Named("mapBankBySubOrders")
     fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =
@@ -115,37 +120,4 @@ abstract class OrderMapper {
 
     // ---------- Helpers ----------
     @Named("nullToEmpty")
-    fun nullToEmpty(value: String?): String = value ?: ""
-
-    @Named("mapClientId")
-    fun mapClientId(metaInfo: List<MetaInfoOrder>): String? = metaInfo.firstOrNull()?.author
-
-    @Named("mapPremium")
-    fun mapPremium(subOrders: List<SubOrderDto>?): BigDecimal? =
-        subOrders
-            ?.map { it.premiumAmountDto }
-            ?.fold(BigDecimal.ZERO, BigDecimal::add)
-            ?.takeIf { it > BigDecimal.ZERO }
-
-    @Named("calculatePremiumAmount")
-    fun calculatePremiumAmount(subOrders: List<CreateSubOrderCommand>): BigDecimal =
-        subOrders
-            .sumOf { it.premiumAmount }
-            .setScale(2, RoundingMode.HALF_UP)
-
-    @Named("mapQueueResultName")
-    protected fun buildQueueStatusResultName(metaInfo: List<MetaInfoOrder>): String? =
-        metaInfo
-            .firstOrNull()
-            ?.author
-            ?.takeIf { it.isNotBlank() }
-            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
-            ?.let { "payment.status.$it.created" }
-
-    @Named("mapClientIdToQueueResultName")
-    protected fun mapClientIdToQueueResultName(command: CreateOrderCommand): String? =
-        command.clientId
-            ?.takeIf { it.isNotBlank() }
-            ?.replace(NON_ALPHANUMERIC_REGEX, ".")
-            ?.let { "payment.status.$it.created" }
-}
+    fun nullToEmpty(value: String?): String = value ?: ""}
