@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import ru.sogaz.site.orderingService.enums.TypeInsuranceEnum
 import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
 import ru.sogaz.site.orderingService.validation.constraint.StrictPremiumBigDecimalDeserializer
 import ru.sogaz.site.orderingService.validation.constraint.ValidEnum

@@ -14,7 +14,8 @@ class PayerFioForQrValidator : ConstraintValidator<ValidPayerFioForQr, OrderRequ
         if (value.payerFio != null) return true
 
         context.disableDefaultConstraintViolation()
-        context.buildConstraintViolationWithTemplate("{validation.orderRequest.payerFio.required}")
+        context
+            .buildConstraintViolationWithTemplate("{validation.orderRequest.payerFio.required}")
             .addPropertyNode("payerFio")
             .addConstraintViolation()
         return false

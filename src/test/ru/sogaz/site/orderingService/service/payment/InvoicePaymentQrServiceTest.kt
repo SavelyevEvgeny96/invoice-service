@@ -30,7 +30,9 @@ class InvoicePaymentQrServiceTest {
         val order =
             OrderEntity(
                 orderId = invoiceId,
-                policyholder = "Иванов Иван Иванович",
+                payerLastName = "Иванов",
+                payerFirstName = "Иван",
+                payerMiddleName = "Иванович",
                 premiumAmount = BigDecimal("154.52"),
                 recipientEmail = "",
                 recipientPhone = "",
@@ -39,6 +41,7 @@ class InvoicePaymentQrServiceTest {
         order.addSubOrder(subOrder("FIRST", "2026-01-01T00:00:00Z"))
         order.addSubOrder(subOrder("SECOND", "2026-02-01T00:00:00Z"))
         val company = company()
+        every { orderDao.findById(invoiceId) } returns order
         every { orderDao.findByIdWithoutLock(invoiceId) } returns order
         every { companyDetailsQrDao.findByBank("GPB") } returns company
         every { qrGeneratorService.generateFileQR(any<String>()) } returns FileQR("base64", "image/png")
@@ -51,9 +54,9 @@ class InvoicePaymentQrServiceTest {
             qrGeneratorService.generateFileQR(
                 match {
                     it.startsWith("ST00012|Name=Компания|PersonalAcc=40701") &&
-                        it.contains("|Sum=15452|PayeeINN=7729503816|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
-                        it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
-                        !it.contains("SECOND")
+                            it.contains("|Sum=15452|PayeeINN=7729503816|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
+                            it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
+                            !it.contains("SECOND")
                 },
             )
         }

@@ -11,6 +11,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+
 @Mapper(componentModel = "spring")
 interface PaymentQrMapper {
     @Mapping(target = "name", source = "company.name")
@@ -30,6 +31,7 @@ interface PaymentQrMapper {
         subOrder: SubOrderEntity?,
         company: CompanyDetailsQrEntity,
     ): PaymentQrData
+
     companion object {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneOffset.UTC)
 
