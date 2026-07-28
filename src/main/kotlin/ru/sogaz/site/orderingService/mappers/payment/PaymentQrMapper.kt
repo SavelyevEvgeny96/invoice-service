@@ -21,9 +21,9 @@ interface PaymentQrMapper {
     @Mapping(target = "correspAcc", source = "company.correspAcc")
     @Mapping(target = "payeeInn", source = "company.payeeInn")
     @Mapping(target = "sum", source = "order.premiumAmount", qualifiedByName = ["amountInKopecks"])
-    @Mapping(target = "lastName", source = "order.policyholder", qualifiedByName = ["lastName"])
-    @Mapping(target = "firstName", source = "order.policyholder", qualifiedByName = ["firstName"])
-    @Mapping(target = "middleName", source = "order.policyholder", qualifiedByName = ["middleName"])
+    @Mapping(target = "lastName", source = "order.payerLastName", defaultValue = "")
+    @Mapping(target = "firstName", source = "order.payerFirstName", defaultValue = "")
+    @Mapping(target = "middleName", source = "order.payerMiddleName", defaultValue = "")
     @Mapping(target = "contractNumber", source = "subOrder.contractNumber", defaultValue = "")
     @Mapping(target = "contractDate", source = "subOrder.contractDate", qualifiedByName = ["date"])
     fun toPaymentQrData(

@@ -69,6 +69,9 @@ abstract class OrderMapper {
     @Mapping(target = "bank", expression = "java(mapBankBySubOrders(command.getSubOrders()))")
     @Mapping(target = "paymentMethodList", expression = "java(mapPaymentMethodList(command.getPaymentMethodList()))")
     @Mapping(target = "bankQr", expression = "java(mapBankQr(command.getBankQr()))")
+    @Mapping(target = "payerLastName", source = "payerFio.lastName")
+    @Mapping(target = "payerFirstName", source = "payerFio.firstName")
+    @Mapping(target = "payerMiddleName", source = "payerFio.middleName")
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
 
     @Named("mapPaymentMethodList")
