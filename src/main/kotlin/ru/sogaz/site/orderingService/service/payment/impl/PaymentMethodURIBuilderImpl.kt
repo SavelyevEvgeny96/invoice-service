@@ -43,10 +43,12 @@ class PaymentMethodURIBuilderImpl(
         UriComponentsBuilder
             .fromUriString(uriString)
             .queryParams(params)
-            .toUriString()
-            .run(URI::create)
+            .build()
+            .encode()
+            .toUri()
 
     private fun PayQueryParams.toQueryParams(): MultiValueMap<String, String> = MultiValueMap.fromSingleValue(toMap())
 
-    private fun PayQueryParams.toMap(): Map<String, String> = objectMapper.convertValue(this)
+    private fun PayQueryParams.toMap(): Map<String, String> =
+        objectMapper.convertValue<Map<String, String>>(this).filterValues(String::isNotBlank)
 }

@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: rna-3764-payment-methods
+      author: Savelyev Evgeny
+      changes:
+        - sqlFile:
+            path: DATA/add_payment_methods.sql
+            relativeToChangelogFile: true

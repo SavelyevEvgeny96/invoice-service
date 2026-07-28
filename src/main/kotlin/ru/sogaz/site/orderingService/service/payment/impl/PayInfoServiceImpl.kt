@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.service.payment.PayInfoService
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
 import ru.sogaz.site.orderingService.service.payment.PaymentService
@@ -16,10 +17,6 @@ class PayInfoServiceImpl(
     private val paymentService: PaymentService,
     private val paymentMethodURIBuilder: PaymentMethodURIBuilder,
     private val qrGeneratorService: QrGeneratorService,
-    @param:Value("\${api.payment.isSbpActive}")
-    private val isSbpActive: Boolean,
-    @param:Value("\${api.payment.isQrGeneratorActive}")
-    private val isQrGeneratorActive: Boolean,
     @param:Value("\${api.payment.qrCodeSize}")
     private val qrCodeSize: Int,
 ) : PayInfoService {
@@ -30,38 +27,27 @@ class PayInfoServiceImpl(
     override fun getInfo(
         order: OrderEntity,
         payQueryParams: PayQueryParams,
-    ): Pair<URI, PaySbp?> {
-        val payCardLink = order.formPayCardLink(payQueryParams)
-        val paySbp =
-            when {
-                isSbpActive && isQrGeneratorActive -> formInnerQrPaySbp(order, payQueryParams)
-                isSbpActive -> getBankQrPaySbp(order, payQueryParams)
-                else -> null
-            }
+        paymentMethods: Set<PaymentMethod>,
+    ): Pair<URI?, PaySbp?> {
+        val payCardLink = if (PaymentMethod.CARD in paymentMethods) order.formPayCardLink(payQueryParams) else null
+        val paySbp = if (PaymentMethod.SBP in paymentMethods) formPaySbp(order, payQueryParams) else null
         return Pair(payCardLink, paySbp)
     }
 
-    private fun formInnerQrPaySbp(
+    private fun formPaySbp(
         order: OrderEntity,
         payQueryParams: PayQueryParams,
     ): PaySbp? =
-        order
-            .formPaySbpLink(payQueryParams)
-            .run(::generatePaySbpByUri)
+        runCatching { paymentService.paySbp(order, payQueryParams) }
+            .getOrNull()
+            ?.uri
+            ?.let { paymentPageUrl -> generatePaySbpByUri(URI.create(paymentPageUrl)) }
 
     private fun generatePaySbpByUri(paySbpLink: URI) =
         qrGeneratorService
             .generateFileQR(paySbpLink, qrCodeSize)
             ?.let { PaySbp(paySbpLink.toString(), it) }
 
-    private fun getBankQrPaySbp(
-        order: OrderEntity,
-        payQueryParams: PayQueryParams,
-    ): PaySbp? = paymentService.payQrSbp(order, payQueryParams)
-
     private fun OrderEntity.formPayCardLink(payQueryParams: PayQueryParams): URI =
         paymentMethodURIBuilder.buildPayCardURI(requireNotNull(orderId) { NULL_ORDER_ID_ERROR }, payQueryParams)
-
-    private fun OrderEntity.formPaySbpLink(payQueryParams: PayQueryParams): URI =
-        paymentMethodURIBuilder.buildPaySbpURI(requireNotNull(orderId) { NULL_ORDER_ID_ERROR }, payQueryParams)
 }
