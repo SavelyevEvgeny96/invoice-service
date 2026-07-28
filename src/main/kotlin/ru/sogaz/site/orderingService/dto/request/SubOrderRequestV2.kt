@@ -34,10 +34,6 @@ data class SubOrderRequestV2(
     val agreementId: String? = null,
     val agreementDate: Instant? = null,
     @field:NotNull(message = "{validation.orderRequest.notBlank}")
-    @field:ValidEnum(
-        enumClass = TypeInsuranceEnum::class,
-        message = "{validation.orderRequest.insuranceKind}",
-    )
     val insuranceKind: String? = null,
     val program: String? = null,
     val channel: String? = null,
