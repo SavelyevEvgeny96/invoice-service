@@ -4,5 +4,5 @@ databaseChangeLog:
       author: Savelyev Evgeny
       changes:
         - sqlFile:
-            path: DATA/add_payment_methods.sql
+            path: DATA/alter_orders_payment_methods.sql
             relativeToChangelogFile: true
