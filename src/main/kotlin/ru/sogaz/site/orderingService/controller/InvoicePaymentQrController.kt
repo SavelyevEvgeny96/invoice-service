@@ -17,7 +17,7 @@ class InvoicePaymentQrController(
         private const val SUCCESS_STATUS_CODE = 1101534200
     }
 
-    override fun getPaymentQr(request: InvoicePaymentQrRequest): Response<InvoicePaymentQr> =
+    override fun getQrPaymentRicvisit(request: InvoicePaymentQrRequest): Response<InvoicePaymentQr> =
         getSuccessResponse(
             getTraceId(),
             SUCCESS_STATUS_CODE,

@@ -8,6 +8,7 @@ data class PaymentQrData(
     val correspAcc: String,
     val sum: String,
     val payeeInn: String,
+    val kpp: String,
     val lastName: String,
     val firstName: String,
     val middleName: String,
