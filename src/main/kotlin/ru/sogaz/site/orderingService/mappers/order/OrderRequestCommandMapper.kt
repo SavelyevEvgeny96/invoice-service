@@ -8,21 +8,24 @@ import ru.sogaz.site.orderingService.dto.request.OrderRequestV1
 import ru.sogaz.site.orderingService.dto.request.OrderRequestV2
 import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV1
 import ru.sogaz.site.orderingService.dto.request.SubOrderRequestV2
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 
 @Mapper(componentModel = "spring")
-interface OrderRequestCommandMapper {
+abstract class OrderRequestCommandMapper {
     @Mapping(source = "orders", target = "subOrders")
     @Mapping(constant = "V1", target = "versionApi")
-    fun toCommand(request: OrderRequestV1): CreateOrderCommand
+    @Mapping(target = "bankQr", expression = "java(mapBankQr(request.getBankQr()))")
+    abstract fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
-    fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
+    abstract fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
 
     @Mapping(source = "invoices", target = "subOrders")
     @Mapping(source = "email", target = "recipientEmail")
     @Mapping(source = "phoneNumber", target = "recipientPhone")
     @Mapping(source = "invoiceEndDate", target = "orderEndDate")
     @Mapping(constant = "V2", target = "versionApi")
-    fun toCommand(request: OrderRequestV2): CreateOrderCommand
+    @Mapping(target = "bankQr", expression = "java(mapBankQr(request.getBankQr()))")
+    abstract fun toCommand(request: OrderRequestV2): CreateOrderCommand
 
     @Mapping(constant = "false", target = "mainContractCheck")
     @Mapping(source = "premium", target = "premiumAmount")
@@ -31,5 +34,8 @@ interface OrderRequestCommandMapper {
     @Mapping(source = "agreementDate", target = "contractDate")
     @Mapping(source = "insuranceKind", target = "typeInsurance")
     @Mapping(source = "program", target = "insuranceProgram")
-    fun toCommand(request: SubOrderRequestV2): CreateSubOrderCommand
+    abstract fun toCommand(request: SubOrderRequestV2): CreateSubOrderCommand
+
+    fun mapBankQr(banks: List<PaymentQrBank>?): String? =
+        banks?.takeIf { it.isNotEmpty() }?.joinToString(",") { it.name }
 }

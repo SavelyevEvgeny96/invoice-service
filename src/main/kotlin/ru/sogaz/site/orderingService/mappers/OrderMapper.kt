@@ -15,6 +15,8 @@ import ru.sogaz.site.orderingService.dto.request.SubOrderDto
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
+import ru.sogaz.site.orderingService.enums.PaymentMethod
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import ru.sogaz.site.orderingService.enums.TypeOperationRequestEnum
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -32,14 +34,14 @@ abstract class OrderMapper {
     }
 
     @Mapping(target = "paymentEndDate", source = "orderEndDate")
-    @Mapping(target = "recipientEmail", source = "recipientEmail", qualifiedByName = ["nullToEmpty"])
-    @Mapping(target = "recipientPhone", source = "recipientPhone", qualifiedByName = ["nullToEmpty"])
-    @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["mapPremium"])
+    @Mapping(target = "recipientEmail", expression = "java(nullToEmpty(dto.getRecipientEmail()))")
+    @Mapping(target = "recipientPhone", expression = "java(nullToEmpty(dto.getRecipientPhone()))")
+    @Mapping(target = "premiumAmount", expression = "java(mapPremium(dto.getSubOrders()))")
     @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "createDate", expression = "java( Instant.now() )")
-    @Mapping(target = "clientId", source = "metaInfo", qualifiedByName = ["mapClientId"])
-    @Mapping(target = "queueStatusResultName", source = "metaInfo", qualifiedByName = ["mapQueueResultName"])
+    @Mapping(target = "clientId", expression = "java(mapClientId(dto.getMetaInfo()))")
+    @Mapping(target = "queueStatusResultName", expression = "java(buildQueueStatusResultName(dto.getMetaInfo()))")
     @Mapping(target = "subOrders", ignore = true)
     abstract fun toOrderEntity(dto: OrderPayloadDto): OrderEntity
 
@@ -62,10 +64,37 @@ abstract class OrderMapper {
     @Mapping(target = "status", constant = "NEW")
     @Mapping(target = "receiptState", constant = "NONE")
     @Mapping(target = "recipientPhone", defaultValue = "")
-    @Mapping(target = "queueStatusResultName", source = ".", qualifiedByName = ["mapClientIdToQueueResultName"])
-    @Mapping(target = "premiumAmount", source = "subOrders", qualifiedByName = ["calculatePremiumAmount"])
-    @Mapping(target = "bank", source = "subOrders", qualifiedByName = ["mapBankBySubOrders"])
+    @Mapping(target = "queueStatusResultName", expression = "java(mapClientIdToQueueResultName(command))")
+    @Mapping(target = "premiumAmount", expression = "java(calculatePremiumAmount(command.getSubOrders()))")
+    @Mapping(target = "bank", expression = "java(mapBankBySubOrders(command.getSubOrders()))")
+    @Mapping(target = "paymentMethodList", expression = "java(mapPaymentMethodList(command.getPaymentMethodList()))")
+    @Mapping(target = "bankQr", expression = "java(mapBankQr(command.getBankQr()))")
+    @Mapping(target = "payerLastName", source = "payerFio.lastName")
+    @Mapping(target = "payerFirstName", source = "payerFio.firstName")
+    @Mapping(target = "payerMiddleName", source = "payerFio.middleName")
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
+
+    @Named("mapPaymentMethodList")
+    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): Set<PaymentMethod>? =
+        paymentMethods?.toSet()
+
+    @Named("mapBankQr")
+    fun mapBankQr(banks: List<PaymentQrBank>?): Set<PaymentQrBank>? = banks?.toSet()
+
+    /** Supports the legacy comma-separated/JSON-array representation used by older create commands. */
+    fun mapBankQr(banks: String?): Set<PaymentQrBank>? =
+        banks
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?.removePrefix("[")
+            ?.removeSuffix("]")
+            ?.split(',')
+            ?.mapNotNull { value ->
+                value.trim().trim('"').uppercase().let { normalized ->
+                    PaymentQrBank.entries.firstOrNull { it.name == normalized }
+                }
+            }
+            ?.toSet()
 
     @Named("mapBankBySubOrders")
     fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =

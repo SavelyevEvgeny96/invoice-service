@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: rna-3764-add-qr-payer-fields
+      author: OpenAI
+      changes:
+        - sqlFile:
+            path: DATA/add_qr_payer_fields.sql
+            relativeToChangelogFile: true

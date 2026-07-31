@@ -44,7 +44,7 @@ class OrderPaymentPageServiceImpl(
         payQueryParams: PayQueryParams,
     ): InvoicePayPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        order.checkStatus()
+        checkOrderStatus(order)
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
         return paymentMethodsMapper.toInvoicePayPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
@@ -55,7 +55,7 @@ class OrderPaymentPageServiceImpl(
         payQueryParams: PayQueryParams,
     ): DataOrderPaymentPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        order.checkStatus()
+        checkOrderStatus(order)
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
         return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
@@ -84,8 +84,8 @@ class OrderPaymentPageServiceImpl(
         )
     }
 
-    private fun OrderEntity.checkStatus() {
-        when (status) {
+    private fun checkOrderStatus(order: OrderEntity) {
+        when (order.status) {
             SUCCESS -> throw BusinessException(ERROR_CODE_ORDER_SUCCESS)
             OVERDUE,
             MARKEDDEL,

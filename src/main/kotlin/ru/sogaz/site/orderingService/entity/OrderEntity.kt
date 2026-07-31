@@ -96,6 +96,14 @@ class OrderEntity(
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "bank_qr", columnDefinition = "jsonb")
     var bankQr: Set<PaymentQrBank>? = null,
+    @Column(name = "payer_last_name")
+    var payerLastName: String? = null,
+    @Column(name = "payer_first_name")
+    var payerFirstName: String? = null,
+    @Column(name = "payer_middle_name")
+    var payerMiddleName: String? = null,
+    @Column(name = "check_url_return")
+    var checkUrlReturn: Boolean? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,

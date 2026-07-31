@@ -27,6 +27,8 @@ open class OrderDaoImpl(
 
     override fun findById(orderId: UUID): OrderEntity? = orderRepository.findById(orderId).getOrNull()
 
+    override fun findByIdWithoutLock(orderId: UUID): OrderEntity? = orderRepository.findByIdWithoutLock(orderId)
+
     override fun findByRecipientUserId(userId: String): List<OrderEntity?> = orderRepository.findAllByRecipientUserId(userId)
 
     override fun findByUnifiedId(unifiedId: String): List<OrderEntity?> = orderRepository.findAllByUnifiedId(unifiedId)

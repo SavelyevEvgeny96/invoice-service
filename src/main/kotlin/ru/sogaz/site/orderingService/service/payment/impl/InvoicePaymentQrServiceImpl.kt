@@ -28,7 +28,7 @@ class InvoicePaymentQrServiceImpl(
         invoiceId: UUID,
         bank: String,
     ): InvoicePaymentQr {
-        val order = orderDao.findById(invoiceId) ?: throw BusinessException(ERROR_CODE_ORDER_NOT_FOUND)
+        val order = orderDao.findByIdWithoutLock(invoiceId) ?: throw BusinessException(ERROR_CODE_ORDER_NOT_FOUND)
         order.checkStatus()
         val company = checkNotNull(companyDetailsQrDao.findByBank(bank)) { "Не найдены реквизиты компании для банка $bank" }
         val qrData = paymentQrMapper.toPaymentQrData(order, order.subOrders.firstOrNull(), company)
