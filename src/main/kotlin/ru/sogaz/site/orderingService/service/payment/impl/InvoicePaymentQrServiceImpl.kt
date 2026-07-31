@@ -33,7 +33,7 @@ class InvoicePaymentQrServiceImpl(
         val company = checkNotNull(companyDetailsQrDao.findByBank(bank)) { "Не найдены реквизиты компании для банка $bank" }
         val qrData = paymentQrMapper.toPaymentQrData(order, order.subOrders.firstOrNull(), company)
         val qr = checkNotNull(qrGeneratorService.generateFileQR(qrData.toGostString())) { "Не удалось сформировать QR" }
-        return InvoicePaymentQr(qr.content, qr.mediaType)
+        return paymentQrMapper.toInvoicePaymentQr(order, order.subOrders.firstOrNull(), company, qr)
     }
 
     private fun OrderEntity.checkStatus() {
@@ -45,7 +45,7 @@ class InvoicePaymentQrServiceImpl(
 
     private fun PaymentQrData.toGostString(): String =
         "ST00012|Name=$name|PersonalAcc=$personalAcc|BankName=$bankName|BIC=$bic|CorrespAcc=$correspAcc" +
-            "|Sum=$sum|PayeeINN=$payeeInn|LastName=$lastName|FirstName=$firstName|MiddleName=$middleName" +
+            "|Sum=$sum|PayeeINN=$payeeInn|KPP=$kpp|LastName=$lastName|FirstName=$firstName|MiddleName=$middleName" +
             "|Purpose=СТРАХОВОЙ ВЗНОС ПО ДОГОВОРУ СТРАХОВАНИЯ $contractNumber от $contractDate " +
             "СТРАХОВАТЕЛЬ ${listOf(
                 lastName,

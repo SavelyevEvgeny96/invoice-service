@@ -27,6 +27,8 @@ class CompanyDetailsQrEntity(
     var correspAcc: String,
     @Column(name = "payee_inn", nullable = false)
     var payeeInn: String,
+    @Column(name = "kpp", nullable = false)
+    var kpp: String,
     @Column(name = "bank", nullable = false, unique = true)
     var bank: String,
     @CreationTimestamp
