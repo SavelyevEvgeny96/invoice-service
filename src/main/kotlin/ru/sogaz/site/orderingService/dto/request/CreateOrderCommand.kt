@@ -20,7 +20,7 @@ data class CreateOrderCommand(
     var clientId: String? = null,
     var policyholder: String? = null,
     var bank: BankEnum? = null,
-    var paymentMethodList: List<PaymentMethod> = listOf(PaymentMethod.CARD),
+    var paymentMethodList: List<PaymentMethod> = listOf(PaymentMethod.CARD, PaymentMethod.SBP),
     var payerFio: PayerFio? = null,
     var checkUrlReturn: Boolean? = null,
     var bankQr: String? = null,
