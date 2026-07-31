@@ -21,9 +21,9 @@ interface PaymentQrMapper {
     @Mapping(target = "correspAcc", source = "company.correspAcc")
     @Mapping(target = "payeeInn", source = "company.payeeInn")
     @Mapping(target = "sum", source = "order.premiumAmount", qualifiedByName = ["amountInKopecks"])
-    @Mapping(target = "lastName", source = "order.policyholder", qualifiedByName = ["lastName"])
-    @Mapping(target = "firstName", source = "order.policyholder", qualifiedByName = ["firstName"])
-    @Mapping(target = "middleName", source = "order.policyholder", qualifiedByName = ["middleName"])
+    @Mapping(target = "lastName", source = "order", qualifiedByName = ["payerLastName"])
+    @Mapping(target = "firstName", source = "order", qualifiedByName = ["payerFirstName"])
+    @Mapping(target = "middleName", source = "order", qualifiedByName = ["payerMiddleName"])
     @Mapping(target = "contractNumber", source = "subOrder.contractNumber", defaultValue = "")
     @Mapping(target = "contractDate", source = "subOrder.contractDate", qualifiedByName = ["date"])
     fun toPaymentQrData(
@@ -40,16 +40,19 @@ interface PaymentQrMapper {
         fun amountInKopecks(amount: BigDecimal?): String = amount?.movePointRight(2)?.toBigIntegerExact()?.toString().orEmpty()
 
         @JvmStatic
-        @Named("lastName")
-        fun lastName(policyholder: String?): String = policyholder.parts().getOrElse(0) { "" }
+        @Named("payerLastName")
+        fun payerLastName(order: OrderEntity): String =
+            order.payerLastName ?: order.policyholder.parts().getOrElse(0) { "" }
 
         @JvmStatic
-        @Named("firstName")
-        fun firstName(policyholder: String?): String = policyholder.parts().getOrElse(1) { "" }
+        @Named("payerFirstName")
+        fun payerFirstName(order: OrderEntity): String =
+            order.payerFirstName ?: order.policyholder.parts().getOrElse(1) { "" }
 
         @JvmStatic
-        @Named("middleName")
-        fun middleName(policyholder: String?): String = policyholder.parts().drop(2).joinToString(" ")
+        @Named("payerMiddleName")
+        fun payerMiddleName(order: OrderEntity): String =
+            order.payerMiddleName ?: order.policyholder.parts().drop(2).joinToString(" ")
 
         @JvmStatic
         @Named("date")

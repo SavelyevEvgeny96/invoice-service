@@ -17,6 +17,11 @@ interface OrderRepository : JpaRepository<OrderEntity, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     override fun findById(id: UUID): Optional<OrderEntity>
 
+    @Query("select o from OrderEntity o where o.orderId = :id")
+    fun findByIdWithoutLock(
+        @Param("id") id: UUID,
+    ): OrderEntity?
+
     fun findAllByRecipientUserId(userId: String): List<OrderEntity?>
 
     fun findAllByUnifiedId(unifiedId: String): List<OrderEntity?>

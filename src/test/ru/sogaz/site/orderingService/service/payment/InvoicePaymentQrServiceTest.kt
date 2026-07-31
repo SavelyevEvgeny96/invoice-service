@@ -30,7 +30,9 @@ class InvoicePaymentQrServiceTest {
         val order =
             OrderEntity(
                 orderId = invoiceId,
-                policyholder = "Иванов Иван Иванович",
+                payerLastName = "Иванов",
+                payerFirstName = "Иван",
+                payerMiddleName = "Иванович",
                 premiumAmount = BigDecimal("154.52"),
                 recipientEmail = "",
                 recipientPhone = "",
@@ -39,7 +41,7 @@ class InvoicePaymentQrServiceTest {
         order.addSubOrder(subOrder("FIRST", "2026-01-01T00:00:00Z"))
         order.addSubOrder(subOrder("SECOND", "2026-02-01T00:00:00Z"))
         val company = company()
-        every { orderDao.findById(invoiceId) } returns order
+        every { orderDao.findByIdWithoutLock(invoiceId) } returns order
         every { companyDetailsQrDao.findByBank("GPB") } returns company
         every { qrGeneratorService.generateFileQR(any<String>()) } returns FileQR("base64", "image/png")
 
@@ -55,6 +57,32 @@ class InvoicePaymentQrServiceTest {
                         it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
                         !it.contains("SECOND")
                 },
+            )
+        }
+    }
+
+    @Test
+    fun `should use legacy policyholder when separate payer fields are absent`() {
+        val invoiceId = UUID.randomUUID()
+        val order =
+            OrderEntity(
+                orderId = invoiceId,
+                policyholder = "Петров Петр Петрович",
+                premiumAmount = BigDecimal.ONE,
+                recipientEmail = "",
+                recipientPhone = "",
+                queueStatusResultName = "status",
+            )
+        order.addSubOrder(subOrder("FIRST", "2026-01-01T00:00:00Z"))
+        every { orderDao.findByIdWithoutLock(invoiceId) } returns order
+        every { companyDetailsQrDao.findByBank("GPB") } returns company()
+        every { qrGeneratorService.generateFileQR(any<String>()) } returns FileQR("base64", "image/png")
+
+        service.generate(invoiceId, "GPB")
+
+        verify {
+            qrGeneratorService.generateFileQR(
+                match { it.contains("|LastName=Петров|FirstName=Петр|MiddleName=Петрович") },
             )
         }
     }

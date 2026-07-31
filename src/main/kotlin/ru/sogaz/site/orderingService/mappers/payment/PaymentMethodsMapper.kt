@@ -6,6 +6,7 @@ import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.InvoiceAccountData
 import ru.sogaz.site.orderingService.dto.response.InvoicePayPageInfo
 import ru.sogaz.site.orderingService.dto.response.PaySbp
+import ru.sogaz.site.orderingService.dto.response.QrBankingDetails
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import java.net.URI
@@ -14,18 +15,26 @@ import java.net.URI
 interface PaymentMethodsMapper {
     @Mapping(source = "order.orderId", target = "orderId")
     @Mapping(source = "order.subOrders", target = "accounts")
+    @Mapping(source = "urlPayBank", target = "urlPayBank")
+    @Mapping(source = "paySbp", target = "paySbp")
+    @Mapping(source = "qrBankingDetails", target = "qrBankingDetails")
     fun toDataOrderPaymentPageInfo(
         order: OrderEntity,
-        urlPayBank: URI,
+        urlPayBank: URI?,
         paySbp: PaySbp?,
+        qrBankingDetails: QrBankingDetails?,
     ): DataOrderPaymentPageInfo
 
     @Mapping(source = "order.orderId", target = "invoiceId")
     @Mapping(source = "order.subOrders", target = "accounts")
+    @Mapping(source = "urlPayBank", target = "urlPayBank")
+    @Mapping(source = "paySbp", target = "paySbp")
+    @Mapping(source = "qrBankingDetails", target = "qrBankingDetails")
     fun toInvoicePayPageInfo(
         order: OrderEntity,
-        urlPayBank: URI,
+        urlPayBank: URI?,
         paySbp: PaySbp?,
+        qrBankingDetails: QrBankingDetails?,
     ): InvoicePayPageInfo
 
     @Mapping(source = "contractNumber", target = "agreementNumber")

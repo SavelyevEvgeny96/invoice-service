@@ -23,6 +23,10 @@ import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapper
 import ru.sogaz.site.orderingService.service.order.OrderPaymentPageService
 import ru.sogaz.site.orderingService.service.payment.PayInfoService
+import ru.sogaz.site.orderingService.service.payment.PaymentMethodsResolver
+import ru.sogaz.site.orderingService.dto.response.QrBankingDetails
+import ru.sogaz.site.orderingService.enums.PaymentMethod
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import java.util.UUID
 
 @Service
@@ -33,15 +37,17 @@ class OrderPaymentPageServiceImpl(
     private val paymentMethodsMapper: PaymentMethodsMapper,
     private val invoiceMetaInfoMapper: InvoiceMetaInfoMapper,
     private val paymentOperationDao: PaymentOperationDao,
+    private val paymentMethodsResolver: PaymentMethodsResolver,
 ) : OrderPaymentPageService {
     override fun getInvoicePayPageInfo(
         orderId: UUID,
         payQueryParams: PayQueryParams,
     ): InvoicePayPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        order.checkStatus()
-        val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams)
-        return paymentMethodsMapper.toInvoicePayPageInfo(order, payCardUri, paySbp)
+        checkOrderStatus(order)
+        val methods = paymentMethodsResolver.resolve(order)
+        val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
+        return paymentMethodsMapper.toInvoicePayPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
     }
 
     override fun getPaymentPage(
@@ -49,9 +55,10 @@ class OrderPaymentPageServiceImpl(
         payQueryParams: PayQueryParams,
     ): DataOrderPaymentPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        order.checkStatus()
-        val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams)
-        return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp)
+        checkOrderStatus(order)
+        val methods = paymentMethodsResolver.resolve(order)
+        val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
+        return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
     }
 
     override fun getMetaInfo(
@@ -77,8 +84,8 @@ class OrderPaymentPageServiceImpl(
         )
     }
 
-    private fun OrderEntity.checkStatus() {
-        when (status) {
+    private fun checkOrderStatus(order: OrderEntity) {
+        when (order.status) {
             SUCCESS -> throw BusinessException(ERROR_CODE_ORDER_SUCCESS)
             OVERDUE,
             MARKEDDEL,
@@ -88,5 +95,14 @@ class OrderPaymentPageServiceImpl(
             -> throw BusinessException(ERROR_CODE_ORDER_CANCELED)
             else -> {}
         }
+    }
+
+    private fun OrderEntity.qrBankingDetails(methods: Set<PaymentMethod>): QrBankingDetails? {
+        if (PaymentMethod.QR_BANKING_DETAILS !in methods) return null
+        val banks = bankQr
+        return QrBankingDetails(
+            gpbAvailability = banks.isNullOrEmpty() || PaymentQrBank.GPB in banks,
+            vtpAvailability = banks.isNullOrEmpty() || PaymentQrBank.VTB in banks,
+        )
     }
 }
