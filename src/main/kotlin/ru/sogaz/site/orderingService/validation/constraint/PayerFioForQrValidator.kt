@@ -11,13 +11,27 @@ class PayerFioForQrValidator : ConstraintValidator<ValidPayerFioForQr, OrderRequ
         context: ConstraintValidatorContext,
     ): Boolean {
         if (value == null || PaymentMethod.QR_BANKING_DETAILS !in value.paymentMethodList.orEmpty()) return true
-        if (value.payerFio != null) return true
+        var isFullPayerFio = true
 
-        context.disableDefaultConstraintViolation()
-        context
-            .buildConstraintViolationWithTemplate("{validation.orderRequest.payerFio.required}")
-            .addPropertyNode("payerFio")
+        if (value.payerFio?.firstName == null) {
+            context.addConstraintForPayerFio("firstName")
+            isFullPayerFio = false
+        }
+        if (value.payerFio?.middleName == null) {
+            context.addConstraintForPayerFio("middleName")
+            isFullPayerFio = false
+        }
+        if (value.payerFio?.lastName == null) {
+            context.addConstraintForPayerFio("lastName")
+            isFullPayerFio = false
+        }
+        return isFullPayerFio
+    }
+
+    private fun ConstraintValidatorContext.addConstraintForPayerFio(field: String) {
+        disableDefaultConstraintViolation()
+        buildConstraintViolationWithTemplate("{validation.orderRequest.payerFio.required}")
+            .addPropertyNode(field)
             .addConstraintViolation()
-        return false
     }
 }
