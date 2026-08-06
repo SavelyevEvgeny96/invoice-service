@@ -26,9 +26,14 @@ class InvoicePaymentStatusEventProducerImpl(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ) {
+        val adjustedPaymentData =
+            completedPaymentData.let { data ->
+                data.takeUnless { order.checkPaymentInformation == true }?.copy(rrn = null) ?: data
+            }
+
         sendMessageProducer.sendMessage(
             buildRoutingKey(order, completedPaymentData),
-            eventMapper.toInvoiceStatusEvent(order, completedPaymentData),
+            eventMapper.toInvoiceStatusEvent(order, adjustedPaymentData),
             rabbitProps.ordersExchange,
             order.orderId,
         )

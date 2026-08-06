@@ -55,6 +55,7 @@ data class OrderRequestV2(
     @field:Valid
     var payerFio: PayerFio? = null,
     var checkUrlReturn: Boolean? = null,
+    var checkPaymentInformation: Boolean? = null,
 )
 
 data class PayerFio(
