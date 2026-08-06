@@ -4,6 +4,6 @@ databaseChangeLog:
       author: Savelyev Evgeny
       changes:
         - sqlFile:
-            path: db.changelog\v1.1.5\2026-07-31\DATA\create_table.sql
+            path: db.changelog\v1.1.5\2026-08-06\DATA\add_column.sql
             splitStatements: true
             stripComments: true
