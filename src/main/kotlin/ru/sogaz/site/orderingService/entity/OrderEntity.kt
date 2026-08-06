@@ -104,6 +104,8 @@ class OrderEntity(
     var payerMiddleName: String? = null,
     @Column(name = "check_url_return")
     var checkUrlReturn: Boolean? = null,
+    @Column(name = "check_payment_information")
+    var checkPaymentInformation: Boolean? = null,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,

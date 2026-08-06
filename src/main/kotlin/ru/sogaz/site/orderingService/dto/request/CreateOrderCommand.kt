@@ -23,6 +23,7 @@ data class CreateOrderCommand(
     var paymentMethodList: List<PaymentMethod> = listOf(PaymentMethod.CARD, PaymentMethod.SBP),
     var payerFio: PayerFio? = null,
     var checkUrlReturn: Boolean? = null,
+    var checkPaymentInformation: Boolean? = null,
     var bankQr: String? = null,
     var orderIdRecurrent: UUID? = null,
     var typePaymentOperation: String? = "",
