@@ -27,7 +27,7 @@ data class CompletedPaymentData(
     val externalErrorCode: String?,
     val errorText: String?,
     val rrn: String? = null,
-    val qrId: String? = null
+    val qrId: String? = null,
 )
 
 data class ClientCardDetails(
