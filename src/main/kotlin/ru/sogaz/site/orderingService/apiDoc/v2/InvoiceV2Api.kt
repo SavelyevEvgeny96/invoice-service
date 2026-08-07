@@ -112,6 +112,7 @@ interface InvoiceV2Api {
                                     "    \"middleName\": \"Иванович\"\n" +
                                     "  },\n" +
                                     "  \"checkUrlReturn\": true,\n" +
+                                    "  \"checkPaymentInformation\": true,\n" +
                                     "  \"bankQR\": \"GPB\",\n" +
                                     "  \"typePaymentOperation\": \"PAYMENT_CONTRACT\",\n" +
                                     "  \"accountCrossId\": \"account-cross-123\"\n" +
