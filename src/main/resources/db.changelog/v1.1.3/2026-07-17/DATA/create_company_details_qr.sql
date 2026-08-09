@@ -15,8 +15,8 @@ CREATE TABLE company_details_qr (
 INSERT INTO company_details_qr (id, name, personal_acc, bank_name, bic, corres_acc, payee_inn, kpp, bank)
 VALUES (
     '5fe4bb4d-8d97-4772-9cb7-48d7ac1a3a25',
-    'общество с ограниченной ответственностью «страховая компания СОГАЗ-ЖИЗНЬ» (ООО «СК СОГАЗ жизнь»)',
-    '40701810500000331710',
+    'ООО «СК СОГАЗ-ЖИЗНЬ»',
+    '40701810500000033171',
     'Банк ГПБ (АО) г. Москва',
     '044525823',
     '30101810200000000823',
