@@ -176,7 +176,7 @@ class OrderServiceImpl(
         if (order.checkUrlReturn != true) return paymentPageUrl
 
         val builder = UriComponentsBuilder.fromUriString(paymentPageUrl)
-        order.urlToReturn?.takeIf { it.isNotBlank() }?.let { builder.queryParam("urlToReturn", it) }
+        order.urlToReturn?.takeIf { it.isNotBlank() }?.let { builder.queryParam("urlToReturnS", it) }
         order.urlToDecline?.takeIf { it.isNotBlank() }?.let { builder.queryParam("urlToReturnF", it) }
 
         return builder
