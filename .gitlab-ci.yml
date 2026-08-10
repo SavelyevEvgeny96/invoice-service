@@ -34,8 +34,13 @@ variables:
   # Исключить сервис из автоматического логирования
   EXCLUDE_FROM_LOGGING: 'false' # false/true
 
-    # online-pay
-  SERVICE_NAMESPACE: 'online-pay'
+  # online-pay
+  SERVICE_NAMESPACE_PROD_NEW: 'online-pay'
+  # online-pay scheduling: nodeSelector + tolerations
+  PROD_NEW_HELM_NODESELECTOR: '{"online-pay":"true"}'
+  PROD_NEW_HELM_TOLERATIONS: '[{"key":"namespace","operator":"Equal","value":"online-pay","effect":"NoSchedule"}]'
+  # ---Life---
+  SERVICE_NAMESPACE_LIFE: 'online-pay'
 
 include:
   - project: 'infrastructure/common/gitlab-ci'
