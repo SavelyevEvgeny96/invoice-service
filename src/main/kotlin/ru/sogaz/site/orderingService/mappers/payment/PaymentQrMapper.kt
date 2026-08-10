@@ -1,7 +1,9 @@
 package ru.sogaz.site.orderingService.mappers.payment
 
+import org.mapstruct.AfterMapping
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.mapstruct.MappingTarget
 import org.mapstruct.Named
 import ru.sogaz.site.orderingService.dto.data.PaymentQrData
 import ru.sogaz.site.orderingService.dto.response.FileQR
@@ -15,7 +17,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Mapper(componentModel = "spring")
-interface PaymentQrMapper {
+abstract class PaymentQrMapper {
     @Mapping(target = "name", source = "company.name")
     @Mapping(target = "personalAcc", source = "company.personalAcc")
     @Mapping(target = "bankName", source = "company.bankName")
@@ -23,13 +25,37 @@ interface PaymentQrMapper {
     @Mapping(target = "correspAcc", source = "company.correspAcc")
     @Mapping(target = "payeeInn", source = "company.payeeInn")
     @Mapping(target = "kpp", source = "company.kpp")
-    @Mapping(target = "sum", source = "order.premiumAmount", qualifiedByName = ["amountInKopecks"])
-    @Mapping(target = "lastName", source = "order.payerLastName", defaultValue = "")
-    @Mapping(target = "firstName", source = "order.payerFirstName", defaultValue = "")
-    @Mapping(target = "middleName", source = "order.payerMiddleName", defaultValue = "")
-    @Mapping(target = "contractNumber", source = "subOrder.contractNumber", defaultValue = "")
-    @Mapping(target = "contractDate", source = "subOrder.contractDate", qualifiedByName = ["date"])
-    fun toPaymentQrData(
+    @Mapping(
+        target = "sum",
+        source = "order.premiumAmount",
+        qualifiedByName = ["amountInKopecks"],
+    )
+    @Mapping(
+        target = "lastName",
+        source = "order.payerLastName",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "firstName",
+        source = "order.payerFirstName",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "middleName",
+        source = "order.payerMiddleName",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "contractNumber",
+        source = "subOrder.contractNumber",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "contractDate",
+        source = "subOrder.contractDate",
+        qualifiedByName = ["date"],
+    )
+    abstract fun toPaymentQrData(
         order: OrderEntity,
         subOrder: SubOrderEntity?,
         company: CompanyDetailsQrEntity,
@@ -37,36 +63,120 @@ interface PaymentQrMapper {
 
     @Mapping(target = "qrInfo.contentQR", source = "qr.content")
     @Mapping(target = "qrInfo.mediaType", source = "qr.mediaType")
-    @Mapping(target = "detais.payerFio.lastName", source = "order.payerLastName", defaultValue = "")
-    @Mapping(target = "detais.payerFio.firstName", source = "order.payerFirstName", defaultValue = "")
-    @Mapping(target = "detais.payerFio.middleName", source = "order.payerMiddleName", defaultValue = "")
+    @Mapping(
+        target = "detais.payerFio.lastName",
+        source = "order.payerLastName",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "detais.payerFio.firstName",
+        source = "order.payerFirstName",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "detais.payerFio.middleName",
+        source = "order.payerMiddleName",
+        defaultValue = "",
+    )
     @Mapping(target = "detais.recipient.name", source = "company.name")
     @Mapping(target = "detais.recipient.inn", source = "company.payeeInn")
     @Mapping(target = "detais.recipient.kpp", source = "company.kpp")
-    @Mapping(target = "detais.recipient.personalAcc", source = "company.personalAcc")
-    @Mapping(target = "detais.recipient.purposePayment", constant = PAYMENT_PURPOSE)
+    @Mapping(
+        target = "detais.recipient.personalAcc",
+        source = "company.personalAcc",
+    )
+    @Mapping(
+        target = "detais.recipient.purposePayment",
+        ignore = true,
+    )
     @Mapping(target = "detais.bank.name", source = "company.bankName")
     @Mapping(target = "detais.bank.bic", source = "company.bic")
-    @Mapping(target = "detais.bank.corresAcc", source = "company.correspAcc")
-    @Mapping(target = "infoInvoice.premiumAmount", source = "order.premiumAmount", qualifiedByName = ["amount"])
-    @Mapping(target = "infoInvoice.accounts.agreementNumber", source = "subOrder.contractNumber", defaultValue = "")
-    @Mapping(target = "infoInvoice.accounts.insuranceKind", source = "subOrder.typeInsurance", defaultValue = "")
-    @Mapping(target = "infoInvoice.accounts.agreementPrice", source = "subOrder.premiumAmount", qualifiedByName = ["amount"])
-    @Mapping(target = "infoInvoice.urlSuccess", source = "order.urlToReturn", defaultValue = "")
-    fun toInvoicePaymentQr(
+    @Mapping(
+        target = "detais.bank.corresAcc",
+        source = "company.correspAcc",
+    )
+    @Mapping(
+        target = "infoInvoice.premiumAmount",
+        source = "order.premiumAmount",
+        qualifiedByName = ["amount"],
+    )
+    @Mapping(
+        target = "infoInvoice.accounts.agreementNumber",
+        source = "subOrder.contractNumber",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "infoInvoice.accounts.insuranceKind",
+        source = "subOrder.typeInsurance",
+        defaultValue = "",
+    )
+    @Mapping(
+        target = "infoInvoice.accounts.agreementPrice",
+        source = "subOrder.premiumAmount",
+        qualifiedByName = ["amount"],
+    )
+    @Mapping(
+        target = "infoInvoice.urlSuccess",
+        source = "order.urlToReturn",
+        defaultValue = "",
+    )
+    abstract fun toInvoicePaymentQr(
         order: OrderEntity,
         subOrder: SubOrderEntity?,
         company: CompanyDetailsQrEntity,
         qr: FileQR,
     ): InvoicePaymentQr
 
+    @AfterMapping
+    protected fun fillPurposePayment(
+        order: OrderEntity,
+        subOrder: SubOrderEntity?,
+        @MappingTarget target: InvoicePaymentQr,
+    ) {
+        target.detais.recipient.purposePayment =
+            generatePurpose(
+                order = order,
+                subOrder = subOrder,
+            )
+    }
+
     companion object {
-        const val PAYMENT_PURPOSE = "СТРАХОВОЙ ВЗНОС ПО ДОГОВОРУ СТРАХОВАНИЯ"
-        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneOffset.UTC)
+        private val DATE_FORMATTER =
+            DateTimeFormatter
+                .ofPattern("dd.MM.yyyy")
+                .withZone(ZoneOffset.UTC)
+
+        private fun generatePurpose(
+            order: OrderEntity,
+            subOrder: SubOrderEntity?,
+        ): String {
+            val contractNumber = subOrder?.contractNumber.orEmpty()
+
+            val contractDate =
+                subOrder
+                    ?.contractDate
+                    ?.let(DATE_FORMATTER::format)
+                    .orEmpty()
+
+            val payerFio =
+                listOfNotNull(
+                    order.payerLastName,
+                    order.payerFirstName,
+                    order.payerMiddleName,
+                ).filter { it.isNotBlank() }
+                    .joinToString(" ")
+
+            return "СТРАХОВОЙ ВЗНОС ПО ДОГОВОРУ СТРАХОВАНИЯ " +
+                "$contractNumber от $contractDate СТРАХОВАТЕЛЬ $payerFio. " +
+                "НДС НЕ ОБЛАГАЕТСЯ. QR"
+        }
 
         @JvmStatic
         @Named("amount")
-        fun amount(amount: BigDecimal?): String = amount?.toPlainString().orEmpty()
+        fun amount(amount: BigDecimal?): String =
+            amount
+                ?.toPlainString()
+                .orEmpty()
 
         @JvmStatic
         @Named("amountInKopecks")
@@ -79,6 +189,9 @@ interface PaymentQrMapper {
 
         @JvmStatic
         @Named("date")
-        fun date(value: Instant?): String = value?.let(DATE_FORMATTER::format).orEmpty()
+        fun date(value: Instant?): String =
+            value
+                ?.let(DATE_FORMATTER::format)
+                .orEmpty()
     }
 }
