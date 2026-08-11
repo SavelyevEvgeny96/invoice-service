@@ -19,7 +19,7 @@ spring:
       enabled: ALWAYS
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
-    port: 5672
+    port: ${RABBIT_PORT:5672}
     username: ${RABBIT_USERNAME:guest}
     password: ${RABBIT_PASSWORD:guest}
     virtual-host: /
