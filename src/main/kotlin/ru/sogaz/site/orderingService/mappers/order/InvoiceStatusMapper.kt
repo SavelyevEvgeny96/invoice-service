@@ -25,6 +25,7 @@ interface InvoiceStatusMapper {
     @Mapping(target = "bank", source = "completedPaymentData.bank")
     @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
     @Mapping(target = "paySucces", source = "completedPaymentData.payDate")
+    @Mapping(target = "paymentBankId", source = "completedPaymentData.paymentBankId")
     fun toInvoiceStatusEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
