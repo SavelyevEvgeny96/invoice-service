@@ -5,7 +5,7 @@ import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class InvoiceStatusEvent(
-    val paymentBankId: String?,
+    var paymentBankId: String?,
     val invoiceId: String?,
     val externalSystemCode: String? = null,
     val externalId: String?,

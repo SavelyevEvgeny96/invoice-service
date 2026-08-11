@@ -9,8 +9,8 @@ import ru.sogaz.site.orderingService.dto.response.SubInvoiceData
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 
-@Mapper
-interface InvoiceStatusMapper {
+@Mapper(componentModel = "spring")
+abstract class InvoiceStatusMapper {
     @Mapping(target = "invoiceId", source = "order.orderId")
     @Mapping(target = "externalSystemCode", source = "order.clientId")
     @Mapping(target = "externalId", source = "order.subscriptionId")
@@ -25,17 +25,27 @@ interface InvoiceStatusMapper {
     @Mapping(target = "bank", source = "completedPaymentData.bank")
     @Mapping(target = "paymentType", source = "completedPaymentData.paymentType")
     @Mapping(target = "paySucces", source = "completedPaymentData.payDate")
-    @Mapping(target = "paymentBankId", source = "completedPaymentData.paymentBankId")
-    fun toInvoiceStatusEvent(
+    @Mapping(target = "paymentBankId", expression = "java(mapBankIdIfLifeClient(order, completedPaymentData))")
+    abstract fun toInvoiceStatusEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): InvoiceStatusEvent
+
+    fun mapBankIdIfLifeClient(
+        order: OrderEntity,
+        completedPaymentData: CompletedPaymentData,
+    ): String? =
+        if ("lk-sogaz-life-client" == order.clientId) {
+            completedPaymentData.paymentBankId
+        } else {
+            null
+        }
 
     @Mapping(target = "invoiceId", source = "completedPaymentData.orderId")
     @Mapping(target = "premium", source = "completedPaymentData.totalAmount")
     @Mapping(target = "status", source = "completedPaymentData.status")
     @Mapping(target = "errorText", source = "completedPaymentData.errorText")
-    fun toInvoiceReversalStatusEvent(completedPaymentData: CompletedPaymentData): InvoiceReversalStatusEvent
+    abstract fun toInvoiceReversalStatusEvent(completedPaymentData: CompletedPaymentData): InvoiceReversalStatusEvent
 
     @Mapping(target = "premium", source = "premiumAmount")
     @Mapping(target = "insuranceKind", source = "typeInsurance")
@@ -43,5 +53,5 @@ interface InvoiceStatusMapper {
     @Mapping(target = "agreementNumber", source = "contractNumber")
     @Mapping(target = "program", source = "insuranceProgram")
     @Mapping(target = "agreementDate", source = "contractDate")
-    fun toInvoiceData(subOrder: SubOrderEntity): SubInvoiceData
+    abstract fun toInvoiceData(subOrder: SubOrderEntity): SubInvoiceData
 }
