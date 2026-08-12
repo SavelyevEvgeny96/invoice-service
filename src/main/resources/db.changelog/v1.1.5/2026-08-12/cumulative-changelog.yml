@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: rna-3764-bag-payment-methods
+      author: Savelyev Evgeny
+      changes:
+        - sqlFile:
+            path: db.changelog\v1.1.5\2026-08-12\DATA\refactor_type.sql
+            splitStatements: true
+            stripComments: true
