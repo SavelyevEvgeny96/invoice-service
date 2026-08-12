@@ -35,7 +35,7 @@ abstract class InvoiceStatusMapper {
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ): String? =
-        if ("lk-sogaz-life-client" == order.clientId) {
+        if (order.checkPaymentInformation == true) {
             completedPaymentData.paymentBankId
         } else {
             null
