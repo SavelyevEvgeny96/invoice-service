@@ -90,9 +90,8 @@ class OrderEntity(
     var receiptState: ReceiptState = ReceiptState.NONE,
     @Column(name = "depersonalization")
     var depersonalization: Boolean? = null,
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "payment_method_list", columnDefinition = "jsonb")
-    var paymentMethodList: Set<PaymentMethod>? = null,
+    @Column(name = "payment_method_list")
+    var paymentMethodList: String? = null,
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "bank_qr", columnDefinition = "jsonb")
     var bankQr: Set<PaymentQrBank>? = null,
