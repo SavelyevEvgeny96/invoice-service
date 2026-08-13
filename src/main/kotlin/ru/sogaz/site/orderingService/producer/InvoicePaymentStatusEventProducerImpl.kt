@@ -44,7 +44,7 @@ class InvoicePaymentStatusEventProducerImpl(
 
         val adjustedPaymentData =
             completedPaymentData.let { data ->
-                data.takeUnless { order.checkPaymentInformation == true }?.copy(rrn = null) ?: data
+                data.takeUnless { order.checkPaymentInformation == true }?.copy(rrn = null,qrId = null) ?: data
             }
 
         sendMessageProducer.sendMessage(
