@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: add_column
+      author: Savelyev Evgeny
+      changes:
+        - sqlFile:
+            path: db.changelog\v1.1.5\2026-08-13\DATA\add_column.sql
+            splitStatements: true
+            stripComments: true
