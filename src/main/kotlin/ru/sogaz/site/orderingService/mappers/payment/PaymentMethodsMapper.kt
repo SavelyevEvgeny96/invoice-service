@@ -15,9 +15,6 @@ import java.net.URI
 interface PaymentMethodsMapper {
     @Mapping(source = "order.orderId", target = "orderId")
     @Mapping(source = "order.subOrders", target = "accounts")
-    @Mapping(source = "urlPayBank", target = "urlPayBank")
-    @Mapping(source = "paySbp", target = "paySbp")
-    @Mapping(source = "qrBankingDetails", target = "qrBankingDetails")
     fun toDataOrderPaymentPageInfo(
         order: OrderEntity,
         urlPayBank: URI?,
@@ -27,9 +24,6 @@ interface PaymentMethodsMapper {
 
     @Mapping(source = "order.orderId", target = "invoiceId")
     @Mapping(source = "order.subOrders", target = "accounts")
-    @Mapping(source = "urlPayBank", target = "urlPayBank")
-    @Mapping(source = "paySbp", target = "paySbp")
-    @Mapping(source = "qrBankingDetails", target = "qrBankingDetails")
     fun toInvoicePayPageInfo(
         order: OrderEntity,
         urlPayBank: URI?,

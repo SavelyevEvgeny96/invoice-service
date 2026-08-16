@@ -1,0 +1,2 @@
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS send_message_result BOOLEAN DEFAULT FALSE;

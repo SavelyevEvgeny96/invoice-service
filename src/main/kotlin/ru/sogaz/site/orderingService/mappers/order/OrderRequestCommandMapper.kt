@@ -14,7 +14,6 @@ import ru.sogaz.site.orderingService.enums.PaymentQrBank
 abstract class OrderRequestCommandMapper {
     @Mapping(source = "orders", target = "subOrders")
     @Mapping(constant = "V1", target = "versionApi")
-    @Mapping(target = "bankQr", expression = "java(mapBankQr(request.getBankQr()))")
     abstract fun toCommand(request: OrderRequestV1): CreateOrderCommand
 
     abstract fun toCommand(request: SubOrderRequestV1): CreateSubOrderCommand
@@ -36,6 +35,5 @@ abstract class OrderRequestCommandMapper {
     @Mapping(source = "program", target = "insuranceProgram")
     abstract fun toCommand(request: SubOrderRequestV2): CreateSubOrderCommand
 
-    fun mapBankQr(banks: List<PaymentQrBank>?): String? =
-        banks?.takeIf { it.isNotEmpty() }?.joinToString(",") { it.name }
+    fun mapBankQr(banks: List<PaymentQrBank>?): String? = banks?.takeIf { it.isNotEmpty() }?.joinToString(",") { it.name }
 }

@@ -1,18 +1,18 @@
 package ru.sogaz.site.orderingService.dto.request
 
-import io.swagger.v3.oas.annotations.Parameter
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import ru.sogaz.site.orderingService.validation.constraint.Phone
-import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
 import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.enums.PaymentQrBank
+import ru.sogaz.site.orderingService.validation.constraint.Phone
+import ru.sogaz.site.orderingService.validation.constraint.SogazDomain
 import ru.sogaz.site.orderingService.validation.constraint.ValidPayerFioForQr
 import java.time.Instant
 
@@ -55,4 +55,16 @@ data class OrderRequestV2(
     @field:Valid
     var payerFio: PayerFio? = null,
     var checkUrlReturn: Boolean? = null,
+    var checkPaymentInformation: Boolean? = null,
 )
+
+data class PayerFio(
+    val lastName: String? = null,
+    val firstName: String? = null,
+    val middleName: String? = null,
+) {
+    fun isFilled(): Boolean =
+        !lastName.isNullOrBlank() &&
+            !firstName.isNullOrBlank() &&
+            !middleName.isNullOrBlank()
+}

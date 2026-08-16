@@ -77,7 +77,7 @@ interface InvoiceV2Api {
                                     "      \"agreementId\": \"SF-0000119500\",\n" +
                                     "      \"agreementDate\": \"2026-09-15T07:59:01+03:00\",\n" +
                                     "      \"typeOperation\": \"PAYMENT_MAIN_AGREEMENT\",\n" +
-                                    "      \"insuranceKind\": \"ОМС\",\n" +
+                                    "      \"insuranceKind\": \"DMSFL\",\n" +
                                     "      \"program\": \"СОГАЗ-Квартира\",\n" +
                                     "      \"managerEmail\": \"manager@sogaz.ru\",\n" +
                                     "      \"channel\": \"ADAKTA\"\n" +
@@ -91,7 +91,7 @@ interface InvoiceV2Api {
                                     "      \"agreementId\": \"SF-0000119501\",\n" +
                                     "      \"agreementDate\": \"2026-09-15T07:59:01+03:00\",\n" +
                                     "      \"typeOperation\": \"PAYMENT_ADDITIONAL_AGREEMENT\",\n" +
-                                    "      \"insuranceKind\": \"Страхование жизни\",\n" +
+                                    "      \"insuranceKind\": \"VPMG\",\n" +
                                     "      \"program\": \"ВПМЖ\",\n" +
                                     "      \"managerEmail\": \"manager@sogaz.ru\",\n" +
                                     "      \"channel\": \"ADAKTA\"\n" +
@@ -105,7 +105,15 @@ interface InvoiceV2Api {
                                     "  \"urlToReturn\": \"https://www.sogaz.ru/success\",\n" +
                                     "  \"urlToDecline\": \"https://www.sogaz.ru/decline\",\n" +
                                     "  \"externalId\": \"ext-123456\",\n" +
-                                    "  \"bank\": \"gpb\",\n" +
+                                    "  \"paymentMethodList\": [\"CARD\", \"SBP\"],\n" +
+                                    "  \"payerFio\": {\n" +
+                                    "    \"lastName\": \"Иванов\",\n" +
+                                    "    \"firstName\": \"Иван\",\n" +
+                                    "    \"middleName\": \"Иванович\"\n" +
+                                    "  },\n" +
+                                    "  \"checkUrlReturn\": true,\n" +
+                                    "  \"checkPaymentInformation\": true,\n" +
+                                    "  \"bankQR\": \"GPB\",\n" +
                                     "  \"typePaymentOperation\": \"PAYMENT_CONTRACT\",\n" +
                                     "  \"accountCrossId\": \"account-cross-123\"\n" +
                                     "}",

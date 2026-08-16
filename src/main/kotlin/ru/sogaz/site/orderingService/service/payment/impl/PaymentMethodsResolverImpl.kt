@@ -12,9 +12,14 @@ class PaymentMethodsResolverImpl(
 ) : PaymentMethodsResolver {
     override fun resolve(order: OrderEntity): Set<PaymentMethod> =
         order.paymentMethodList?.takeIf { it.isNotEmpty() }
-            ?: defaultPaymentMethodRepository.findAllByAvailabilityTrue()
-                .mapNotNull { method -> method.name?.trim()?.uppercase()?.let(::parse) }
-                .toSet()
+            ?: defaultPaymentMethodRepository
+                .findAllByAvailabilityTrue()
+                .mapNotNull { method ->
+                    method.name
+                        ?.trim()
+                        ?.uppercase()
+                        ?.let(::parse)
+                }.toSet()
 
     private fun parse(value: String): PaymentMethod? = runCatching { PaymentMethod.valueOf(value) }.getOrNull()
 }

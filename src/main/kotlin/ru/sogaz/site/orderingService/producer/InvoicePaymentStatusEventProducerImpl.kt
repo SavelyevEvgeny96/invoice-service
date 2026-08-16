@@ -1,8 +1,11 @@
 package ru.sogaz.site.orderingService.producer
 
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+import ru.sogaz.site.orderingService.dao.OrderDao
 import ru.sogaz.site.orderingService.dto.data.CompletedPaymentData
 import ru.sogaz.site.orderingService.entity.OrderEntity
+import ru.sogaz.site.orderingService.loggerFor
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusMapper
 import ru.sogaz.site.orderingService.mappers.order.InvoiceStatusRegMapper
 import ru.sogaz.site.orderingService.properties.RabbitProps
@@ -14,6 +17,7 @@ class InvoicePaymentStatusEventProducerImpl(
     private val eventMapper: InvoiceStatusMapper,
     private val invoiceStatusRegMapper: InvoiceStatusRegMapper,
     private val sendMessageProducer: SendMessageProducer,
+    private val orderDao: OrderDao,
 ) : OrderPaymentStatusEventProducer,
     InvoicePaymentStatusRegEventProducer {
     companion object {
@@ -22,16 +26,35 @@ class InvoicePaymentStatusEventProducerImpl(
         private const val DOT = "."
     }
 
+    private val logger = loggerFor(InvoicePaymentStatusEventProducerImpl::class.java)
+
+    @Transactional
     override fun sendPaymentOrderEvent(
         order: OrderEntity,
         completedPaymentData: CompletedPaymentData,
     ) {
+        if (order.sendMessageResult == true) {
+            logger.warn(
+                "Предотвращена попытка двойной отправки статуса оплаты. " +
+                    "Order orderId={} уже имеет sendMessageResult=true",
+                order.orderId,
+            )
+            return
+        }
+
+        val adjustedPaymentData =
+            completedPaymentData.let { data ->
+                data.takeUnless { order.checkPaymentInformation == true }?.copy(rrn = null,qrId = null) ?: data
+            }
+
         sendMessageProducer.sendMessage(
             buildRoutingKey(order, completedPaymentData),
-            eventMapper.toInvoiceStatusEvent(order, completedPaymentData),
+            eventMapper.toInvoiceStatusEvent(order, adjustedPaymentData),
             rabbitProps.ordersExchange,
             order.orderId,
         )
+        order.sendMessageResult = true
+        orderDao.save(order)
     }
 
     override fun sendPaymentStatusRegEvent(

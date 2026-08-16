@@ -75,8 +75,7 @@ abstract class OrderMapper {
     abstract fun fromCommand(command: CreateOrderCommand): OrderEntity
 
     @Named("mapPaymentMethodList")
-    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): Set<PaymentMethod>? =
-        paymentMethods?.toSet()
+    fun mapPaymentMethodList(paymentMethods: List<PaymentMethod>?): Set<PaymentMethod>? = paymentMethods?.toSet()
 
     @Named("mapBankQr")
     fun mapBankQr(banks: List<PaymentQrBank>?): Set<PaymentQrBank>? = banks?.toSet()
@@ -93,8 +92,7 @@ abstract class OrderMapper {
                 value.trim().trim('"').uppercase().let { normalized ->
                     PaymentQrBank.entries.firstOrNull { it.name == normalized }
                 }
-            }
-            ?.toSet()
+            }?.toSet()
 
     @Named("mapBankBySubOrders")
     fun mapBankBySubOrders(subOrders: List<CreateSubOrderCommand>?): String? =

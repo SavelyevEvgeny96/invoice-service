@@ -34,10 +34,11 @@ class PaymentMethodsInfoServiceTest {
     fun `enabled default payment methods are used for empty order list`() {
         val repository = mockk<DefaultPaymentMethodRepository>()
         order.paymentMethodList = emptySet()
-        every { repository.findAllByAvailabilityTrue() } returns listOf(
-            DefaultPaymentMethodEntity(name = "CARD", availability = true),
-            DefaultPaymentMethodEntity(name = "SBP", availability = true),
-        )
+        every { repository.findAllByAvailabilityTrue() } returns
+            listOf(
+                DefaultPaymentMethodEntity(name = "CARD", availability = true),
+                DefaultPaymentMethodEntity(name = "SBP", availability = true),
+            )
 
         assertThat(PaymentMethodsResolverImpl(repository).resolve(order)).containsExactlyInAnyOrder(PaymentMethod.CARD, PaymentMethod.SBP)
     }
@@ -50,8 +51,9 @@ class PaymentMethodsInfoServiceTest {
         val cardUrl = URI("https://gateway/payment/pay/${order.orderId}?urlToReturn=https%3A%2F%2Freturn.example")
         every { builder.buildPayCardURI(order.orderId!!, params) } returns cardUrl
 
-        val result = PayInfoServiceImpl(paymentService, builder, generator, 300)
-            .getInfo(order, params, setOf(PaymentMethod.CARD))
+        val result =
+            PayInfoServiceImpl(paymentService, builder, generator, 300)
+                .getInfo(order, params, setOf(PaymentMethod.CARD))
 
         assertThat(result.first).isEqualTo(cardUrl)
         assertThat(result.second).isNull()
@@ -69,8 +71,9 @@ class PaymentMethodsInfoServiceTest {
         every { paymentService.paySbp(order, params) } returns PaymentPage(paymentUrl)
         every { generator.generateFileQR(URI(paymentUrl), 300) } returns qr
 
-        val result = PayInfoServiceImpl(paymentService, builder, generator, 300)
-            .getInfo(order, params, setOf(PaymentMethod.SBP))
+        val result =
+            PayInfoServiceImpl(paymentService, builder, generator, 300)
+                .getInfo(order, params, setOf(PaymentMethod.SBP))
 
         assertThat(result.first).isNull()
         assertThat(result.second?.urlPay).isEqualTo(paymentUrl)
@@ -84,8 +87,9 @@ class PaymentMethodsInfoServiceTest {
         val generator = mockk<QrGeneratorService>()
         every { paymentService.paySbp(order, params) } throws IllegalStateException("payment unavailable")
 
-        val result = PayInfoServiceImpl(paymentService, builder, generator, 300)
-            .getInfo(order, params, setOf(PaymentMethod.SBP))
+        val result =
+            PayInfoServiceImpl(paymentService, builder, generator, 300)
+                .getInfo(order, params, setOf(PaymentMethod.SBP))
 
         assertThat(result.first).isNull()
         assertThat(result.second).isNull()

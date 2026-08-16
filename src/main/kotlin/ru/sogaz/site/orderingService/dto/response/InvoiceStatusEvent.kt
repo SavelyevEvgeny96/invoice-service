@@ -5,6 +5,7 @@ import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class InvoiceStatusEvent(
+    var paymentBankId: String?,
     val invoiceId: String?,
     val externalSystemCode: String? = null,
     val externalId: String?,
@@ -12,6 +13,8 @@ data class InvoiceStatusEvent(
     val email: String?,
     val errorText: String? = null,
     val invoices: List<SubInvoiceData>?,
+    val rrn: String? = null,
+    val qrId: String? = null,
     val maskedPan: String?, // Маскированный номер карты
     val paymentSystem: String?, // Наименование платёжной системы
     val issuerName: String?, // Кем выдана карта (банк-эмитент)

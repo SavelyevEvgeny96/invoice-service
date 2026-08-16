@@ -16,9 +16,9 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.hibernate.type.SqlTypes
 import ru.sogaz.site.orderingService.enums.ApiVersionEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
-import ru.sogaz.site.orderingService.enums.ReceiptState
 import ru.sogaz.site.orderingService.enums.PaymentMethod
 import ru.sogaz.site.orderingService.enums.PaymentQrBank
+import ru.sogaz.site.orderingService.enums.ReceiptState
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -104,6 +104,10 @@ class OrderEntity(
     var payerMiddleName: String? = null,
     @Column(name = "check_url_return")
     var checkUrlReturn: Boolean? = null,
+    @Column(name = "check_payment_information")
+    var checkPaymentInformation: Boolean? = null,
+    @Column(name = "send_message_result")
+    var sendMessageResult: Boolean? = false,
     @CreationTimestamp
     @Column(name = "create_date", updatable = false)
     var createDate: Instant? = null,

@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import ru.sogaz.site.orderingService.enums.BankEnum
-import ru.sogaz.site.orderingService.enums.PaymentMethod
-import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import ru.sogaz.site.orderingService.validation.constraint.Phone
 import ru.sogaz.site.orderingService.validation.constraint.RussianNameValid
 import ru.sogaz.site.orderingService.validation.constraint.SameChannelInOrders
@@ -57,6 +55,4 @@ data class OrderRequestV1(
     var orderIdRecurrent: UUID? = null,
     var bank: BankEnum? = null,
     var keyCard: String? = null,
-    var paymentMethodList: List<PaymentMethod>? = null,
-    var bankQr: List<PaymentQrBank>? = null,
 )

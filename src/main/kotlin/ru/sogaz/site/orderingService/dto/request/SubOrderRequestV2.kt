@@ -1,3 +1,5 @@
+
+
 package ru.sogaz.site.orderingService.dto.request
 
 import com.fasterxml.jackson.annotation.JsonSetter

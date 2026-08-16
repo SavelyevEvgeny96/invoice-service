@@ -30,7 +30,9 @@ class PayInfoServiceImpl(
         paymentMethods: Set<PaymentMethod>,
     ): Pair<URI?, PaySbp?> {
         val payCardLink = if (PaymentMethod.CARD in paymentMethods) order.formPayCardLink(payQueryParams) else null
-        val paySbp = if (PaymentMethod.SBP in paymentMethods) formPaySbp(order, payQueryParams) else null
+        // Проверяем, есть ли СБП ИЛИ Цифровой рубль
+        val hasQrPayment = paymentMethods.any { it == PaymentMethod.SBP || it == PaymentMethod.DIGITAL_RUB }
+        val paySbp = if (hasQrPayment) formPaySbp(order, payQueryParams) else null
         return Pair(payCardLink, paySbp)
     }
 
@@ -50,5 +52,4 @@ class PayInfoServiceImpl(
 
     private fun OrderEntity.formPayCardLink(payQueryParams: PayQueryParams): URI =
         paymentMethodURIBuilder.buildPayCardURI(requireNotNull(orderId) { NULL_ORDER_ID_ERROR }, payQueryParams)
-
 }

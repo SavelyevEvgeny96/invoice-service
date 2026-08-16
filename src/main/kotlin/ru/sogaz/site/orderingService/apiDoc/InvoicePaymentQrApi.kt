@@ -20,7 +20,7 @@ interface InvoicePaymentQrApi {
     @ApiResponse(responseCode = "200", description = "QR-код успешно сформирован")
     @ApiResponse(responseCode = "409", description = "Заказ не найден, оплачен или недоступен для оплаты")
     @PostMapping("/payqr", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun getPaymentQr(
+    fun getQrPaymentRicvisit(
         @Valid @RequestBody request: InvoicePaymentQrRequest,
     ): Response<InvoicePaymentQr>
 }

@@ -41,48 +41,25 @@ class InvoicePaymentQrServiceTest {
         order.addSubOrder(subOrder("FIRST", "2026-01-01T00:00:00Z"))
         order.addSubOrder(subOrder("SECOND", "2026-02-01T00:00:00Z"))
         val company = company()
+        every { orderDao.findById(invoiceId) } returns order
         every { orderDao.findByIdWithoutLock(invoiceId) } returns order
         every { companyDetailsQrDao.findByBank("GPB") } returns company
         every { qrGeneratorService.generateFileQR(any<String>()) } returns FileQR("base64", "image/png")
 
         val result = service.generate(invoiceId, "GPB")
 
-        assertThat(result.contentQR).isEqualTo("base64")
-        assertThat(result.mediaType).isEqualTo("image/png")
+        assertThat(result.qrInfo.contentQR).isEqualTo("base64")
+        assertThat(result.qrInfo.mediaType).isEqualTo("image/png")
+        assertThat(result.detais.recipient.kpp).isEmpty()
+        assertThat(result.infoInvoice.accounts.agreementNumber).isEqualTo("FIRST")
         verify {
             qrGeneratorService.generateFileQR(
                 match {
                     it.startsWith("ST00012|Name=Компания|PersonalAcc=40701") &&
-                        it.contains("|Sum=15452|PayeeINN=7729503816|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
+                        it.contains("|Sum=15452|PayeeINN=7729503816|KPP=|LastName=Иванов|FirstName=Иван|MiddleName=Иванович") &&
                         it.contains("ДОГОВОРУ СТРАХОВАНИЯ FIRST от 01.01.2026") &&
                         !it.contains("SECOND")
                 },
-            )
-        }
-    }
-
-    @Test
-    fun `should use legacy policyholder when separate payer fields are absent`() {
-        val invoiceId = UUID.randomUUID()
-        val order =
-            OrderEntity(
-                orderId = invoiceId,
-                policyholder = "Петров Петр Петрович",
-                premiumAmount = BigDecimal.ONE,
-                recipientEmail = "",
-                recipientPhone = "",
-                queueStatusResultName = "status",
-            )
-        order.addSubOrder(subOrder("FIRST", "2026-01-01T00:00:00Z"))
-        every { orderDao.findByIdWithoutLock(invoiceId) } returns order
-        every { companyDetailsQrDao.findByBank("GPB") } returns company()
-        every { qrGeneratorService.generateFileQR(any<String>()) } returns FileQR("base64", "image/png")
-
-        service.generate(invoiceId, "GPB")
-
-        verify {
-            qrGeneratorService.generateFileQR(
-                match { it.contains("|LastName=Петров|FirstName=Петр|MiddleName=Петрович") },
             )
         }
     }
@@ -106,6 +83,7 @@ class InvoicePaymentQrServiceTest {
             bic = "044525823",
             correspAcc = "30101",
             payeeInn = "7729503816",
+            kpp = "",
             bank = "GPB",
         )
 }

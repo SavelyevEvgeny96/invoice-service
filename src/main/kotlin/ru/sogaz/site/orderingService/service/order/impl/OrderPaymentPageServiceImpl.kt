@@ -13,20 +13,20 @@ import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.InvoiceMetaInfo
 import ru.sogaz.site.orderingService.dto.response.InvoicePayPageInfo
+import ru.sogaz.site.orderingService.dto.response.QrBankingDetails
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum.CANCELED
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum.MARKEDDEL
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum.OVERDUE
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum.REFUND
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum.SUCCESS
+import ru.sogaz.site.orderingService.enums.PaymentMethod
+import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import ru.sogaz.site.orderingService.mappers.order.InvoiceMetaInfoMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentMethodsMapper
 import ru.sogaz.site.orderingService.service.order.OrderPaymentPageService
 import ru.sogaz.site.orderingService.service.payment.PayInfoService
 import ru.sogaz.site.orderingService.service.payment.PaymentMethodsResolver
-import ru.sogaz.site.orderingService.dto.response.QrBankingDetails
-import ru.sogaz.site.orderingService.enums.PaymentMethod
-import ru.sogaz.site.orderingService.enums.PaymentQrBank
 import java.util.UUID
 
 @Service
@@ -44,7 +44,7 @@ class OrderPaymentPageServiceImpl(
         payQueryParams: PayQueryParams,
     ): InvoicePayPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        checkOrderStatus(order)
+        order.checkStatus()
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
         return paymentMethodsMapper.toInvoicePayPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
@@ -55,7 +55,7 @@ class OrderPaymentPageServiceImpl(
         payQueryParams: PayQueryParams,
     ): DataOrderPaymentPageInfo {
         val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
-        checkOrderStatus(order)
+        order.checkStatus()
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
         return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
@@ -84,8 +84,8 @@ class OrderPaymentPageServiceImpl(
         )
     }
 
-    private fun checkOrderStatus(order: OrderEntity) {
-        when (order.status) {
+    private fun OrderEntity.checkStatus() {
+        when (status) {
             SUCCESS -> throw BusinessException(ERROR_CODE_ORDER_SUCCESS)
             OVERDUE,
             MARKEDDEL,

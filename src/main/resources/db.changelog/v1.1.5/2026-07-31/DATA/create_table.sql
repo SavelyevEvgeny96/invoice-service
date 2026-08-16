@@ -1,7 +1,3 @@
-ALTER TABLE orders
-    ADD COLUMN payment_method_list JSONB,
-    ADD COLUMN bank_qr JSONB;
-
 CREATE TABLE default_payment_methods (
     id UUID PRIMARY KEY,
     name VARCHAR(64) NOT NULL UNIQUE,
