@@ -2,6 +2,7 @@ package ru.sogaz.site.orderingService.mappers.payment
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import ru.sogaz.site.orderingService.dto.request.InvoicePayCardGidRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
@@ -10,10 +11,25 @@ import ru.sogaz.site.payment.client.model.BankPaymentPageData
 import ru.sogaz.site.payment.client.model.BankPaymentQrContent
 import ru.sogaz.site.payment.client.model.CardPayOperationRequest
 import ru.sogaz.site.payment.client.model.CardRecurrentOperationRequest
+import ru.sogaz.site.payment.client.model.GidPayOperationRequest
 import ru.sogaz.site.payment.client.model.SbpPayOperationRequest
 
 @Mapper(uses = [PaymentPurposeMapper::class])
 interface PaymentServiceMapper {
+    @Mapping(target = "amount", source = "order.premiumAmount")
+    @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapGidRequestContractDescription"])
+    @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapGidRequestParams"])
+    @Mapping(target = "depersonalization", source = "request.depersonalization")
+    @Mapping(target = "saveCard", source = "request.saveCard")
+    @Mapping(
+        target = "params",
+        expression = "java(paymentPurposeMapper.mapGidPayParams(request, order))",
+    )
+    fun orderToGidPayRequest(
+        order: OrderEntity,
+        request: InvoicePayCardGidRequest,
+    ): GidPayOperationRequest
+
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapCardRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapRequestParams"])
