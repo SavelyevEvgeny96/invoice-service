@@ -4,9 +4,11 @@ import org.mapstruct.Mapper
 import org.mapstruct.Named
 import ru.sogaz.site.exceptionStarter.starter.dto.exceptions.InnerException
 import ru.sogaz.site.filterStarter.services.RequestInfo.getTraceId
+import ru.sogaz.site.orderingService.dto.request.InvoicePayCardGidRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.payment.client.model.GidPayParams
 import ru.sogaz.site.payment.client.model.RedirectParams
 import ru.sogaz.site.payment.client.model.StraightRedirectSchema
 import java.time.Instant
@@ -18,6 +20,8 @@ import java.time.format.DateTimeFormatter
 abstract class PaymentPurposeMapper {
     companion object {
         private const val PAY_CARD_ONE_CONTRACT_INFO = "Оплата по договору %s%s. Платежный сервис, дата операции %s"
+        private const val PAY_GID_INFO = "Зачисление по операции оплата банковской карты %s от %s, дата операции %s"
+        private const val MAX_PAYMENT_DESCRIPTION_LENGTH = 125
         private const val PAY_SBP_ONE_CONTRACT_INFO = "Оплата по договору страхования %s"
         private const val CONTRACT_INFO = "%s%s"
         private const val PARAM = "param"
@@ -46,6 +50,17 @@ abstract class PaymentPurposeMapper {
                 ?: order.urlToDecline
         }
 
+    fun mapGidPayParams(
+        request: InvoicePayCardGidRequest,
+        order: OrderEntity,
+    ): GidPayParams =
+        GidPayParams().apply {
+            urlToReturnS = request.urlToReturnS.takeIf { !it.isNullOrBlank() } ?: order.urlToReturn
+            urlToReturnF = request.urlToReturnF.takeIf { !it.isNullOrBlank() } ?: order.urlToDecline
+            gid = request.gid
+            cardId = request.keyCard
+        }
+
     fun mapSbpRedirectParams(
         params: PayQueryParams,
         order: OrderEntity,
@@ -62,6 +77,17 @@ abstract class PaymentPurposeMapper {
         val operationDate = LocalDate.now(DEFAULT_ZONE).toContractDateFormat()
         return runCatching { mapCardRequestContractDescription(operationDate, subOrders) }
             .getOrElse { EMPTY_PAY_INFO.format(operationDate) }
+    }
+
+    @Named("mapGidRequestContractDescription")
+    protected fun mapGidRequestContractDescription(subOrders: List<SubOrderEntity>): String {
+        val operationDate = LocalDate.now(DEFAULT_ZONE).toContractDateFormat()
+        val contract = subOrders.findMainContract()
+        val contractName =
+            contract.contractId.takeUnless { it.isNullOrBlank() || it == "0" }
+                ?: contract.contractNumber.orEmpty()
+        val contractDate = contract.contractDate?.atZone(DEFAULT_ZONE)?.toLocalDate()?.toContractDateFormat().orEmpty()
+        return PAY_GID_INFO.format(contractName, contractDate, operationDate).take(MAX_PAYMENT_DESCRIPTION_LENGTH)
     }
 
     private fun mapCardRequestContractDescription(
@@ -104,6 +130,16 @@ abstract class PaymentPurposeMapper {
         subOrders
             .mapIndexed(::mapToParam)
             .toMap()
+
+    @Named("mapGidRequestParams")
+    protected fun mapGidRequestParams(subOrders: List<SubOrderEntity>): Map<String, String> =
+        subOrders.mapIndexed { index, subOrder ->
+            val contractName =
+                subOrder.contractId.takeUnless { it.isNullOrBlank() || it == "0" }
+                    ?: subOrder.contractNumber.orEmpty()
+            val contractDate = subOrder.contractDate?.atZone(DEFAULT_ZONE)?.toLocalDate()?.toContractDateFormat().orEmpty()
+            "param${index + 1}" to "$contractName от $contractDate"
+        }.toMap()
 
     private fun mapToParam(
         idx: Int,
