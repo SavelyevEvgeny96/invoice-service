@@ -19,13 +19,11 @@ interface PaymentServiceMapper {
     @Mapping(target = "amount", source = "order.premiumAmount")
     @Mapping(target = "description", source = "order.subOrders", qualifiedByName = ["mapGidRequestContractDescription"])
     @Mapping(target = "payItems", source = "order.subOrders", qualifiedByName = ["mapGidRequestParams"])
-    @Mapping(target = "gid", source = "request.gid")
-    @Mapping(target = "cardId", source = "request.keyCard")
     @Mapping(target = "depersonalization", source = "request.depersonalization")
     @Mapping(target = "saveCard", source = "request.saveCard")
     @Mapping(
         target = "params",
-        expression = "java(paymentPurposeMapper.mapGidRedirectParams(request, order))",
+        expression = "java(paymentPurposeMapper.mapGidPayParams(request, order))",
     )
     fun orderToGidPayRequest(
         order: OrderEntity,

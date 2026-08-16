@@ -8,6 +8,7 @@ import ru.sogaz.site.orderingService.dto.request.InvoicePayCardGidRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
+import ru.sogaz.site.payment.client.model.GidPayParams
 import ru.sogaz.site.payment.client.model.RedirectParams
 import ru.sogaz.site.payment.client.model.StraightRedirectSchema
 import java.time.Instant
@@ -49,13 +50,15 @@ abstract class PaymentPurposeMapper {
                 ?: order.urlToDecline
         }
 
-    fun mapGidRedirectParams(
+    fun mapGidPayParams(
         request: InvoicePayCardGidRequest,
         order: OrderEntity,
-    ): RedirectParams =
-        RedirectParams().apply {
+    ): GidPayParams =
+        GidPayParams().apply {
             urlToReturnS = request.urlToReturnS.takeIf { !it.isNullOrBlank() } ?: order.urlToReturn
             urlToReturnF = request.urlToReturnF.takeIf { !it.isNullOrBlank() } ?: order.urlToDecline
+            gid = request.gid
+            cardId = request.keyCard
         }
 
     fun mapSbpRedirectParams(

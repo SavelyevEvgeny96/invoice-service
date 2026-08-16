@@ -97,10 +97,13 @@ class PaymentServiceTest {
         assertThat(payRequest)
             .returns(order.orderId) { it.orderId }
             .returns(order.premiumAmount) { it.amount }
-            .returns("gid-1") { it.gid }
-            .returns("card-1") { it.cardId }
             .returns(true) { it.saveCard }
             .returns(true) { it.depersonalization }
+        assertThat(payRequest.params)
+            .returns("gid-1") { it.gid }
+            .returns("card-1") { it.cardId }
+            .returns("https://example.org/success") { it.urlToReturnS }
+            .returns("https://example.org/fail") { it.urlToReturnF }
         assertThat(payRequest.description).contains(TEST_CONTRACT_NUMBER)
         assertThat(payRequest.payItems.values.first()).contains(TEST_CONTRACT_NUMBER)
     }
