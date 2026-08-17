@@ -47,14 +47,6 @@ interface InvoicePayPageInfoV2Api {
         @ParameterObject
         payQueryParams: PayQueryParams,
         @Parameter(
-            name = "saveCard",
-            required = false,
-            `in` = ParameterIn.QUERY,
-            schema = Schema(type = "boolean", defaultValue = "false"),
-        )
-        @RequestParam(required = false, defaultValue = "false")
-        saveCard: Boolean,
-        @Parameter(
             name = "unifiedId",
             required = false,
             `in` = ParameterIn.QUERY,

@@ -13,6 +13,9 @@ data class InvoicePayPageInfo(
     val urlPayBank: URI? = null,
     val paySbp: PaySbp? = null,
     val qrBankingDetails: QrBankingDetails? = null,
+    val gidId: String? = null,
+    val gidPayUrl: String? = null,
+    val listSavedCardsGid: List<SavedCardGid>? = emptyList(),
 )
 
 data class InvoiceAccountData(
@@ -21,4 +24,10 @@ data class InvoiceAccountData(
     val agreementNumber: String?,
     val typeOperation: String?,
     val insuranceKind: String?,
+)
+
+data class SavedCardGid(
+    val keyCard: String?,
+    val lastDigits: String?,
+    val paymentSystem: String?,
 )

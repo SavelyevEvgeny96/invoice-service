@@ -2,7 +2,10 @@ package ru.sogaz.site.orderingService.service.payment.impl
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import ru.sogaz.site.orderingService.apiDoc.InvoicePayCardGidApi
+import ru.sogaz.site.orderingService.apiDoc.integretion.LKApi
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
+import ru.sogaz.site.orderingService.dto.response.GidAuthResponse
 import ru.sogaz.site.orderingService.dto.response.PaySbp
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.enums.PaymentMethod
@@ -11,12 +14,15 @@ import ru.sogaz.site.orderingService.service.payment.PaymentMethodURIBuilder
 import ru.sogaz.site.orderingService.service.payment.PaymentService
 import ru.sogaz.site.orderingService.service.payment.QrGeneratorService
 import java.net.URI
+import java.util.UUID
 
 @Service
 class PayInfoServiceImpl(
+    private val invoicePayCardGidApi: InvoicePayCardGidApi,
     private val paymentService: PaymentService,
     private val paymentMethodURIBuilder: PaymentMethodURIBuilder,
     private val qrGeneratorService: QrGeneratorService,
+    private val lkApi: LKApi,
     @param:Value("\${api.payment.qrCodeSize}")
     private val qrCodeSize: Int,
 ) : PayInfoService {
@@ -34,6 +40,14 @@ class PayInfoServiceImpl(
         val hasQrPayment = paymentMethods.any { it == PaymentMethod.SBP || it == PaymentMethod.DIGITAL_RUB }
         val paySbp = if (hasQrPayment) formPaySbp(order, payQueryParams) else null
         return Pair(payCardLink, paySbp)
+    }
+
+    override fun getGidIdInfo(payQueryParams: PayQueryParams, invoiceId: UUID): Pair<GidAuthResponse, String> {
+
+        val gidAuthResponse = lkApi.getGidId(payQueryParams.gidId)
+
+        val gitUrlResponse = invoicePayCardGidApi.payCardGid()
+
     }
 
     private fun formPaySbp(
