@@ -40,14 +40,23 @@ class OrderPaymentPageServiceImpl(
     private val paymentMethodsResolver: PaymentMethodsResolver,
 ) : OrderPaymentPageService {
     override fun getInvoicePayPageInfo(
-        orderId: UUID,
+        invoiceId: UUID,
         payQueryParams: PayQueryParams,
     ): InvoicePayPageInfo {
-        val order = orderDao.findById(orderId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
+        val order = orderDao.findById(invoiceId) ?: throw BusinessException(CODE_ERROR_ORDER_NOT_FOUND_INFO)
         order.checkStatus()
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
-        return paymentMethodsMapper.toInvoicePayPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
+        val (saveCardRespLk, gidPayUrl) = payInfoService.getGidIdInfo(payQueryParams, invoiceId)
+        return paymentMethodsMapper.toInvoicePayPageInfo(
+            saveCardRespLk,
+            gidPayUrl,
+            payQueryParams,
+            order,
+            payCardUri,
+            paySbp,
+            order.qrBankingDetails(methods)
+        )
     }
 
     override fun getPaymentPage(
@@ -58,7 +67,12 @@ class OrderPaymentPageServiceImpl(
         order.checkStatus()
         val methods = paymentMethodsResolver.resolve(order)
         val (payCardUri, paySbp) = payInfoService.getInfo(order, payQueryParams, methods)
-        return paymentMethodsMapper.toDataOrderPaymentPageInfo(order, payCardUri, paySbp, order.qrBankingDetails(methods))
+        return paymentMethodsMapper.toDataOrderPaymentPageInfo(
+            order,
+            payCardUri,
+            paySbp,
+            order.qrBankingDetails(methods)
+        )
     }
 
     override fun getMetaInfo(
@@ -89,10 +103,12 @@ class OrderPaymentPageServiceImpl(
             SUCCESS -> throw BusinessException(ERROR_CODE_ORDER_SUCCESS)
             OVERDUE,
             MARKEDDEL,
-            -> throw BusinessException(ERROR_CODE_ORDER_OVERDUE)
+                -> throw BusinessException(ERROR_CODE_ORDER_OVERDUE)
+
             CANCELED,
             REFUND,
-            -> throw BusinessException(ERROR_CODE_ORDER_CANCELED)
+                -> throw BusinessException(ERROR_CODE_ORDER_CANCELED)
+
             else -> {}
         }
     }

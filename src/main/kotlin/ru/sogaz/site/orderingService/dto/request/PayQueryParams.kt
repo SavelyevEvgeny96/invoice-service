@@ -1,6 +1,7 @@
 package ru.sogaz.site.orderingService.dto.request
 
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springdoc.core.annotations.ParameterObject
 
@@ -19,4 +20,8 @@ open class PayQueryParams(
     val channelSale: String? = null,
     @field:Parameter(description = "IP пользователя, который совершает оплату")
     open val payerIP: String? = null,
+    @field:Parameter(description = "Идентификатор ГИД ИД")
+    open val gidId: String? = null,
+    @field:Parameter(description = "Флаг факта сохранения карты")
+    open val saveCard: Boolean? = false,
 )

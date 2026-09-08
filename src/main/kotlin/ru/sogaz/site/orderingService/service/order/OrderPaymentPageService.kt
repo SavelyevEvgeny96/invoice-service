@@ -8,7 +8,7 @@ import java.util.UUID
 
 interface OrderPaymentPageService {
     fun getInvoicePayPageInfo(
-        orderId: UUID,
+        invoiceId: UUID,
         payQueryParams: PayQueryParams,
     ): InvoicePayPageInfo
 

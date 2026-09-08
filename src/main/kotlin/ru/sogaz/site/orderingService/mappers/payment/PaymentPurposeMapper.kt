@@ -86,7 +86,12 @@ abstract class PaymentPurposeMapper {
         val contractName =
             contract.contractId.takeUnless { it.isNullOrBlank() || it == "0" }
                 ?: contract.contractNumber.orEmpty()
-        val contractDate = contract.contractDate?.atZone(DEFAULT_ZONE)?.toLocalDate()?.toContractDateFormat().orEmpty()
+        val contractDate =
+            contract.contractDate
+                ?.atZone(DEFAULT_ZONE)
+                ?.toLocalDate()
+                ?.toContractDateFormat()
+                .orEmpty()
         return PAY_GID_INFO.format(contractName, contractDate, operationDate).take(MAX_PAYMENT_DESCRIPTION_LENGTH)
     }
 
@@ -133,13 +138,19 @@ abstract class PaymentPurposeMapper {
 
     @Named("mapGidRequestParams")
     protected fun mapGidRequestParams(subOrders: List<SubOrderEntity>): Map<String, String> =
-        subOrders.mapIndexed { index, subOrder ->
-            val contractName =
-                subOrder.contractId.takeUnless { it.isNullOrBlank() || it == "0" }
-                    ?: subOrder.contractNumber.orEmpty()
-            val contractDate = subOrder.contractDate?.atZone(DEFAULT_ZONE)?.toLocalDate()?.toContractDateFormat().orEmpty()
-            "param${index + 1}" to "$contractName от $contractDate"
-        }.toMap()
+        subOrders
+            .mapIndexed { index, subOrder ->
+                val contractName =
+                    subOrder.contractId.takeUnless { it.isNullOrBlank() || it == "0" }
+                        ?: subOrder.contractNumber.orEmpty()
+                val contractDate =
+                    subOrder.contractDate
+                        ?.atZone(DEFAULT_ZONE)
+                        ?.toLocalDate()
+                        ?.toContractDateFormat()
+                        .orEmpty()
+                "param${index + 1}" to "$contractName от $contractDate"
+            }.toMap()
 
     private fun mapToParam(
         idx: Int,

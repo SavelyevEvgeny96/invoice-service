@@ -14,7 +14,7 @@ interface PaymentOperationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "paymentId", ignore = true)
     @Mapping(target = "state", constant = "REG")
-    @Mapping(target = "bank", source = "order.bank")
+    @Mapping(target = "bank", source = "paymentData.bank")
     @Mapping(target = "operation", constant = "PAY")
     @Mapping(target = "type", constant = "CARD_GID")
     @Mapping(target = "amount", source = "order.premiumAmount")

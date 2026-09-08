@@ -24,11 +24,11 @@ class InvoicePayPageInfoController(
         xRealIp: String?,
         invoiceId: UUID,
         payQueryParams: PayQueryParams,
-        saveCard: Boolean,
         unifiedId: String?,
     ): Response<InvoicePayPageInfo> {
         val updatedParams =
             PayQueryParams(
+                gidId = payQueryParams.gidId,
                 urlToReturn = payQueryParams.urlToReturn,
                 urlToReturnS = payQueryParams.urlToReturnS,
                 urlToReturnF = payQueryParams.urlToReturnF,
