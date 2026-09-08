@@ -13,5 +13,4 @@ data class PaymentApiProperties(
     val pagepayinfoHost: String,
     val pagepayinfoUrlSuffix: String,
     val paymentHostPagePayInfo: String,
-    val
 )
