@@ -51,7 +51,6 @@ class OrderPaymentPageServiceImpl(
         return paymentMethodsMapper.toInvoicePayPageInfo(
             saveCardRespLk,
             gidPayUrl,
-            payQueryParams,
             order,
             payCardUri,
             paySbp,
