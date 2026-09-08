@@ -15,5 +15,8 @@ interface PayInfoService {
         paymentMethods: Set<PaymentMethod>,
     ): Pair<URI?, PaySbp?>
 
-    fun getGidIdInfo( payQueryParams: PayQueryParams,  invoiceId: UUID): Pair<GidAuthResponse, String>
+    fun getGidIdInfo(
+        payQueryParams: PayQueryParams,
+        invoiceId: UUID,
+    ): Pair<GidAuthResponse?, String?>
 }

@@ -92,7 +92,10 @@ app:
 
 api:
   payment:
-    lkBasePath: ${LK_BASE_PATH:https://lk-stage.sogaz.ru}
+    lkCardUrl: ${LK_CARD_URL:https://lk-stage.sogaz.ru}
+    keycloakUrl: ${KEYCLOAK_URL:https://new-service-test.sogaz.ru/auth/realms/sogaz/protocol/openid-connect/token}
+    keycloakClientId: ${CLIENT_ID_KEYCLOAK:invoice-service-client}
+    keycloakClientSecret: ${CLIENT_ID_SECRET_KEYCLOAK:}
     paymentHostPagePayInfo: ${PAYMENT_HOST_PAGE_PAY_INFO:https://test-gateway-site-dmz.sogaz.ru/}
     paymentHost: ${PAYMENT_HOST:https://test-gateway-site-kis.sogaz.ru/}
     paymentUrlSuffix: ${PAYMENT_URL_SUFFIX:/payment/pay/}

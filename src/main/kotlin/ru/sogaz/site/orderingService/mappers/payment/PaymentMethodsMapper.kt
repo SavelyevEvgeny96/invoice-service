@@ -2,7 +2,6 @@ package ru.sogaz.site.orderingService.mappers.payment
 
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
-import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.DataOrderPaymentPageInfo
 import ru.sogaz.site.orderingService.dto.response.GidAuthResponse
 import ru.sogaz.site.orderingService.dto.response.InvoiceAccountData
@@ -28,28 +27,21 @@ interface PaymentMethodsMapper {
 
     @Mapping(source = "order.orderId", target = "invoiceId")
     @Mapping(source = "order.subOrders", target = "accounts")
-    @Mapping(source = "payQueryParams.gidId", target = "gidId")
+    @Mapping(source = "saveCardRespLk.gidId", target = "gidId")
     @Mapping(source = "saveCardRespLk.paymentMethods", target = "listSavedCardsGid")
     fun toInvoicePayPageInfo(
-        saveCardRespLk: GidAuthResponse,
-        gidPayUrl: String,
-        payQueryParams: PayQueryParams,
+        saveCardRespLk: GidAuthResponse?,
+        gidPayUrl: String?,
         order: OrderEntity,
         urlPayBank: URI?,
         paySbp: PaySbp?,
         qrBankingDetails: QrBankingDetails?,
     ): InvoicePayPageInfo
 
-    private fun mapPaymentMethodsToSavedCards(methods: List<List<PaymentMethodDto>>?): List<SavedCardGid>? {
-        if (methods == null) return emptyList()
-        return methods.flatten().map { method ->
-            SavedCardGid(
-                keyCard = method.id?.toString(),
-                lastDigits = method.details?.lastDigits,
-                paymentSystem = method.paymentSystem?.name
-            )
-        }
-    }
+    @Mapping(source = "id", target = "keyCard")
+    @Mapping(source = "details.lastDigits", target = "lastDigits")
+    @Mapping(source = "paymentSystem.name", target = "paymentSystem")
+    fun toSavedCardGid(method: PaymentMethodDto): SavedCardGid
 
     @Mapping(source = "contractNumber", target = "agreementNumber")
     @Mapping(source = "premiumAmount", target = "agreementPrice")

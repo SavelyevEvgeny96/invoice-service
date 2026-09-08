@@ -7,7 +7,7 @@ import java.util.UUID
 data class GidAuthResponse(
     val gidId: String?,
     val refreshToken: String?,
-    val paymentMethods: List<List<PaymentMethodDto>>? = emptyList()
+    val paymentMethods: List<PaymentMethodDto> = emptyList(),
 )
 
 data class PaymentMethodDto(
@@ -17,26 +17,26 @@ data class PaymentMethodDto(
     val acquirer: AcquirerDto?,
     val provider: ProviderDto?,
     val paymentSystem: PaymentSystemDto?,
-    val details: PaymentDetailsDto?
+    val details: PaymentDetailsDto?,
 )
 
 data class AcquirerDto(
     val slug: String?,
-    val name: String?
+    val name: String?,
 )
 
 data class ProviderDto(
     val slug: String?,
     val name: String?,
-    val icon: String?
+    val icon: String?,
 )
 
 data class PaymentSystemDto(
     val slug: String?,
-    val name: String?
+    val name: String?,
 )
 
 data class PaymentDetailsDto(
     val description: String?,
-    val lastDigits: String?
+    val lastDigits: String?,
 )
