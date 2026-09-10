@@ -11,12 +11,16 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import ru.sogaz.site.orderingService.dto.request.InvoicePayCardGidRequest
 import ru.sogaz.site.orderingService.dto.request.PayQueryParams
 import ru.sogaz.site.orderingService.dto.response.PaymentPage
 import ru.sogaz.site.orderingService.entity.OrderEntity
 import ru.sogaz.site.orderingService.entity.SubOrderEntity
 import ru.sogaz.site.orderingService.enums.BankEnum
 import ru.sogaz.site.orderingService.enums.OrderStatusesEnum
+import ru.sogaz.site.orderingService.enums.PaymentOperationStateEnum
+import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapper
+import ru.sogaz.site.orderingService.mappers.payment.PaymentOperationMapperImpl
 import ru.sogaz.site.orderingService.mappers.payment.PaymentPurposeMapperImpl
 import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapper
 import ru.sogaz.site.orderingService.mappers.payment.PaymentServiceMapperImpl
@@ -29,7 +33,7 @@ import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockKExtension::class, SpringExtension::class)
-@Import(value = [PaymentServiceMapperImpl::class, PaymentPurposeMapperImpl::class])
+@Import(value = [PaymentServiceMapperImpl::class, PaymentPurposeMapperImpl::class, PaymentOperationMapperImpl::class])
 class PaymentServiceTest {
     companion object {
         private const val TEST_CONTRACT_NUMBER = "contract-number"
@@ -41,6 +45,9 @@ class PaymentServiceTest {
 
     @Autowired
     private lateinit var paymentServiceMapper: PaymentServiceMapper
+
+    @Autowired
+    private lateinit var paymentOperationMapper: PaymentOperationMapper
 
     private lateinit var paymentService: PaymentService
 
@@ -71,6 +78,61 @@ class PaymentServiceTest {
 
         assertThat(payRequest.description)
             .contains(TEST_CONTRACT_NUMBER)
+    }
+
+    @Test
+    fun `should correctly map order to GID pay request`() {
+        val request =
+            InvoicePayCardGidRequest(
+                gid = "gid-1",
+                keyCard = "card-1",
+                saveCard = true,
+                depersonalization = true,
+                urlToReturnS = "https://example.org/success",
+                urlToReturnF = "https://example.org/fail",
+            )
+
+        val payRequest = paymentServiceMapper.orderToGidPayRequest(order, request)
+
+        assertThat(payRequest)
+            .returns(order.orderId) { it.orderId }
+            .returns(order.premiumAmount) { it.amount }
+            .returns(true) { it.saveCard }
+            .returns(true) { it.depersonalization }
+        assertThat(payRequest.params)
+            .returns("gid-1") { it.gid }
+            .returns("card-1") { it.cardId }
+            .returns("https://example.org/success") { it.urlToReturnS }
+            .returns("https://example.org/fail") { it.urlToReturnF }
+        assertThat(payRequest.description).contains(TEST_CONTRACT_NUMBER)
+        assertThat(payRequest.payItems.values.first()).contains(TEST_CONTRACT_NUMBER)
+    }
+
+    @Test
+    fun `should correctly map registered GID payment operation`() {
+        val request =
+            InvoicePayCardGidRequest(
+                gid = "gid-1",
+                keyCard = "card-1",
+                payerIP = "127.0.0.1",
+                depersonalization = true,
+            )
+        val paymentData = BankPaymentPageData().apply { paymentBankId = "bank-payment-1" }
+        val operationTime = Instant.now()
+
+        val operation = paymentOperationMapper.fromGidPayment(order, request, paymentData, operationTime)
+
+        assertThat(operation)
+            .returns(order) { it.orderEntity }
+            .returns(PaymentOperationStateEnum.REG) { it.state }
+            .returns(BankEnum.GPB) { it.bank }
+            .returns("PAY") { it.operation }
+            .returns("CARD_GID") { it.type }
+            .returns(order.premiumAmount) { it.amount }
+            .returns("bank-payment-1") { it.paymentBankId }
+            .returns("127.0.0.1") { it.payerIp }
+            .returns(operationTime) { it.payDate }
+            .returns(operationTime) { it.updateDate }
     }
 
     @Test
